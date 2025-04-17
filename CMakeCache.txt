@@ -239,9 +239,6 @@ Protobuf_PROTOC_LIBRARY_DEBUG:FILEPATH=Protobuf_PROTOC_LIBRARY_DEBUG-NOTFOUND
 //Path to a library.
 Protobuf_PROTOC_LIBRARY_RELEASE:FILEPATH=Protobuf_PROTOC_LIBRARY_RELEASE-NOTFOUND
 
-//The directory containing a CMake configuration file for fmt.
-fmt_DIR:PATH=fmt_DIR-NOTFOUND
-
 //Value Computed by CMake
 onnx2cpp_BINARY_DIR:STATIC=/mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/onnx2cpp
 

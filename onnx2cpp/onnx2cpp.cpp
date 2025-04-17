@@ -2,6 +2,7 @@
 //
 
 #include "onnx2cpp.h"
+#include "onnx.pb.h"
 
 using namespace std;
 

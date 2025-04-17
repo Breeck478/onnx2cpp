@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp
+CMAKE_SOURCE_DIR = /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/onnx2cpp
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp
+CMAKE_BINARY_DIR = /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/onnx2cpp
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,14 +87,14 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/CMakeFiles /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/onnx2cpp//CMakeFiles/progress.marks
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 onnx2cpp/all
-	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/onnx2cpp/CMakeFiles /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/onnx2cpp//CMakeFiles/progress.marks
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
+	$(CMAKE_COMMAND) -E cmake_progress_start /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp/onnx2cpp/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
 clean:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 onnx2cpp/clean
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 clean
 .PHONY : clean
 
 # The main clean target
@@ -103,31 +103,30 @@ clean/fast: clean
 
 # Prepare targets for installation.
 preinstall: all
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 onnx2cpp/preinstall
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall
 
 # Prepare targets for installation.
 preinstall/fast:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 onnx2cpp/preinstall
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 preinstall
 .PHONY : preinstall/fast
 
 # clear depends
 depend:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-# Convenience name for target.
-onnx2cpp/CMakeFiles/onnx2cpp.dir/rule:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 onnx2cpp/CMakeFiles/onnx2cpp.dir/rule
-.PHONY : onnx2cpp/CMakeFiles/onnx2cpp.dir/rule
+#=============================================================================
+# Target rules for targets named onnx2cpp
 
-# Convenience name for target.
-onnx2cpp: onnx2cpp/CMakeFiles/onnx2cpp.dir/rule
+# Build rule for target.
+onnx2cpp: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 onnx2cpp
 .PHONY : onnx2cpp
 
 # fast build rule for target.
 onnx2cpp/fast:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f onnx2cpp/CMakeFiles/onnx2cpp.dir/build.make onnx2cpp/CMakeFiles/onnx2cpp.dir/build
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/onnx2cpp.dir/build.make CMakeFiles/onnx2cpp.dir/build
 .PHONY : onnx2cpp/fast
 
 onnx2cpp.o: onnx2cpp.cpp.o
@@ -135,7 +134,7 @@ onnx2cpp.o: onnx2cpp.cpp.o
 
 # target to build an object file
 onnx2cpp.cpp.o:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f onnx2cpp/CMakeFiles/onnx2cpp.dir/build.make onnx2cpp/CMakeFiles/onnx2cpp.dir/onnx2cpp.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/onnx2cpp.dir/build.make CMakeFiles/onnx2cpp.dir/onnx2cpp.cpp.o
 .PHONY : onnx2cpp.cpp.o
 
 onnx2cpp.i: onnx2cpp.cpp.i
@@ -143,7 +142,7 @@ onnx2cpp.i: onnx2cpp.cpp.i
 
 # target to preprocess a source file
 onnx2cpp.cpp.i:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f onnx2cpp/CMakeFiles/onnx2cpp.dir/build.make onnx2cpp/CMakeFiles/onnx2cpp.dir/onnx2cpp.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/onnx2cpp.dir/build.make CMakeFiles/onnx2cpp.dir/onnx2cpp.cpp.i
 .PHONY : onnx2cpp.cpp.i
 
 onnx2cpp.s: onnx2cpp.cpp.s
@@ -151,7 +150,7 @@ onnx2cpp.s: onnx2cpp.cpp.s
 
 # target to generate assembly for a file
 onnx2cpp.cpp.s:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(MAKE) $(MAKESILENT) -f onnx2cpp/CMakeFiles/onnx2cpp.dir/build.make onnx2cpp/CMakeFiles/onnx2cpp.dir/onnx2cpp.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/onnx2cpp.dir/build.make CMakeFiles/onnx2cpp.dir/onnx2cpp.cpp.s
 .PHONY : onnx2cpp.cpp.s
 
 # Help Target
@@ -177,6 +176,6 @@ help:
 # No rule that depends on this can have commands that come from listfiles
 # because they might be regenerated.
 cmake_check_build_system:
-	cd /mnt/c/Users/Benjamin/Desktop/ONNX/onnx2cpp/onnx2cpp/onnx2cpp && $(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
+	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 0
 .PHONY : cmake_check_build_system
 
