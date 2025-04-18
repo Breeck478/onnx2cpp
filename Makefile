@@ -116,19 +116,6 @@ depend:
 	$(CMAKE_COMMAND) -S$(CMAKE_SOURCE_DIR) -B$(CMAKE_BINARY_DIR) --check-build-system CMakeFiles/Makefile.cmake 1
 .PHONY : depend
 
-#=============================================================================
-# Target rules for targets named onnx2cpp
-
-# Build rule for target.
-onnx2cpp: cmake_check_build_system
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 onnx2cpp
-.PHONY : onnx2cpp
-
-# fast build rule for target.
-onnx2cpp/fast:
-	$(MAKE) $(MAKESILENT) -f onnx2cpp/CMakeFiles/onnx2cpp.dir/build.make onnx2cpp/CMakeFiles/onnx2cpp.dir/build
-.PHONY : onnx2cpp/fast
-
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -137,7 +124,6 @@ help:
 	@echo "... depend"
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
-	@echo "... onnx2cpp"
 .PHONY : help
 
 

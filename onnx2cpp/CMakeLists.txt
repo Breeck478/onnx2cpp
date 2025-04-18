@@ -3,8 +3,7 @@
 #
 cmake_minimum_required(VERSION 3.20)
 project(onnx2cpp)
-include_directories(onnx2cpp)
-include_directories(onnx)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/onnx/onnx)
 
 
 # Fügen Sie der ausführbaren Datei dieses Projekts eine Quelle hinzu.

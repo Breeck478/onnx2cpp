@@ -11,9 +11,11 @@ endif()
 
 project ("onnx2cpp")
 
-# Schließen Sie Unterprojekte ein.
-add_subdirectory(onnx)
-find_package(Protobuf REQUIRED)
-include_directories(${Protobuf_INCLUDE_DIRS})
+# Schließen Sie Unterprojekte ein'.
+# add_subdirectory(onnx)
+#
+#find_package(Protobuf REQUIRED)
+#include_directories(${Protobuf_INCLUDE_DIRS})
 include_directories(onnx2cpp)
+include_directories(Protobuf)
 
