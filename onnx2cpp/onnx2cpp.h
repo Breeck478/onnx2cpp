@@ -1,113 +1,27 @@
-﻿#include "onnx/onnx.pb.h"
+﻿//#include <iostream>
+#include <onnx/onnx_pb.h>
+#include <google/protobuf/text_format.h>
 
 
-onnx::GraphProto* getGraph(onnx::ModelProto* model) {
-	if (model == nullptr) {
-		return nullptr;
-	}
-	return model->mutable_graph();
-}
+onnx::GraphProto* getGraph(onnx::ModelProto* model);
 
-onnx::TensorProto* getTensor(onnx::GraphProto* graph, int index) {
-	if (graph == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= graph->initializer_size()) {
-		return nullptr;
-	}
-	return graph->mutable_initializer(index);
-}
+onnx::TensorProto* getTensor(onnx::GraphProto* graph, int index);
 
-onnx::TensorProto* getInput(onnx::GraphProto* graph, int index) {
-	if (graph == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= graph->input_size()) {
-		return nullptr;
-	}
-	return graph->mutable_input(index);
-}
+onnx::TensorProto* getInput(onnx::GraphProto* graph, int index);
 
-onnx::TensorProto* getOutput(onnx::GraphProto* graph, int index) {
-	if (graph == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= graph->output_size()) {
-		return nullptr;
-	}
-	return graph->mutable_output(index);
-}
+onnx::TensorProto* getOutput(onnx::GraphProto* graph, int index);
 
-onnx::NodeProto* getNode(onnx::GraphProto* graph, int index) {
-	if (graph == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= graph->node_size()) {
-		return nullptr;
-	}
-	return graph->mutable_node(index);
-}
+onnx::NodeProto* getNode(onnx::GraphProto* graph, int index);
 
-onnx::AttributeProto* getAttribute(onnx::NodeProto* node, int index) {
-	if (node == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= node->attribute_size()) {
-		return nullptr;
-	}
-	return node->mutable_attribute(index);
-}
+onnx::AttributeProto* getAttribute(onnx::NodeProto* node, int index);
 
-onnx::TensorProto_DataType getDataType(onnx::TensorProto* tensor) {
-	if (tensor == nullptr) {
-		return onnx::TensorProto_DataType_UNDEFINED;
-	}
-	return tensor->data_type();
-}
+onnx::TensorProto_DataType getDataType(onnx::TensorProto* tensor);
 
-onnx::TensorProto_DataType getDataType(onnx::AttributeProto* attribute) {
-	if (attribute == nullptr) {
-		return onnx::TensorProto_DataType_UNDEFINED;
-	}
-	return attribute->t().data_type();
-}
+onnx::TensorProto_DataType getDataType(onnx::AttributeProto* attribute);
 
-onnx::TensorProto_DataType getDataType(onnx::NodeProto* node, int index) {
-	if (node == nullptr) {
-		return onnx::TensorProto_DataType_UNDEFINED;
-	}
-	if (index < 0 || index >= node->attribute_size()) {
-		return onnx::TensorProto_DataType_UNDEFINED;
-	}
-	return node->attribute(index).t().data_type();
-}
+onnx::TensorProto_DataType getDataType(onnx::NodeProto* node, int index);
 
-onnx::TensorProto_DataType getDataType(onnx::GraphProto* graph, int index) {
-	if (graph == nullptr) {
-		return onnx::TensorProto_DataType_UNDEFINED;
-	}
-	if (index < 0 || index >= graph->initializer_size()) {
-		return onnx::TensorProto_DataType_UNDEFINED;
-	}
-	return graph->initializer(index).data_type();
-}
-#include <iostream>
+onnx::TensorProto_DataType getDataType(onnx::GraphProto* graph, int index);
+
 int main(int argc, char* argv[]);
-	onnx::ModelProto model;
-	model = onnx::loadModel("model.onnx");
-	onnx::GraphProto* graph = getGraph(&model);
-	if (graph == nullptr) {
-		cout << "Graph is null" << endl;
-		return -1;
-	}
 
-	onnx::TensorProto* tensor = getTensor(graph, 0);
-	if (tensor == nullptr) {
-		cout << "Tensor is null" << endl;
-		return -1;
-	}
-
-	onnx::TensorProto_DataType dataType = getDataType(tensor);
-	cout << "Data type: " << dataType << endl;
-	return 0;
-}
