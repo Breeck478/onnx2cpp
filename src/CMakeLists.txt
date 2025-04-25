@@ -7,10 +7,10 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/onnx/onnx)
 
 
 # Fügen Sie der ausführbaren Datei dieses Projekts eine Quelle hinzu.
-add_executable (onnx2cpp "onnx2cpp.cpp" "onnx2cpp.h")
+#add_executable (onnx2cpp "onnx2cpp.cpp" "onnx2cpp.h")
 
 
-set_property(TARGET onnx2cpp PROPERTY CXX_STANDARD 20)
+s#et_property(TARGET onnx2cpp PROPERTY CXX_STANDARD 20)
 
 
 

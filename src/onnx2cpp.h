@@ -1,6 +1,8 @@
 ﻿//#include <iostream>
-#include <onnx/onnx_pb.h>
 #include <google/protobuf/text_format.h>
+#include <onnx/onnx_pb.h>
+#include <iostream>
+#include <fstream>
 
 
 onnx::GraphProto* getGraph(onnx::ModelProto* model);
@@ -23,5 +25,4 @@ onnx::TensorProto_DataType getDataType(onnx::NodeProto* node, int index);
 
 onnx::TensorProto_DataType getDataType(onnx::GraphProto* graph, int index);
 
-int main(int argc, char* argv[]);
 
