@@ -4,66 +4,106 @@
 #include "onnx2cpp.h"
 #include <google/protobuf/text_format.h>
 #include <onnx/onnx_pb.h>
-#include <iostream>
+
+#include <onnx/common/file_utils.h>
+#include <onnx/defs/printer.h>
+#include <vector>
+#include <string>
 #include <fstream>
+#include "OnnxVars.h"
+
 
 using namespace std;
 
-onnx::GraphProto* getGraph(onnx::ModelProto* model) {
-	if (model == nullptr) {
-		return nullptr;
+void PrintGraphInfo(onnx::GraphProto graph) {
+	cout << "Graph: " << onnx::ProtoToString(&graph) << endl;
+	cout << "Input : " << endl;
+	for (onnx::ValueInfoProto text : graph.input()) {
+		cout << "	" << "Name: " << text.name() << endl;
+		cout << "	" << "Type: " << text.type() << endl;
 	}
-	return model->mutable_graph();
+	cout << endl;
+	cout << "value_info : " << endl;
+	for (onnx::ValueInfoProto text : graph.value_info()) {
+		cout << "	" << "Name: " << text.name() << endl;
+		cout << "	" << "Type: " << text.type() << endl;
+	}
+	cout << endl;
+	cout << "Output : " << endl;
+	for (onnx::ValueInfoProto text : graph.output()) {
+		cout << "	" << "Name: " << text.name() << endl;
+		cout << "	" << "Type: " << text.type() << endl;
+	}
+	cout << endl;
+	for (onnx::TensorProto tensor : graph.initializer()) {
+		cout << " _____ " << tensor.name() << " _____ " << endl;
+		cout << "dims: ";
+		for (int text : tensor.dims())
+			cout << text << ", ";
+		cout << endl;
+		cout << "float_data : ";
+		for (float text : tensor.float_data())
+			cout << text << ", ";
+		cout << endl;
+		cout << "DataType: " << tensor.data_type() << endl;
+		cout << "metadata_props: " << endl;
+		for (onnx::StringStringEntryProto metadata : tensor.metadata_props()) {
+			cout << "-------------------------------------------------------" << endl;
+			cout << "	" << metadata.key() << ": " << metadata.value() << endl;
+		}
+		cout << endl;
+	}
+	cout << "Graph mit " << graph.node_size() << " Knoten: " << endl;
+	for (onnx::NodeProto node : graph.node()) {
+		cout << " _____ " << node.name() << " _____ " << endl;
+		cout << "input: ";
+		for (string text : node.input())
+			cout << text << ", ";
+		cout << endl;
+		cout << "output: ";
+		for (string text : node.output())
+			cout << text << ", ";
+		cout << endl;
+		cout << "op_type: " << node.op_type() << endl;
+		cout << "domain: " << node.domain() << endl;
+		cout << "attribute: ";
+		for (onnx::AttributeProto Attribute : node.attribute())
+			cout << Attribute.name() << ", ";
+		cout << endl;
+		cout << "metadata_props: " << endl;
+		for (onnx::StringStringEntryProto metadata : node.metadata_props()) {
+			cout << "-------------------------------------------------------" << endl;
+			cout << "	" << metadata.key() << ": " << metadata.value() << endl;
+		}
+		cout << endl;
+	}
 }
 
-onnx::TensorProto* getTensor(onnx::GraphProto* graph, int index) {
-	if (graph == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= graph->initializer_size()) {
-		return nullptr;
-	}
-	return graph->mutable_initializer(index);
-}
-onnx::NodeProto* getNode(onnx::GraphProto* graph, int index) {
-	if (graph == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= graph->node_size()) {
-		return nullptr;
-	}
-	return graph->mutable_node(index);
-}
+void collectAllVars(onnx::GraphProto, vector<OnnxVar> vars) {
 
-onnx::AttributeProto* getAttribute(onnx::NodeProto* node, int index) {
-	if (node == nullptr) {
-		return nullptr;
-	}
-	if (index < 0 || index >= node->attribute_size()) {
-		return nullptr;
-	}
-	return node->mutable_attribute(index);
 }
 
 int main(){
-	std::ifstream input("model.onnx");
+	fstream file;
+	file.open("model.cpp", fstream::out | fstream::trunc);
 	onnx::ModelProto model;
-	model.ParseFromIstream(&input);
-	onnx::GraphProto* graph = getGraph(&model);
-	if (graph == nullptr) {
-		cout << "Graph is null" << endl;
-		return -1;
-	}else {
-		cout << "Graph: " << graph << endl;
+	onnx::LoadProtoFromPath("model.onnx", model);
+	onnx::GraphProto graph = model.graph();
+	//PrintGraphInfo(graph);
+	vector<OnnxVar> vars;
+	for (OnnxVar info : graph.input()) {
+		vars.push_back(info);
 	}
-
-	onnx::TensorProto* tensor = getTensor(graph, 0);
-	if (tensor == nullptr) {
-		cout << "Tensor is null" << endl;
-		return -1;
+	for (OnnxVar info : graph.value_info()) {
+		vars.push_back(info);
 	}
-	else{
-		cout << "Tensor: " << tensor << endl;
+	for (OnnxVar info : graph.output()) {
+		vars.push_back(info);
 	}
+	for (const OnnxVar var : vars)
+		file << var.GetVarInitString() << endl;
+	file.close();
 	return 0;
 }
+
+
