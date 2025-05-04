@@ -1,8 +1,11 @@
 ﻿// onnx2cpp.cpp: Definiert den Einstiegspunkt für die Anwendung.
 //
+//#define _CRTDBG_MAP_ALLOC
+//#include <stdlib.h>
+//#include <crtdbg.h>
 
 #include "onnx2cpp.h"
-#include <google/protobuf/text_format.h>
+//#include <google/protobuf/text_format.h>
 #include <onnx/onnx_pb.h>
 
 #include <onnx/common/file_utils.h>
@@ -15,7 +18,7 @@
 
 using namespace std;
 
-void PrintGraphInfo(onnx::GraphProto graph) {
+static void PrintGraphInfo(onnx::GraphProto graph) {
 	cout << "Graph: " << onnx::ProtoToString(&graph) << endl;
 	cout << "Input : " << endl;
 	for (onnx::ValueInfoProto text : graph.input()) {
@@ -79,30 +82,21 @@ void PrintGraphInfo(onnx::GraphProto graph) {
 	}
 }
 
-void collectAllVars(onnx::GraphProto, vector<OnnxVar> vars) {
-
-}
-
 int main(){
 	fstream file;
 	file.open("model.cpp", fstream::out | fstream::trunc);
-	onnx::ModelProto model;
-	onnx::LoadProtoFromPath("model.onnx", model);
-	onnx::GraphProto graph = model.graph();
-	//PrintGraphInfo(graph);
-	vector<OnnxVar> vars;
-	for (OnnxVar info : graph.input()) {
-		vars.push_back(info);
+	if (file.is_open() and file.good()) {
+		onnx::ModelProto model;
+		onnx::LoadProtoFromPath("model.onnx", model);
+		onnx::GraphProto graph = model.graph();
+		OnnxVars vars;
+		vars.InitWithGraph(graph);
+		for (const OnnxVar var : vars)
+			file << var.GetVarInitString() << endl;
+		file.close();
 	}
-	for (OnnxVar info : graph.value_info()) {
-		vars.push_back(info);
-	}
-	for (OnnxVar info : graph.output()) {
-		vars.push_back(info);
-	}
-	for (const OnnxVar var : vars)
-		file << var.GetVarInitString() << endl;
-	file.close();
+	//_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
+	//_CrtDumpMemoryLeaks();
 	return 0;
 }
 
