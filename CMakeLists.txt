@@ -16,7 +16,7 @@ project (onnx2cpp)
 set(CMAKE_BUILD_TYPE Debug)
 include_directories(src)
 
-add_executable (main src/onnx2cpp.cpp src/OnnxVars.cpp src/Utils.cpp)
+add_executable (main src/onnx2cpp.cpp src/OnnxVars.cpp src/Utils.cpp src/OnnxNodes.cpp src/OnnxNodes.h)
 
 find_package(ONNX CONFIG REQUIRED)
 target_link_libraries(main PRIVATE ONNX::onnx ONNX::onnx_proto)

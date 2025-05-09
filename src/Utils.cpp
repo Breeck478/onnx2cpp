@@ -31,3 +31,14 @@ std::string Utils::GetDataTypeString(const int enumValue) {
         return "ERROR";
     }
 }
+
+std::string join(const std::vector<std::string>& strings, const std::string& delimiter) {
+    std::string result;
+    for (size_t i = 0; i < strings.size(); ++i) {
+        result += strings[i];
+        if (i + 1 < strings.size()) {
+            result += delimiter;
+        }
+    }
+    return result;
+}

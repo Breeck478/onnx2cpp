@@ -66,7 +66,6 @@ std::string OnnxVar::GetDataTypeString() const {
 			}
 		}
 	}
-	res += ";";
 	return res;
 }
 
@@ -80,22 +79,22 @@ std::string OnnxVar::GetVarInitString() const {
 void OnnxVars::InitWithGraph(onnx::GraphProto graph) {
 	Clear();
 	for (onnx::ValueInfoProto valueInfo : graph.input()) {
-		Add(OnnxVar(valueInfo));
+		Add(OnnxVar(valueInfo), input);
 	}
 	for (onnx::ValueInfoProto valueInfo : graph.value_info()) {
-		Add(OnnxVar(valueInfo));
+		Add(OnnxVar(valueInfo), vars);
 	}
 	for (onnx::ValueInfoProto valueInfo : graph.output()) {
-		Add(OnnxVar(valueInfo));
+		Add(OnnxVar(valueInfo), output);
 	}
 }
-void OnnxVars::Add(const OnnxVar var) {
-	vars.push_back(var);
+void OnnxVars::Add(const OnnxVar var, std::vector<OnnxVar> &list) {
+	list.push_back(var);
 	if ((names.end() == std::find(names.begin(), names.end(), var.GetName()))) {
 		names.push_back(var.GetName());
 	}
 	else {
-		std::cout <<"var " << var.GetName() << " is already added" << std::endl;
+		std::cout <<"var " << var.GetName() << " is already added" << std::endl; // Can´t happen. ERROR
 	}
 }
 int OnnxVars::GetCount() const {
@@ -103,6 +102,14 @@ int OnnxVars::GetCount() const {
 }
 const OnnxVar& OnnxVars::operator[](int i) const {
 	return vars[i];
+}
+std::vector<std::string> OnnxVars::GetVarsAsStrings(const std::vector<OnnxVar> list) {
+	std::vector<std::string> res;
+	for (const OnnxVar var : list)
+	{
+		res.push_back(var.GetDataTypeString());
+	}
+	return res;
 }
 
 OnnxVar& OnnxVars::operator[](int i) {

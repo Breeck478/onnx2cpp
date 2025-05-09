@@ -22,7 +22,10 @@ public:
 	void Clear() { vars.clear(); names.clear(); }
 	void InitWithGraph(onnx::GraphProto graph);	
 	int GetCount() const;
-	void Add(const OnnxVar var);
+	void Add(const OnnxVar var, std::vector<OnnxVar> &list);
+	std::vector<OnnxVar> GetInput() const { return input; }
+	std::vector<OnnxVar> GetOutput() const { return output; }
+	static std::vector<std::string> GetVarsAsStrings(const std::vector<OnnxVar> list);
 	const OnnxVar& operator[](int i) const;
 	OnnxVar& operator[](int i);
 	std::vector<OnnxVar>::const_iterator begin() const;
@@ -35,6 +38,8 @@ public:
 	int GetNameCount() const;
 private:
 	std::vector<OnnxVar> vars;
+	std::vector<OnnxVar> input;
+	std::vector<OnnxVar> output;
 	std::vector<std::string> names;
 };
 

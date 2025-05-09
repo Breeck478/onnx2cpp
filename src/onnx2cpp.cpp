@@ -14,7 +14,8 @@
 #include <string>
 #include <fstream>
 #include "OnnxVars.h"
-
+#include "OnnxNodes.h"
+#include "Utils.h"
 
 using namespace std;
 
@@ -84,16 +85,43 @@ static void PrintGraphInfo(onnx::GraphProto graph) {
 
 int main(){
 	fstream file;
-	file.open("model.cpp", fstream::out | fstream::trunc);
-	if (file.is_open() and file.good()) {
-		onnx::ModelProto model;
-		onnx::LoadProtoFromPath("model.onnx", model);
-		onnx::GraphProto graph = model.graph();
-		OnnxVars vars;
-		vars.InitWithGraph(graph);
-		for (const OnnxVar var : vars)
-			file << var.GetVarInitString() << endl;
-		file.close();
+	file.open("model.h", fstream::out | fstream::trunc);
+	if (file.is_open() && file.good()) {
+		try
+		{
+			onnx::ModelProto model;
+			onnx::LoadProtoFromPath("Model.onnx", model);
+			onnx::GraphProto graph = model.graph();
+			OnnxVars vars;
+			OnnxNodes nodes;
+			vars.InitWithGraph(graph);
+			nodes.InitWithGraph(graph);
+			file << "// Includes" << endl << endl;
+			for (const std::string type : nodes.GetOpTypes())
+			{
+				file << "#include <Operators/" << type << ".h>" << endl; 
+			}
+			file << "void model(";
+			file << join(OnnxVars::GetVarsAsStrings(vars.GetInput()), ", ");
+			file << ", ";
+			file << join(OnnxVars::GetVarsAsStrings(vars.GetOutput()), ", ");
+			file << ") {" << endl;
+			file << endl << "// Initialize variables"  << endl;
+			for (const OnnxVar var : vars)
+				file << var.GetVarInitString() << ";" << endl;
+			
+			
+			file << endl << "// Initialize nodes" << endl;
+			for (const OnnxNode node : nodes)
+				file << node.GetVarInitString() << endl;
+			file << "}" << endl;
+			file.close();
+		}
+		catch (const std::exception& e)
+		{	
+			cout << "Error: " << e.what() << endl;
+		}
+
 	}
 	//_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 	//_CrtDumpMemoryLeaks();
