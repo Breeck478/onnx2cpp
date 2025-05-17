@@ -14,8 +14,10 @@
 #include <string>
 #include <fstream>
 #include "OnnxVars.h"
+#include "OnnxConsts.h"
 #include "OnnxNodes.h"
 #include "Utils.h"
+#include <cstdlib>
 
 using namespace std;
 
@@ -90,31 +92,42 @@ int main(){
 		try
 		{
 			onnx::ModelProto model;
-			onnx::LoadProtoFromPath("Model.onnx", model);
+			onnx::LoadProtoFromPath("Sinus_model.onnx", model);
 			onnx::GraphProto graph = model.graph();
 			OnnxVars vars;
+			OnnxVars input;
+			OnnxVars output;
 			OnnxNodes nodes;
-			vars.InitWithGraph(graph);
+			OnnxConsts consts;
+			vars.InitWithList(graph.value_info());
+			input.InitWithList(graph.input());
+			output.InitWithList(graph.output());
+			consts.InitWithList(graph.initializer());
 			nodes.InitWithGraph(graph);
 			file << "// Includes" << endl << endl;
+			file << "#include <vector>" << endl;
 			for (const std::string type : nodes.GetOpTypes())
 			{
 				file << "#include <Operators/" << type << ".h>" << endl; 
 			}
+			file << "template <typename T>" << endl;
 			file << "void model(";
-			file << join(OnnxVars::GetVarsAsStrings(vars.GetInput()), ", ");
+			file << join(input.GetVarsAsStrings(), ", ");
 			file << ", ";
-			file << join(OnnxVars::GetVarsAsStrings(vars.GetOutput()), ", ");
+			file << join(output.GetVarsAsStrings(), ", ");
 			file << ") {" << endl;
 			file << endl << "// Initialize variables"  << endl;
-			for (const OnnxVar var : vars)
-				file << var.GetVarInitString() << ";" << endl;
-			
+			//file << join(OnnxVars::GetVarsAsStrings(vars.GetOutput()), ", ");
+			for (const std::string var : vars.GetVarsAsStrings())
+				file << var << ";" << endl;
+			for (const std::string var : consts.GetVarsAsStrings())
+				file << var << ";" << endl;
 			
 			file << endl << "// Initialize nodes" << endl;
 			for (const OnnxNode node : nodes)
 				file << node.GetVarInitString() << endl;
 			file << "}" << endl;
+			//int result = std::system("clang-format -i model.h");
 			file.close();
 		}
 		catch (const std::exception& e)

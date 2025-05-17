@@ -19,13 +19,11 @@ class OnnxVars
 {
 public:
 	// Vars
-	void Clear() { vars.clear(); names.clear(); }
-	void InitWithGraph(onnx::GraphProto graph);	
+	void Clear() { vars.clear(); }
+	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list);
 	int GetCount() const;
 	void Add(const OnnxVar var, std::vector<OnnxVar> &list);
-	std::vector<OnnxVar> GetInput() const { return input; }
-	std::vector<OnnxVar> GetOutput() const { return output; }
-	static std::vector<std::string> GetVarsAsStrings(const std::vector<OnnxVar> list);
+	std::vector<std::string> GetVarsAsStrings();
 	const OnnxVar& operator[](int i) const;
 	OnnxVar& operator[](int i);
 	std::vector<OnnxVar>::const_iterator begin() const;
@@ -38,9 +36,8 @@ public:
 	int GetNameCount() const;
 private:
 	std::vector<OnnxVar> vars;
-	std::vector<OnnxVar> input;
-	std::vector<OnnxVar> output;
-	std::vector<std::string> names;
+	static std::vector<std::string> names;
+
 };
 
 

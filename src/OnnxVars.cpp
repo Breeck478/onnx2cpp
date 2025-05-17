@@ -1,6 +1,10 @@
 #include "OnnxVars.h"
 #include "Utils.h"
 #include <algorithm>
+#include <iostream>
+
+
+std::vector<std::string> OnnxVars::names;
 
 OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo)
 {
@@ -16,29 +20,40 @@ onnx::TypeProto OnnxVar::GetTypeProto() const {
 	return typeProto;
 }
 
+
 std::string OnnxVar::GetDataTypeString() const {
 	std::string res = "";
 	if (typeProto.has_tensor_type())
 	{
 		const onnx::TypeProto_Tensor tensorType = typeProto.tensor_type();
-		res = Utils::GetDataTypeString(tensorType.elem_type());
-		res += " " + name;
+		//res = Utils::GetDataTypeString(tensorType.elem_type());
+		res = "";// "std::vector<T> const& " + name;
 		const auto& dims = tensorType.shape().dim();
-		for (const auto& dim : dims)
+		for (size_t i = 0; i < dims.size(); ++i)
 		{
-			if (dim.has_dim_value())
-			{
-				res += "[" + std::to_string(dim.dim_value()) + "]";
-			}
-			else if (dim.has_dim_param())
-			{
-				res += "[" + dim.dim_param() + "]";
-			}
-			else
-			{
-				res += "[]";
-			}
+			res += "std::vector<";
 		}
+		res += "T";
+		for (size_t i = 0; i < dims.size(); ++i)
+		{
+			res += ">";
+		}
+		res += " " + name;
+		//for (const auto& dim : dims)
+		//{
+		//	if (dim.has_dim_value())
+		//	{
+		//		res += "[" + std::to_string(dim.dim_value()) + "]";
+		//	}
+		//	else if (dim.has_dim_param())
+		//	{
+		//		res += "[" + dim.dim_param() + "]";
+		//	}
+		//	else
+		//	{
+		//		res += "[]";
+		//	}
+		//}
 	}
 	else if (typeProto.has_sequence_type())
 		res = "Sequence";
@@ -76,25 +91,23 @@ std::string OnnxVar::GetVarInitString() const {
 }
 
 // Vars
-void OnnxVars::InitWithGraph(onnx::GraphProto graph) {
+void OnnxVars::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list){
 	Clear();
-	for (onnx::ValueInfoProto valueInfo : graph.input()) {
-		Add(OnnxVar(valueInfo), input);
-	}
-	for (onnx::ValueInfoProto valueInfo : graph.value_info()) {
+
+	for (onnx::ValueInfoProto valueInfo : list) {
 		Add(OnnxVar(valueInfo), vars);
 	}
-	for (onnx::ValueInfoProto valueInfo : graph.output()) {
-		Add(OnnxVar(valueInfo), output);
-	}
+
 }
+
 void OnnxVars::Add(const OnnxVar var, std::vector<OnnxVar> &list) {
 	list.push_back(var);
-	if ((names.end() == std::find(names.begin(), names.end(), var.GetName()))) {
-		names.push_back(var.GetName());
+	std::string name = remove_chars(var.GetName());
+	if ((names.end() == std::find(names.begin(), names.end(), name))) {
+		names.push_back(name);
 	}
 	else {
-		std::cout <<"var " << var.GetName() << " is already added" << std::endl; // Can´t happen. ERROR
+		std::cout << "var " << var.GetName() << " is already added" << std::endl; // Can´t happen. ERROR
 	}
 }
 int OnnxVars::GetCount() const {
@@ -103,9 +116,9 @@ int OnnxVars::GetCount() const {
 const OnnxVar& OnnxVars::operator[](int i) const {
 	return vars[i];
 }
-std::vector<std::string> OnnxVars::GetVarsAsStrings(const std::vector<OnnxVar> list) {
+std::vector<std::string> OnnxVars::GetVarsAsStrings() {
 	std::vector<std::string> res;
-	for (const OnnxVar var : list)
+	for (const OnnxVar var : vars)
 	{
 		res.push_back(var.GetDataTypeString());
 	}
