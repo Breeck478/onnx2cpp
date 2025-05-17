@@ -1,0 +1,57 @@
+#include <onnx/onnx_pb.h>
+#include <string>
+#include <vector>
+#include <variant>
+#include <any>
+class OnnxConst
+{
+public:
+	OnnxConst(onnx::TensorProto valueInfo);
+	std::string GetName() const;
+	const ::google::protobuf::RepeatedField<int64_t> GetDims() const;
+	std::string GetDataTypeString() const;
+	std::string GetVarInitString() const;
+	std::vector<std::any> GetDataAsAny() const;
+	template <typename T>
+	std::string GenerateNestedInitializerFromAny(const std::vector<int64_t>& shape, size_t& offset, int level = 0) const;
+	using TensorData = std::variant<
+		std::vector<float>,
+		std::vector<int32_t>,
+		std::vector<int64_t>,
+		std::vector<double>,
+		std::vector<std::string>,
+		std::vector<uint64_t>
+	>;
+	TensorData GetData() const;
+private:
+	std::string name;
+	::google::protobuf::RepeatedField<int64_t> dims;
+	TensorData data;	
+};
+
+class OnnxConsts
+{
+public:
+	// Vars
+	void Clear() { vars.clear(); }
+	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::TensorProto>& list);
+	int GetCount() const;
+	void Add(const OnnxConst var, std::vector<OnnxConst> &list);
+	std::vector<std::string> GetVarsAsStrings();
+	const OnnxConst& operator[](int i) const;
+	OnnxConst& operator[](int i);
+	std::vector<OnnxConst>::const_iterator begin() const;
+	std::vector<OnnxConst>::const_iterator end() const;
+	std::vector<OnnxConst>::iterator begin();
+	std::vector<OnnxConst>::iterator end();
+	// names
+	std::vector<std::string> GetNames() const;
+	std::string GetName(const int i) const;
+	int GetNameCount() const;
+private:
+	std::vector<OnnxConst> vars;
+	static std::vector<std::string> names;
+
+};
+
+
