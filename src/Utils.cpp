@@ -42,3 +42,13 @@ std::string join(const std::vector<std::string>& strings, const std::string& del
     }
     return result;
 }
+
+std::string remove_chars(const std::string& input, const std::string& chars_to_remove) {
+    std::string result = input;
+    result.erase(std::remove_if(result.begin(), result.end(),
+        [&chars_to_remove](char c) {
+            return chars_to_remove.find(c) != std::string::npos;
+        }),
+        result.end());
+    return result;
+}

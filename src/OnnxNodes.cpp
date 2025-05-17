@@ -6,13 +6,13 @@ OnnxNode::OnnxNode(onnx::NodeProto nodeProto)
 {
 	for (std::string val : nodeProto.input())
 	{
-		this->input.push_back(val);
+		this->input.push_back(remove_chars(val));
 	}
 	for (std::string val : nodeProto.output())
 	{
-		this->output.push_back(val);
+		this->output.push_back(remove_chars(val));
 	}
-	this->name = nodeProto.name();
+	this->name = remove_chars(nodeProto.name());
 	this->op_type = nodeProto.op_type();
 }
 
@@ -20,10 +20,10 @@ std::string OnnxNode::GetName() const{
 	return name;
 }
 
-std::string OnnxNode::GetVarInitString() const {
+std::string OnnxNode::GetVarInitString() const { 
 	std::string res = op_type +"(";
 	res += join(input, ", ");
-	if (input.size() > 0)
+	if (input.size() > 0 && output.size() > 0)
 		res += ", ";
 	res += join(output, ", ");
 	res += "); // " + name;
