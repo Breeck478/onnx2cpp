@@ -1,31 +1,67 @@
 #include <cmath>
 #include <vector>
+#include <stdexcept>
+#include <cassert>
 
 template <typename T>
-void Gemm(const std::vector<std::vector<T>> &A,
-         const std::vector<std::vector<T>> &B,
-         std::vector<std::vector<T>> &C,
-         float alpha = 1.0f,
-         float beta = 0.0f)
+void gemm(
+    const std::vector<T> &A, int M, int K,
+    const std::vector<T> &B,  int Kb, int N,
+    const std::vector<T> &C,
+    const float alpha = 1.0f,
+    const float beta = 1.0f,
+    const bool transA = false,
+    const bool transB = false,
+    std::vector<T> &Y)
 {
-  size_t M = A.size();
-  size_t N = B[0].size();
-  size_t K = A[0].size();
-
-  // Initialize result matrix if empty
-  if (C.size() != M || C[0].size() != N)
-    C = std::vector<std::vector<T>>(M, std::vector<T>(N, 0.0f));
-
-  for (size_t i = 0; i < M; ++i)
+  // Helper to transpose matrix
+  if (!transA && K != Kb)
   {
-    for (size_t j = 0; j < N; ++j)
+    throw std::invalid_argument("Inkompatible Dimensionen für A und B.");
+  }
+  if (transA && M != Kb)
+  {
+    throw std::invalid_argument("Inkompatible Dimensionen bei transA.");
+  }
+
+  int a_rows = transA ? K : M;
+  int a_cols = transA ? M : K;
+  int b_rows = transB ? N : K;
+  int b_cols = transB ? K : N;
+
+  if (a_cols != b_rows)
+  {
+    throw std::invalid_argument("Inkompatible Matrixmaße nach Transponieren.");
+  }
+
+  Y.resize(M * N, 0.0f);
+
+  // Matrix-Multiplikation: alpha * A * B
+  for (int i = 0; i < M; ++i)
+  {
+    for (int j = 0; j < N; ++j)
     {
       float sum = 0.0f;
-      for (size_t k = 0; k < K; ++k)
+      for (int k = 0; k < K; ++k)
       {
-        sum += A[i][k] * B[k][j];
+        float a_val = transA ? A[k * M + i] : A[i * K + k];
+        float b_val = transB ? B[j * K + k] : B[k * N + j];
+        sum += a_val * b_val;
       }
-      C[i][j] = alpha * sum + beta * C[i][j];
+      Y[i * N + j] = alpha * sum;
+    }
+  }
+
+  // Optional: beta * C hinzufügen
+  if (!C.empty())
+  {
+    if (C.size() != static_cast<size_t>(M * N))
+    {
+      throw std::invalid_argument("C hat falsche Dimension.");
+    }
+    for (int i = 0; i < M * N; ++i)
+    {
+      Y[i] += beta * C[i];
     }
   }
 }
