@@ -103,7 +103,7 @@ std::string OnnxConst::GetDataTypeString() const {
 	{
 		res += ">";
 	}
-	res += " " + name + " = ";
+	res += " " + remove_chars(name) + " = ";
 	size_t offset = 0;
 	std::ostringstream oss;
 	std::vector<int64_t> shape(dims.begin(), dims.end());

@@ -13,7 +13,7 @@ OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo)
 }
 
 std::string OnnxVar::GetName() const{
-	return name;
+	return remove_chars(name);
 }
 
 onnx::TypeProto OnnxVar::GetTypeProto() const {
@@ -38,7 +38,7 @@ std::string OnnxVar::GetDataTypeString() const {
 		{
 			res += ">";
 		}
-		res += " " + name;
+		res += " " + GetName();
 		//for (const auto& dim : dims)
 		//{
 		//	if (dim.has_dim_value())

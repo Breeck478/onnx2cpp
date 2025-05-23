@@ -10,6 +10,7 @@
 
 #include <onnx/common/file_utils.h>
 #include <onnx/defs/printer.h>
+#include<onnx/shape_inference/implementation.h>
 #include <vector>
 #include <string>
 #include <fstream>
@@ -84,7 +85,6 @@ static void PrintGraphInfo(onnx::GraphProto graph) {
 		cout << endl;
 	}
 }
-
 int main(){
 	fstream file;
 	file.open("model.h", fstream::out | fstream::trunc);
@@ -93,6 +93,7 @@ int main(){
 		{
 			onnx::ModelProto model;
 			onnx::LoadProtoFromPath("Sinus_model.onnx", model);
+			onnx::shape_inference::InferShapes(model);
 			onnx::GraphProto graph = model.graph();
 			OnnxVars vars;
 			OnnxVars input;
