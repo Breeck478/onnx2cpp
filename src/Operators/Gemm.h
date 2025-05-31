@@ -1,19 +1,32 @@
 #include <cmath>
 #include <vector>
 #include <stdexcept>
-#include <cassert>
-
+#include <cassert>  
+#include <iostream>
+struct GemmParams {
+  const float alpha = 1.0f;
+  const float beta = 1.0f;
+  const bool transA = false;
+  const bool transB = false;
+};
 template <typename T>
-void gemm(
-    const std::vector<T> &A, int M, int K,
-    const std::vector<T> &B,  int Kb, int N,
-    const std::vector<T> &C,
-    const float alpha = 1.0f,
-    const float beta = 1.0f,
-    const bool transA = false,
-    const bool transB = false,
-    std::vector<T> &Y)
+void Gemm(const std::vector<std::vector<T>> A, const std::vector<std::vector<T>> B, const std::vector<T> C = nullptr, std::vector<std::vector<T>> &Y = nullptr, GemmParams params = nullptr)
 {
+
+
+  auto alpha = params.alpha;
+  auto beta = params.beta;
+  auto transA = params.transA;
+  auto transB = params.transB;
+
+  std::cout << "Gemm"<< std::endl;
+  int K = A[0].size(); 
+  int Kb = B[0].size();
+  int M = A.size();
+  int N = B.size();
+  
+
+
   // Helper to transpose matrix
   if (!transA && K != Kb)
   {
@@ -29,39 +42,45 @@ void gemm(
   int b_rows = transB ? N : K;
   int b_cols = transB ? K : N;
 
-  if (a_cols != b_rows)
+if (a_cols != b_cols)
   {
-    throw std::invalid_argument("Inkompatible Matrixmaße nach Transponieren.");
+    throw std::invalid_argument("Inkompatible Matrixmaße nach Transponieren: " + std::to_string(a_cols) + " vs. " + std::to_string(b_rows));
   }
 
-  Y.resize(M * N, 0.0f);
+  Y.resize(a_rows, std::vector<T>(b_rows, T(0)));
 
   // Matrix-Multiplikation: alpha * A * B
-  for (int i = 0; i < M; ++i)
+  for (int i = 0; i < a_rows; ++i)
   {
-    for (int j = 0; j < N; ++j)
+    for (int j = 0; j < b_rows; ++j)
     {
-      float sum = 0.0f;
-      for (int k = 0; k < K; ++k)
+      T sum = 0;
+      for (int k = 0; k < a_cols; ++k)
       {
-        float a_val = transA ? A[k * M + i] : A[i * K + k];
-        float b_val = transB ? B[j * K + k] : B[k * N + j];
+        T a_val = transA ? A[k][i] : A[i][k];
+        T b_val = transB ? B[j][k] : B[k][j];
         sum += a_val * b_val;
+        
       }
-      Y[i * N + j] = alpha * sum;
+      Y[i][j] = alpha * sum;
     }
   }
+
 
   // Optional: beta * C hinzufügen
   if (!C.empty())
   {
+    std::cout << "C wird genutzt" << std::endl;
     if (C.size() != static_cast<size_t>(M * N))
     {
       throw std::invalid_argument("C hat falsche Dimension.");
     }
-    for (int i = 0; i < M * N; ++i)
+    for (int i = 0; i < M; ++i)
     {
-      Y[i] += beta * C[i];
+      for (int j = 0; j < N; j++)
+      {
+      Y[i][j] += beta * C[j];
+      }
     }
   }
 }
