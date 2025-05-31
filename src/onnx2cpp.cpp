@@ -102,7 +102,7 @@ int main(){
 			OnnxConsts consts;
 			vars.InitWithList(graph.value_info());
 			input.InitWithList(graph.input());
-			output.InitWithList(graph.output());
+			output.InitWithList(graph.output(), true);
 			consts.InitWithList(graph.initializer());
 			nodes.InitWithGraph(graph);
 			file << "// Includes" << endl << endl;

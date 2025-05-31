@@ -2,14 +2,16 @@
 #include "Utils.h"
 #include <algorithm>
 #include <iostream>
-
+#include <iomanip>
+#include <Eigen/Dense>
 
 std::vector<std::string> OnnxVars::names;
 
-OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo)
+OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isOutput)
 {
 	this->name = valueInfo.name();
 	this->typeProto = valueInfo.type();
+	this->isOutput = isOutput;
 }
 
 std::string OnnxVar::GetName() const{
@@ -38,6 +40,8 @@ std::string OnnxVar::GetDataTypeString() const {
 		{
 			res += ">";
 		}
+		if (isOutput)
+			res += "&";
 		res += " " + GetName();
 		//for (const auto& dim : dims)
 		//{
@@ -91,11 +95,11 @@ std::string OnnxVar::GetVarInitString() const {
 }
 
 // Vars
-void OnnxVars::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list){
+void OnnxVars::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isOutput){
 	Clear();
 
 	for (onnx::ValueInfoProto valueInfo : list) {
-		Add(OnnxVar(valueInfo), vars);
+		Add(OnnxVar(valueInfo, isOutput), vars);
 	}
 
 }

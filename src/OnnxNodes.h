@@ -1,6 +1,8 @@
 #include <onnx/onnx_pb.h>
 #include <string>
 #include <vector>
+#include <map>
+#include <any>
 class OnnxNode
 {
 public:
@@ -8,11 +10,19 @@ public:
 	std::string GetName() const;
 	std::string GetOpType() const { return op_type; }
 	std::string GetVarInitString() const;
+	std::any GetAttribute(const std::string& name) const {
+		auto it = attributes.find(name);
+		if (it != attributes.end()) {
+			return it->second;
+		}
+		return std::any();
+	}
 private:
 	std::vector<std::string> input;
 	std::vector<std::string> output;
 	std::string name;
 	std::string op_type;	
+	std::map<std::string, std::any> attributes; // name, value
 };
 
 class OnnxNodes

@@ -4,7 +4,7 @@
 class OnnxVar
 {
 public:
-	OnnxVar(onnx::ValueInfoProto valueInfo);
+	OnnxVar(onnx::ValueInfoProto valueInfo, bool isOutput = false);
 	std::string GetName() const;
 	onnx::TypeProto GetTypeProto() const;
 	std::string GetDataTypeString() const;
@@ -12,6 +12,7 @@ public:
 private:
 	std::string name;
 	onnx::TypeProto typeProto;
+	bool isOutput = false;
 	
 };
 
@@ -20,7 +21,7 @@ class OnnxVars
 public:
 	// Vars
 	void Clear() { vars.clear(); }
-	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list);
+	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isOutput = false);
 	int GetCount() const;
 	void Add(const OnnxVar var, std::vector<OnnxVar> &list);
 	std::vector<std::string> GetVarsAsStrings();
