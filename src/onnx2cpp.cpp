@@ -10,7 +10,7 @@
 
 #include <onnx/common/file_utils.h>
 #include <onnx/defs/printer.h>
-#include<onnx/shape_inference/implementation.h>
+#include <onnx/shape_inference/implementation.h>
 #include <vector>
 #include <string>
 #include <fstream>
@@ -19,6 +19,8 @@
 #include "OnnxNodes.h"
 #include "Utils.h"
 #include <cstdlib>
+#include <iomanip>
+#include <Eigen/Dense>
 
 using namespace std;
 
@@ -87,6 +89,8 @@ static void PrintGraphInfo(onnx::GraphProto graph) {
 }
 int main(){
 	fstream file;
+	std::cout << std::fixed << std::setprecision(1);
+	std::cout.precision(1);
 	file.open("model.h", fstream::out | fstream::trunc);
 	if (file.is_open() && file.good()) {
 		try
@@ -95,6 +99,22 @@ int main(){
 			onnx::LoadProtoFromPath("Sinus_model.onnx", model);
 			onnx::shape_inference::InferShapes(model);
 			onnx::GraphProto graph = model.graph();
+			for (onnx::FunctionProto func : model.functions()) {
+				cout << "Function: " << func.name() << endl;
+				for (const auto& input : func.input())
+				{
+					cout << "Input: " << input << endl;
+				}
+				for (const auto& output : func.output())
+				{
+					cout << "Output: " << output << endl;
+				}
+			}
+			for (onnx::OperatorSetIdProto  func : model.opset_import()) {
+				cout << "OpSet: " << func.domain() << " : " << func.version() << endl;
+			}
+			file << std::fixed << std::setprecision(1);
+			file.precision(1);
 			OnnxVars vars;
 			OnnxVars input;
 			OnnxVars output;
@@ -106,6 +126,7 @@ int main(){
 			consts.InitWithList(graph.initializer());
 			nodes.InitWithGraph(graph);
 			file << "// Includes" << endl << endl;
+			file << "#include <Eigen/Dense>" << endl;
 			file << "#include <vector>" << endl;
 			for (const std::string type : nodes.GetOpTypes())
 			{

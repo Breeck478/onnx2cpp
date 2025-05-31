@@ -20,6 +20,8 @@ add_executable (main src/onnx2cpp.cpp src/OnnxVars.cpp src/Utils.cpp src/OnnxNod
 
 find_package(ONNX CONFIG REQUIRED)
 target_link_libraries(main PRIVATE ONNX::onnx ONNX::onnx_proto)
+find_package(Eigen3 CONFIG REQUIRED)
+target_link_libraries(main PRIVATE Eigen3::Eigen)
 #set_property(TARGET onnx2cpp/onnx2cpp PROPERTY CXX_STANDARD 20)
 #add_subdirectory(protobuf)
 # Schließen Sie Unterprojekte ein'.
