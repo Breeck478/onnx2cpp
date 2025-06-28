@@ -8,12 +8,17 @@ class OnnxConst
 public:
 	OnnxConst(onnx::TensorProto valueInfo);
 	std::string GetName() const;
+	void SetName(std::string name) { this->name = name; }
+	std::string GetShapeName() const;
 	const ::google::protobuf::RepeatedField<int64_t> GetDims() const;
 	std::string GetDataTypeString() const;
 	std::string GetVarInitString() const;
 	std::vector<std::any> GetDataAsAny() const;
+	size_t GetDataSize() const;
 	template <typename T>
-	std::string GenerateNestedInitializerFromAny(const std::vector<int64_t>& shape, size_t& offset, int level = 0) const;
+	std::vector<T>GetDataAsT() const;
+	template <typename T>
+	std::string GenerateNestedInitializerFromAny() const;
 	using TensorData = std::variant<
 		std::vector<float>,
 		std::vector<int32_t>,
@@ -26,7 +31,7 @@ public:
 private:
 	std::string name;
 	::google::protobuf::RepeatedField<int64_t> dims;
-	TensorData data;	
+	TensorData data; 
 };
 
 class OnnxConsts

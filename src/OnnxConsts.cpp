@@ -2,10 +2,7 @@
 #include "Utils.h"
 #include <algorithm>
 #include <iostream>
-
-
 std::vector<std::string> OnnxConsts::names;
-
 OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
 {
 	this->name = tensorProto.name();
@@ -32,8 +29,12 @@ OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
 }
 
 std::string OnnxConst::GetName() const{
-	return name;
+	return remove_chars(name);
 }
+std::string OnnxConst::GetShapeName() const {
+	return GetName() + "_shape"; // For xtensor shape
+}
+
 std::vector<std::any> OnnxConst::GetDataAsAny() const {
 	return std::visit([](const auto& vec) -> std::vector<std::any> {
 		std::vector<std::any> result;
@@ -52,40 +53,36 @@ OnnxConst::TensorData OnnxConst::GetData() const {
 	return data;
 }
 
+size_t OnnxConst::GetDataSize() const {
+	return std::visit([](auto&& arg) -> size_t {
+		return arg.size();
+		}, data);
+}
+
 template <typename T>
-std::string OnnxConst::GenerateNestedInitializerFromAny(const std::vector<int64_t>& shape,	size_t& offset,	int level) const {
+std::vector<T> OnnxConst::GetDataAsT() const {
+	if (!std::holds_alternative<std::vector<T>>(data)) {
+		std::cout << "ERROR: Tensor data type not supported for GetDataAsT" << std::endl;
+		return {};
+	}
+	return std::get<std::vector<T>>(data);
+}
+
+template <typename T>
+std::string OnnxConst::GenerateNestedInitializerFromAny() const {
 	std::ostringstream oss;
 	oss << "{";
 	std::vector<std::any> vals = GetDataAsAny();
-	int64_t dim = shape[level];
-	for (int64_t i = 0; i < dim; ++i) {
-		if (level + 1 == shape.size()) {
-			// Leaf level – cast element from std::any
-			if (offset >= vals.size()) {
-				throw std::runtime_error("Zu wenige Daten vorhanden.");
-			}
-
-			try {
-				const T& val = std::any_cast<T>(vals[offset++]);
-				if constexpr (std::is_floating_point_v<T>) {
-					oss << std::fixed << std::setprecision(6) << val << "f";
-				}
-				else {
-					oss << val;
-				}
-			}
-			catch (const std::bad_any_cast& e) {
-				throw std::runtime_error("std::any_cast fehlgeschlagen: falscher Typ?");
-			}
+	for (int64_t i = 0; i < vals.size(); ++i) {
+		const T& val = std::any_cast<T>(vals[i]);
+		if constexpr (std::is_floating_point_v<T>) {
+			oss << std::fixed << std::setprecision(20) << val << "f";
 		}
 		else {
-			// Rekursion
-			oss << GenerateNestedInitializerFromAny<T>(shape, offset, level + 1);
+			oss << val;
 		}
-
-		if (i + 1 < dim) oss << ", ";
+		if (i + 1 < vals.size()) oss << ", ";
 	}
-
 	oss << "}";
 	return oss.str();
 }
@@ -93,43 +90,111 @@ std::string OnnxConst::GenerateNestedInitializerFromAny(const std::vector<int64_
 std::string OnnxConst::GetDataTypeString() const {
 	std::string res = "";
 	//res = Utils::GetDataTypeString(tensorType.elem_type());
-	res = "";// "std::vector<T> const& " + name;
-	for (size_t i = 0; i < dims.size(); ++i)
-	{
-		res += "std::vector<";
+	//res = "";// "std::vector<T> const& " + name;
+	//for (size_t i = 0; i < dims.size(); ++i)
+	// 
+	//{
+	if (dims.size() > 0) {
+		std::vector<int64_t> shape(dims.begin(), dims.end());
+		res += "typename xt::xarray<T>::shape_type " + GetShapeName() + " = {";
+		for (size_t i = 0; i < shape.size(); ++i) {
+			if (shape[i] < 0) {
+				std::cout << "ERROR: Negative dimension in tensor shape" << std::endl;
+				return res;
+			}
+			if (i > 0) res += ", ";
+			res += std::to_string(shape[i]);
+		}
+		res += "};\n"; // Initialize with zeros
 	}
-	res += "T";
-	for (size_t i = 0; i < dims.size(); ++i)
-	{
-		res += ">";
-	}
-	res += " " + remove_chars(name) + " = ";
-	size_t offset = 0;
-	std::ostringstream oss;
-	std::vector<int64_t> shape(dims.begin(), dims.end());
 
-	if (std::holds_alternative<std::vector<float>>(data)) {
-		oss << GenerateNestedInitializerFromAny<float>(shape, offset);
+	//res += "> ";
+	//}
+	//for (size_t i = 0; i < dims.size(); ++i)
+	//{
+	//	res += ">";
+	//}
+
+	/*res += "(";
+	int i = 0;
+	for (const auto dim : dims)
+	{
+		res += std::to_string(dim);
+		if (i < dims.size() - 1)
+			res += ", ";
+		i++;
 	}
-	else if (std::holds_alternative<std::vector<int32_t>>(data)) {
-		oss << GenerateNestedInitializerFromAny<int32_t>(shape, offset);
+	res += ") << ";
+	i = 0;
+	for (auto val : GetDataAsAny()) {
+		if (std::any_cast<std::string>(&val) != nullptr) {
+			res += std::any_cast<std::string>(val);
+		}
+		else if (std::any_cast<int32_t>(&val) != nullptr){
+			res += std::to_string(std::any_cast<int32_t>(val));
+		}
+		else if (std::any_cast<int64_t>(&val) != nullptr) {
+			res += std::to_string(std::any_cast<int64_t>(val));
+		}
+		else if (std::any_cast<double>(&val) != nullptr) {
+			res += std::to_string(std::any_cast<double>(val));
+		}
+		else if (std::any_cast<float>(&val) != nullptr) {
+			res += std::to_string(std::any_cast<float>(val));
+		}
+		else if (std::any_cast<uint64_t>(&val) != nullptr) {
+			res += std::to_string(std::any_cast<uint64_t>(val));
+		}
+		else {
+			std::cout << "ERROR: Tensor data type not supported" << std::endl;
+		}
+
+
+		if (i < GetDataAsAny().size() - 1)
+			res += ", ";
+		i++;
+	}*/
+
+	//res += " = ";
+	if (GetDataSize() > 0) {
+
+		std::ostringstream oss;
+
+		oss << "xt::xarray<T> " << GetName() << " = ";
+
+		if (std::holds_alternative<std::vector<float>>(data)) {
+			oss << GenerateNestedInitializerFromAny<float>();
+
+		}
+		else if (std::holds_alternative<std::vector<int32_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<int32_t>();
+
+		}
+		else if (std::holds_alternative<std::vector<int64_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<int64_t>();
+
+		}
+		else if (std::holds_alternative<std::vector<double>>(data)) {
+			oss << GenerateNestedInitializerFromAny<double>();
+
+		}
+		else if (std::holds_alternative<std::vector<std::string>>(data)) {
+			oss << GenerateNestedInitializerFromAny<std::string>();
+			GetDataAsT<std::string>();
+		}
+		else if (std::holds_alternative<std::vector<uint64_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<uint64_t>();
+
+		}
+		else {
+			std::cout << "ERROR: Tensor data type not supported" << std::endl;
+		}
+		res += oss.str() + ";";
 	}
-	else if (std::holds_alternative<std::vector<int64_t>>(data)) {
-		oss << GenerateNestedInitializerFromAny<int64_t>(shape, offset);
+
+	if (dims.size() > 0) {
+		res += "\n" + GetName() + " = " + GetName() + ".reshape(" + GetShapeName() + ");";
 	}
-	else if (std::holds_alternative<std::vector<double>>(data)) {
-		oss << GenerateNestedInitializerFromAny<double>(shape, offset);
-	}
-	else if (std::holds_alternative<std::vector<std::string>>(data)) {
-		oss << GenerateNestedInitializerFromAny<std::string>(shape, offset);
-	}
-	else if (std::holds_alternative<std::vector<uint64_t>>(data)) {
-		oss << GenerateNestedInitializerFromAny<uint64_t>(shape, offset);
-	}
-	else {
-		std::cout << "ERROR: Tensor data type not supported" << std::endl;
-	}
-	res += oss.str();
 	return res;
 }
 
