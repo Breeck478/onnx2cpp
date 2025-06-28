@@ -1,7 +1,7 @@
-#include <cmath>
+#include <xtensor/xarray.hpp>
 
 template<typename T>
-void add(T x, T& r){
+void Tanh(const xt::xarray<T>& x, xt::xarray<T>& r){
   r = x * x;
 }
 

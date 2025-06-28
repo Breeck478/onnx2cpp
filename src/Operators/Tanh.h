@@ -1,18 +1,8 @@
-#include <cmath>
-#include <vector>
-
+#include <xtensor/xarray.hpp>
 
 template<typename T>
-void Tanh(const std::vector<std::vector<T>> x ,  std::vector<std::vector<T>>& r ){
-  r.resize(x.size());
-for (std::size_t i = 0; i < x.size(); ++i) {
-    r[i].resize(x[i].size());
-}
-  for (int i = 0; i < x.size(); i++){
-    for (int j = 0; j < x[i].size(); j++){
-      r[i][j] = tanh(x[i][j]);
-    }
-  }
+void Tanh(const xt::xarray<T>& x, xt::xarray<T>& r) {
+	r = xt::tanh(x);
 }
 
 

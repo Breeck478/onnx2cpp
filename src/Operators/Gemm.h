@@ -1,86 +1,64 @@
 #include <cmath>
 #include <vector>
 #include <stdexcept>
-#include <cassert>  
+#include <cassert>
 #include <iostream>
-struct GemmParams {
-  const float alpha = 1.0f;
-  const float beta = 1.0f;
+// #include <xtensor/dotUtil.h>
+#include <xtensor/xarray.hpp>
+#include <xtensor-blas/xlinalg.hpp>
+#include <xtensor/xadapt.hpp>
+#include <xtensor/xstrides.hpp>
+#include <xtensor/xeval.hpp>
+struct GemmParams
+{
+  const double alpha = 1.0;
+  const double beta = 1.0;
   const bool transA = false;
   const bool transB = false;
 };
 template <typename T>
-void Gemm(const std::vector<std::vector<T>> A, const std::vector<std::vector<T>> B, const std::vector<T> C = nullptr, std::vector<std::vector<T>> &Y = nullptr, GemmParams params = nullptr)
+void Gemm(
+    const xt::xarray<T> &A,
+    const xt::xarray<T> &B,
+    const xt::xarray<T> &C, 
+    xt::xarray<T> &Y,
+    const GemmParams &params = GemmParams())
 {
-
-
   auto alpha = params.alpha;
   auto beta = params.beta;
   auto transA = params.transA;
   auto transB = params.transB;
 
-  std::cout << "Gemm"<< std::endl;
-  int K = A[0].size(); 
-  int Kb = B[0].size();
-  int M = A.size();
-  int N = B.size();
-  
+  xt::xarray<T> A_proc = transA ? xt::transpose(A) : A;
+  xt::xarray<T> B_proc = transB ? xt::transpose(B) : B;
 
-
-  // Helper to transpose matrix
-  if (!transA && K != Kb)
+  xt::xarray<T> dot_Res;
+  if ((A_proc.shape().size() == 1) && (B_proc.shape().size() == 1))
   {
-    throw std::invalid_argument("Inkompatible Dimensionen für A und B.");
+
+    dot_Res = xt::linalg::vdot(A_proc, B_proc);
   }
-  if (transA && M != Kb)
+  else if ((A_proc.shape().size() > 2) || (B_proc.shape().size() > 2))
   {
-    throw std::invalid_argument("Inkompatible Dimensionen bei transA.");
+
+    xt::xarray<T> correctA = xt::broadcast(A_proc, B_proc.shape());
+
+    dot_Res = xt::linalg::tensordot(correctA, B_proc);
   }
-
-  int a_rows = transA ? K : M;
-  int a_cols = transA ? M : K;
-  int b_rows = transB ? N : K;
-  int b_cols = transB ? K : N;
-
-if (a_cols != b_cols)
+  else
   {
-    throw std::invalid_argument("Inkompatible Matrixmaße nach Transponieren: " + std::to_string(a_cols) + " vs. " + std::to_string(b_rows));
-  }
+      dot_Res = xt::linalg::dot(A_proc, B_proc);
 
-  Y.resize(a_rows, std::vector<T>(b_rows, T(0)));
+      xt::xarray<T> G = alpha * dot_Res;
 
-  // Matrix-Multiplikation: alpha * A * B
-  for (int i = 0; i < a_rows; ++i)
-  {
-    for (int j = 0; j < b_rows; ++j)
-    {
-      T sum = 0;
-      for (int k = 0; k < a_cols; ++k)
+      if (C.size() > 0 && beta != 0.0)
       {
-        T a_val = transA ? A[k][i] : A[i][k];
-        T b_val = transB ? B[j][k] : B[k][j];
-        sum += a_val * b_val;
-        
+
+          Y = G + (beta * C);
       }
-      Y[i][j] = alpha * sum;
-    }
+      else {
+          Y = G;
+      }
+
   }
 
-
-  // Optional: beta * C hinzufügen
-  if (!C.empty())
-  {
-    std::cout << "C wird genutzt" << std::endl;
-    if (C.size() != static_cast<size_t>(M * N))
-    {
-      throw std::invalid_argument("C hat falsche Dimension.");
-    }
-    for (int i = 0; i < M; ++i)
-    {
-      for (int j = 0; j < N; j++)
-      {
-      Y[i][j] += beta * C[j];
-      }
-    }
-  }
-}
