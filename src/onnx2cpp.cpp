@@ -13,6 +13,7 @@
 #include <onnx/shape_inference/implementation.h>
 #include <vector>
 #include <string>
+
 #include <fstream>
 #include "OnnxVars.h"
 #include "OnnxConsts.h"
@@ -22,6 +23,15 @@
 #include <iomanip>
 #include <Eigen/Dense>
 
+#include <xtensor/xarray.hpp>
+
+/*template<typename T>
+struct Tensor {
+	std::string name;
+	std::vector<int64_t> dims;
+	Eigen::Tensor<T, 1> data;
+
+};*/
 using namespace std;
 
 static void PrintGraphInfo(onnx::GraphProto graph) {
@@ -96,7 +106,7 @@ int main(){
 		try
 		{
 			onnx::ModelProto model;
-			onnx::LoadProtoFromPath("Sinus_model.onnx", model);
+			onnx::LoadProtoFromPath("modular_net.onnx", model);
 			onnx::shape_inference::InferShapes(model);
 			onnx::GraphProto graph = model.graph();
 			for (onnx::FunctionProto func : model.functions()) {
@@ -120,14 +130,14 @@ int main(){
 			OnnxVars output;
 			OnnxNodes nodes;
 			OnnxConsts consts;
-			vars.InitWithList(graph.value_info());
+			vars.InitWithList(graph.value_info(), true);
 			input.InitWithList(graph.input());
-			output.InitWithList(graph.output(), true);
+			output.InitWithList(graph.output(), false, true);
 			consts.InitWithList(graph.initializer());
 			nodes.InitWithGraph(graph);
 			file << "// Includes" << endl << endl;
-			file << "#include <Eigen/Dense>" << endl;
-			file << "#include <vector>" << endl;
+			file << "#include <xtensor/xarray.hpp>" << endl;
+			file << "#include <tuple>" << endl;
 			for (const std::string type : nodes.GetOpTypes())
 			{
 				file << "#include <Operators/" << type << ".h>" << endl; 
@@ -139,15 +149,23 @@ int main(){
 			file << join(output.GetVarsAsStrings(), ", ");
 			file << ") {" << endl;
 			file << endl << "// Initialize variables"  << endl;
+			file << "std::size_t batch_size = 1;" << endl;
 			//file << join(OnnxVars::GetVarsAsStrings(vars.GetOutput()), ", ");
 			for (const std::string var : vars.GetVarsAsStrings())
 				file << var << ";" << endl;
 			for (const std::string var : consts.GetVarsAsStrings())
-				file << var << ";" << endl;
+				file << var << endl;
 			
 			file << endl << "// Initialize nodes" << endl;
-			for (const OnnxNode node : nodes)
-				file << node.GetVarInitString() << endl;
+			for (const OnnxNode node : nodes) {
+				try {
+					file << node.GetVarInitString() << endl;
+				}
+				catch (const std::exception& e) {
+					std::cerr << "Error generating" << node.GetName() << "operator: " << e.what() << std::endl;
+					return 0;
+				}
+			}
 			file << "}" << endl;
 			//int result = std::system("clang-format -i model.h");
 			file.close();
@@ -158,6 +176,7 @@ int main(){
 		}
 
 	}
+	
 	//_CrtSetReportMode(_CRT_WARN, _CRTDBG_MODE_DEBUG);
 	//_CrtDumpMemoryLeaks();
 	return 0;

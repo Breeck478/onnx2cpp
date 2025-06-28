@@ -8,7 +8,7 @@ public:
 	static std::string GetDataTypeString(const int enumValue);
 };
 std::string join(const std::vector<std::string>& strings, const std::string& delimiter);
-std::string remove_chars(const std::string& input, const std::string& chars_to_remove = "/., ");
+std::string remove_chars(const std::string& input, const std::string& chars_to_remove = "/.,: ");
 
 template<typename T>
 std::vector<T> ParseRawData(const onnx::TensorProto& tensor) {
