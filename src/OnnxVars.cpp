@@ -7,15 +7,20 @@
 
 std::vector<std::string> OnnxVars::names;
 
-OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isOutput)
+OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInitialising, bool isOutput)
 {
 	this->name = valueInfo.name();
 	this->typeProto = valueInfo.type();
 	this->isOutput = isOutput;
+	this->isInitialising = isInitialising;
 }
 
 std::string OnnxVar::GetName() const{
 	return remove_chars(name);
+}
+
+std::string OnnxVar::GetShapeName() const {
+	return GetName() + "_shape"; // For xtensor shape
 }
 
 onnx::TypeProto OnnxVar::GetTypeProto() const {
@@ -31,57 +36,87 @@ std::string OnnxVar::GetDataTypeString() const {
 		//res = Utils::GetDataTypeString(tensorType.elem_type());
 		res = "";// "std::vector<T> const& " + name;
 		const auto& dims = tensorType.shape().dim();
-		for (size_t i = 0; i < dims.size(); ++i)
-		{
-			res += "std::vector<";
-		}
-		res += "T";
-		for (size_t i = 0; i < dims.size(); ++i)
-		{
-			res += ">";
-		}
-		if (isOutput)
-			res += "&";
-		res += " " + GetName();
-		//for (const auto& dim : dims)
-		//{
-		//	if (dim.has_dim_value())
-		//	{
-		//		res += "[" + std::to_string(dim.dim_value()) + "]";
-		//	}
-		//	else if (dim.has_dim_param())
-		//	{
-		//		res += "[" + dim.dim_param() + "]";
-		//	}
-		//	else
-		//	{
-		//		res += "[]";
-		//	}
-		//}
-	}
-	else if (typeProto.has_sequence_type())
-		res = "Sequence";
-	else if (typeProto.has_map_type())
-		res = "Map";
-	else if (typeProto.has_optional_type())
-		res = "Optional";
-	else if (typeProto.has_sparse_tensor_type())
-	{
-		res = "Sparse Tensor";
-		const auto& dims = typeProto.tensor_type().shape().dim();
-		for (const auto& dim : dims)
-		{
-			if (dim.has_dim_value())
-			{
-				res += "[" + std::to_string(dim.dim_value()) + "]";
+		if (dims.size() > 0) {
+			if (isInitialising) {
+				res += "typename xt::xarray<T>::shape_type " + GetShapeName() + " = {";
+				for (size_t i = 0; i < dims.size(); ++i)
+				{
+					if (dims[i].has_dim_value())
+					{
+						res += std::to_string(dims[i].dim_value());
+					}
+					else if (dims[i].has_dim_param())
+					{
+						res += dims[i].dim_param();
+					}
+					else
+					{
+						res += "0"; // Default value for unknown dimensions
+					}
+					if (i < dims.size() - 1)
+						res += ", ";
+				}
+				res += "}; \n";
 			}
-			else if (dim.has_dim_param())
-			{
-				res += "[" + dim.dim_param() + "]";
+			//for (size_t i = 0; i < dims.size(); ++i)
+			//{
+			res += "xt::xarray<";
+			//}
+
+			res += "T>";
+
+
+			//for (size_t i = 0; i < dims.size(); ++i)
+			//{
+			//	res += ">";
+			//}
+
+			if (isOutput)
+				res += "&";
+			res += " " + GetName();
+			if (isInitialising) {
+				res += "(" + GetShapeName() + ", 0.0)"; // Initialize with zeros
 			}
-			else
+			//for (const auto& dim : dims)
+			//{
+			//	if (dim.has_dim_value())
+			//	{
+			//		res += "[" + std::to_string(dim.dim_value()) + "]";
+			//	}
+			//	else if (dim.has_dim_param())
+			//	{
+			//		res += "[" + dim.dim_param() + "]";
+			//	}
+			//	else
+			//	{
+			//		res += "[]";
+			//	}
+			//}
+		}
+		else if (typeProto.has_sequence_type())
+			res = "Sequence";
+		else if (typeProto.has_map_type())
+			res = "Map";
+		else if (typeProto.has_optional_type())
+			res = "Optional";
+		else if (typeProto.has_sparse_tensor_type())
+		{
+			res = "Sparse Tensor";
+			const auto& dims = typeProto.tensor_type().shape().dim();
+			for (const auto& dim : dims)
 			{
-				res += "[]";
+				if (dim.has_dim_value())
+				{
+					res += "[" + std::to_string(dim.dim_value()) + "]";
+				}
+				else if (dim.has_dim_param())
+				{
+					res += "[" + dim.dim_param() + "]";
+				}
+				else
+				{
+					res += "[]";
+				}
 			}
 		}
 	}
@@ -95,11 +130,11 @@ std::string OnnxVar::GetVarInitString() const {
 }
 
 // Vars
-void OnnxVars::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isOutput){
+void OnnxVars::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInitialising, bool isOutput){
 	Clear();
 
 	for (onnx::ValueInfoProto valueInfo : list) {
-		Add(OnnxVar(valueInfo, isOutput), vars);
+		Add(OnnxVar(valueInfo, isInitialising, isOutput), vars);
 	}
 
 }
@@ -124,7 +159,11 @@ std::vector<std::string> OnnxVars::GetVarsAsStrings() {
 	std::vector<std::string> res;
 	for (const OnnxVar var : vars)
 	{
-		res.push_back(var.GetDataTypeString());
+		std::string varString = var.GetVarInitString();
+		if (!varString.empty()) {
+			res.push_back(varString); // Add semicolon to the end of the variable declaration
+		}
+		
 	}
 	return res;
 }

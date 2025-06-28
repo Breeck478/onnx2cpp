@@ -4,8 +4,9 @@
 class OnnxVar
 {
 public:
-	OnnxVar(onnx::ValueInfoProto valueInfo, bool isOutput = false);
+	OnnxVar(onnx::ValueInfoProto valueInfo, bool isInitialising = false, bool isOutput = false);
 	std::string GetName() const;
+	std::string GetShapeName() const;
 	onnx::TypeProto GetTypeProto() const;
 	std::string GetDataTypeString() const;
 	std::string GetVarInitString() const;
@@ -13,6 +14,7 @@ private:
 	std::string name;
 	onnx::TypeProto typeProto;
 	bool isOutput = false;
+	bool isInitialising = false; // true if this variable is initialised in the model
 	
 };
 
@@ -21,7 +23,7 @@ class OnnxVars
 public:
 	// Vars
 	void Clear() { vars.clear(); }
-	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isOutput = false);
+	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInitialising = false, bool isOutput = false);
 	int GetCount() const;
 	void Add(const OnnxVar var, std::vector<OnnxVar> &list);
 	std::vector<std::string> GetVarsAsStrings();
