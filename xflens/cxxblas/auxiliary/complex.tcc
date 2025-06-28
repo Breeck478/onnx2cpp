@@ -40,7 +40,7 @@ namespace cxxblas {
 
 template <typename T>
 typename
-cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+cxxblas::RestrictTo<IsUsable<T>::value,
          const T &>::Type
 conjugate(const T &x)
 {
@@ -49,7 +49,7 @@ conjugate(const T &x)
 
 template <typename T>
 typename
-cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+cxxblas::RestrictTo<IsUsable<T>::value,
          std::complex<T> >::Type
 conjugate(const std::complex<T> &x)
 {
@@ -58,7 +58,7 @@ conjugate(const std::complex<T> &x)
 
 template <typename T>
 typename
-cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+cxxblas::RestrictTo<IsUsable<T>::value,
          const T & >::Type
 real(const T &x)
 {
@@ -67,7 +67,7 @@ real(const T &x)
 
 template <typename T>
 typename
-cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+cxxblas::RestrictTo<IsUsable<T>::value,
          const T >::Type
 real(const std::complex<T> &x)
 {
@@ -76,7 +76,7 @@ real(const std::complex<T> &x)
 
 template <typename T>
 typename
-cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+cxxblas::RestrictTo<IsUsable<T>::value,
          const T >::Type
 imag(const T &)
 {
@@ -85,7 +85,7 @@ imag(const T &)
 
 template <typename T>
 typename
-cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+cxxblas::RestrictTo<IsUsable<T>::value,
                const T >::Type
 imag(const std::complex<T> &x)
 {

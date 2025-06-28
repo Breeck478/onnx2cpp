@@ -35,42 +35,47 @@
 
 #include "xflens/cxxblas/typedefs.h"
 #include "xflens/cxxblas/auxiliary/restrictto.h"
+#include "dco.hpp"
+template <typename T>
+struct IsUsable {
+    static constexpr bool value = std::is_arithmetic<T>::value || dco::is_dco_type_v<T>;
+};
 
 namespace cxxblas {
 
 template <typename T>
     typename
-    cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+    cxxblas::RestrictTo<IsUsable<T>::value,
              const T &>::Type
     conjugate(const T &x);
 
 template <typename T>
     typename
-    cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+    cxxblas::RestrictTo<IsUsable<T>::value,
              std::complex<T> >::Type
     conjugate(const std::complex<T> &x);
 
 template <typename T>
     typename
-    cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+    cxxblas::RestrictTo<IsUsable<T>::value,
                    const T & >::Type
     real(const T &x);
 
 template <typename T>
     typename
-    cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+    cxxblas::RestrictTo<IsUsable<T>::value,
              const T >::Type
     real(const std::complex<T> &x);
 
 template <typename T>
     typename
-    cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+    cxxblas::RestrictTo<IsUsable<T>::value,
              const T >::Type
     imag(const T &x);
 
 template <typename T>
     typename
-    cxxblas::RestrictTo<std::is_arithmetic<T>::value,
+    cxxblas::RestrictTo<IsUsable<T>::value,
              const T >::Type
     imag(const std::complex<T> &x);
 
