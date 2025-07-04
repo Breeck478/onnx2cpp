@@ -1,3 +1,4 @@
+#pragma once
 #include "Utils.h"
 
 std::string Utils::GetDataTypeString(const int enumValue) {

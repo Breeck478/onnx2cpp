@@ -1,3 +1,4 @@
+#pragma once
 #include <onnx/onnx_pb.h>
 #include <string>
 

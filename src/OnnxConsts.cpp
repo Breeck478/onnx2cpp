@@ -1,3 +1,4 @@
+#pragma once
 #include "OnnxConsts.h"
 #include "Utils.h"
 #include <algorithm>
@@ -89,11 +90,6 @@ std::string OnnxConst::GenerateNestedInitializerFromAny() const {
 
 std::string OnnxConst::GetDataTypeString() const {
 	std::string res = "";
-	//res = Utils::GetDataTypeString(tensorType.elem_type());
-	//res = "";// "std::vector<T> const& " + name;
-	//for (size_t i = 0; i < dims.size(); ++i)
-	// 
-	//{
 	if (dims.size() > 0) {
 		std::vector<int64_t> shape(dims.begin(), dims.end());
 		res += "typename xt::xarray<T>::shape_type " + GetShapeName() + " = {";
@@ -107,55 +103,6 @@ std::string OnnxConst::GetDataTypeString() const {
 		}
 		res += "};\n"; // Initialize with zeros
 	}
-
-	//res += "> ";
-	//}
-	//for (size_t i = 0; i < dims.size(); ++i)
-	//{
-	//	res += ">";
-	//}
-
-	/*res += "(";
-	int i = 0;
-	for (const auto dim : dims)
-	{
-		res += std::to_string(dim);
-		if (i < dims.size() - 1)
-			res += ", ";
-		i++;
-	}
-	res += ") << ";
-	i = 0;
-	for (auto val : GetDataAsAny()) {
-		if (std::any_cast<std::string>(&val) != nullptr) {
-			res += std::any_cast<std::string>(val);
-		}
-		else if (std::any_cast<int32_t>(&val) != nullptr){
-			res += std::to_string(std::any_cast<int32_t>(val));
-		}
-		else if (std::any_cast<int64_t>(&val) != nullptr) {
-			res += std::to_string(std::any_cast<int64_t>(val));
-		}
-		else if (std::any_cast<double>(&val) != nullptr) {
-			res += std::to_string(std::any_cast<double>(val));
-		}
-		else if (std::any_cast<float>(&val) != nullptr) {
-			res += std::to_string(std::any_cast<float>(val));
-		}
-		else if (std::any_cast<uint64_t>(&val) != nullptr) {
-			res += std::to_string(std::any_cast<uint64_t>(val));
-		}
-		else {
-			std::cout << "ERROR: Tensor data type not supported" << std::endl;
-		}
-
-
-		if (i < GetDataAsAny().size() - 1)
-			res += ", ";
-		i++;
-	}*/
-
-	//res += " = ";
 	if (GetDataSize() > 0) {
 
 		std::ostringstream oss;
@@ -198,7 +145,7 @@ std::string OnnxConst::GetDataTypeString() const {
 	return res;
 }
 
-std::string OnnxConst::GetVarInitString() const {
+std::string OnnxConst::GetConstantString() const {
 	std::string res = "";
 	res += GetDataTypeString();
 	return res;
@@ -209,21 +156,22 @@ void OnnxConsts::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::T
 	Clear();
 
 	for (onnx::TensorProto tensorProto : list) {
-		Add(OnnxConst(tensorProto), vars);
+		Add(OnnxConst(tensorProto));
 	}
 
 }
-
-void OnnxConsts::Add(const OnnxConst var, std::vector<OnnxConst> &list) {
-	list.push_back(var);
+void OnnxConsts::Add(const OnnxConst var) {
 	std::string name = remove_chars(var.GetName());
 	if ((names.end() == std::find(names.begin(), names.end(), name))) {
 		names.push_back(name);
+		vars.push_back(var);
 	}
 	else {
 		std::cout << "var " << var.GetName() << " is already added" << std::endl; // Can´t happen. ERROR
 	}
 }
+
+
 int OnnxConsts::GetCount() const {
 	return vars.size();
 }
@@ -242,16 +190,16 @@ std::vector<std::string> OnnxConsts::GetVarsAsStrings() {
 OnnxConst& OnnxConsts::operator[](int i) {
 	return vars[i];
 }
-std::vector<OnnxConst>::const_iterator OnnxConsts::begin() const {
+std::deque<OnnxConst>::const_iterator OnnxConsts::begin() const {
 	return vars.begin();
 }
-std::vector<OnnxConst>::const_iterator OnnxConsts::end() const {
+std::deque<OnnxConst>::const_iterator OnnxConsts::end() const {
 	return vars.end();
 }
-std::vector<OnnxConst>::iterator OnnxConsts::begin() {
+std::deque<OnnxConst>::iterator OnnxConsts::begin() {
 	return vars.begin();
 }
-std::vector<OnnxConst>::iterator OnnxConsts::end() {
+std::deque<OnnxConst>::iterator OnnxConsts::end() {
 	return vars.end();
 }
 
@@ -266,3 +214,4 @@ std::vector<std::string> OnnxConsts::GetNames() const {
 int OnnxConsts::GetNameCount() const {
 	return names.size();
 }
+

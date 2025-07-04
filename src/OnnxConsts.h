@@ -1,3 +1,4 @@
+#pragma once
 #include <onnx/onnx_pb.h>
 #include <string>
 #include <vector>
@@ -12,7 +13,7 @@ public:
 	std::string GetShapeName() const;
 	const ::google::protobuf::RepeatedField<int64_t> GetDims() const;
 	std::string GetDataTypeString() const;
-	std::string GetVarInitString() const;
+	std::string GetConstantString() const;
 	std::vector<std::any> GetDataAsAny() const;
 	size_t GetDataSize() const;
 	template <typename T>
@@ -41,20 +42,20 @@ public:
 	void Clear() { vars.clear(); }
 	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::TensorProto>& list);
 	int GetCount() const;
-	void Add(const OnnxConst var, std::vector<OnnxConst> &list);
+	void Add(const OnnxConst var);
 	std::vector<std::string> GetVarsAsStrings();
 	const OnnxConst& operator[](int i) const;
 	OnnxConst& operator[](int i);
-	std::vector<OnnxConst>::const_iterator begin() const;
-	std::vector<OnnxConst>::const_iterator end() const;
-	std::vector<OnnxConst>::iterator begin();
-	std::vector<OnnxConst>::iterator end();
+	std::deque<OnnxConst>::const_iterator begin() const;
+	std::deque<OnnxConst>::const_iterator end() const;
+	std::deque<OnnxConst>::iterator begin();
+	std::deque<OnnxConst>::iterator end();
 	// names
 	std::vector<std::string> GetNames() const;
 	std::string GetName(const int i) const;
 	int GetNameCount() const;
 private:
-	std::vector<OnnxConst> vars;
+	std::deque<OnnxConst> vars;
 	static std::vector<std::string> names;
 
 };

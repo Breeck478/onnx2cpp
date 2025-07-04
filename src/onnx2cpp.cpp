@@ -1,5 +1,6 @@
 ﻿// onnx2cpp.cpp: Definiert den Einstiegspunkt für die Anwendung.
 //
+#pragma once
 //#define _CRTDBG_MAP_ALLOC
 //#include <stdlib.h>
 //#include <crtdbg.h>
@@ -105,10 +106,14 @@ int main(){
 	if (file.is_open() && file.good()) {
 		try
 		{
+			
 			onnx::ModelProto model;
-			onnx::LoadProtoFromPath("modular_net.onnx", model);
+			onnx::LoadProtoFromPath("ModelMoreOps.onnx", model);  // Will be set by the user through the input args
 			onnx::shape_inference::InferShapes(model);
 			onnx::GraphProto graph = model.graph();
+			for (onnx::StringStringEntryProto str : graph.metadata_props()) {
+				cout << "Metadata: " << str.key() << " : " << str.value() << endl;
+			} 
 			for (onnx::FunctionProto func : model.functions()) {
 				cout << "Function: " << func.name() << endl;
 				for (const auto& input : func.input())
@@ -135,6 +140,7 @@ int main(){
 			output.InitWithList(graph.output(), false, true);
 			consts.InitWithList(graph.initializer());
 			nodes.InitWithGraph(graph);
+			nodes.RegisterVariables(vars);
 			file << "// Includes" << endl << endl;
 			file << "#include <xtensor/xarray.hpp>" << endl;
 			file << "#include <tuple>" << endl;
@@ -149,7 +155,8 @@ int main(){
 			file << join(output.GetVarsAsStrings(), ", ");
 			file << ") {" << endl;
 			file << endl << "// Initialize variables"  << endl;
-			file << "std::size_t batch_size = 1;" << endl;
+			file << "std::size_t batch_size = 1;" << endl;   // Will be set by the user through the input args
+			file << OnnxNode::PrintPredictedDims() << endl;
 			//file << join(OnnxVars::GetVarsAsStrings(vars.GetOutput()), ", ");
 			for (const std::string var : vars.GetVarsAsStrings())
 				file << var << ";" << endl;
@@ -157,9 +164,9 @@ int main(){
 				file << var << endl;
 			
 			file << endl << "// Initialize nodes" << endl;
-			for (const OnnxNode node : nodes) {
+			for (OnnxNode node : nodes) {
 				try {
-					file << node.GetVarInitString() << endl;
+					file << node.GetNodeString() << endl;
 				}
 				catch (const std::exception& e) {
 					std::cerr << "Error generating" << node.GetName() << "operator: " << e.what() << std::endl;
