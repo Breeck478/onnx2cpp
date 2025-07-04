@@ -6,21 +6,21 @@
 class ConstantHandler : public OperatorHandler {
 public:
 	ConstantHandler(OnnxNode node) : OperatorHandler(node) {}
-	bool OperatorSpecificGeneration() const override {
+	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-	std::string GetVarInitString() const override {
+	std::string GetNodeHandlerString() const override {
 
 		std::string res = "";
 		try {
-			if (node.GetOutputs().size() > 0 && node.GetInputs().size() == 0) {
+			if (node.GetOutputNames().size() > 0 && node.GetInputNames().size() == 0) {
 				for (auto att : node.GetAttributes())
 				{
 					if (att.first == "value" || att.first == "sparse_value") {
 						auto value = std::any_cast<onnx::TensorProto>(att.second);
 						OnnxConst constant(value);
-						constant.SetName(node.GetOutputs()[0]);
-						res += constant.GetVarInitString();
+						constant.SetName(node.GetOutputNames()[0]);
+						res += constant.GetConstantString();
 					}
 					else if (att.first.rfind("value_", 0) == 0) {
 						std::cout << att.first << std::endl;

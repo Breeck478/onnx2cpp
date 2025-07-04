@@ -4,15 +4,16 @@
 class ConcatHandler : public OperatorHandler {
 public:
 	ConcatHandler(OnnxNode node) : OperatorHandler(node) {}
-	bool OperatorSpecificGeneration() const override {
+	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-	std::string GetVarInitString() const override {
+	std::string GetNodeHandlerString() const override {
 
 		std::string res = "";
 		try {
-			if (node.GetInputs().size() > 0) {
-				res += "Concat(std::tuple(" + join(node.GetInputs(), ", ") + "), " + node.GetOutputs()[0];
+			if (node.GetInputNames().size() > 0) {
+				res += "std::vector<xt::xarray<T>> myVector = {" + join(node.GetInputNames(), ", ") + "};\n";
+				res += "Concat(myVector, " + node.GetOutputNames()[0];
 				if (node.GetAttributes().size() > 0) {
 					res += ", " + node.GetParamsString();
 				}

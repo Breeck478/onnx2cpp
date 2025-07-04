@@ -3,18 +3,18 @@
 class GemmHandler : public OperatorHandler {
 public:
 GemmHandler(OnnxNode node) : OperatorHandler(node) {}
-bool OperatorSpecificGeneration() const override {
+bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-std::string GetVarInitString() const override {
+std::string GetNodeHandlerString() const override {
 	std::string res = "Gemm(";
 
 
-	if (!node.GetInputs().empty()) {
-		res += join(node.GetInputs(), ", ");
+	if (!node.GetInputNames().empty()) {
+		res += join(node.GetInputNames(), ", ");
 	}
-	if (!node.GetOutputs().empty()) {
-		res += ", " + join(node.GetOutputs(), ", ");
+	if (!node.GetOutputNames().empty()) {
+		res += ", " + join(node.GetOutputNames(), ", ");
 	}
 	if (node.GetAttributes().size() > 0) {
 		res += ", " + node.GetParamsString();

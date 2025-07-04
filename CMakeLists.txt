@@ -17,7 +17,7 @@ set(CMAKE_BUILD_TYPE Debug)
 include_directories(src)
 aux_source_directory(./src/Operators SOURCES)
 message(WARNING ${SOURCES})
-add_executable (onnx2cpp src/onnx2cpp.cpp src/OnnxVars.cpp src/Utils.cpp src/OnnxNodes.cpp src/OnnxConsts.cpp ${SOURCES}  "src/Operators/Gemm.cpp" "src/Operators/Constant.cpp""src/Operators/Concat.cpp")
+add_executable (onnx2cpp src/onnx2cpp.cpp src/OnnxVars.cpp src/Utils.cpp src/OnnxNodes.cpp src/OnnxConsts.cpp ${SOURCES}  "src/Operators/Gemm.cpp" "src/Operators/Constant.cpp""src/Operators/Concat.cpp" "src/Operators/Pow.cpp")
 
 find_package(ONNX CONFIG REQUIRED)
 target_link_libraries(onnx2cpp PRIVATE ONNX::onnx ONNX::onnx_proto)
