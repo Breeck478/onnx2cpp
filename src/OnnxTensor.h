@@ -1,0 +1,27 @@
+#pragma once
+#include <onnx/onnx_pb.h>
+#include <string>
+#include <vector>
+#include <variant>
+#include <any>
+#include "Utils.h"
+class OnnxTensor {
+public:	
+	void Name(std::string name) { this->name = name; }
+	std::string Name() const { return remove_chars(name); }
+	std::vector<int> Shape() const;
+	std::string GetDataTypeAsString() const;
+	void DataType(int32_t type) { this->dataType = type; }
+	int32_t DataType()const { return dataType; }
+	std::string GetVariableString();
+	void HasStaticType(bool canStaticType) { this->hasStaticType = canStaticType; }
+	bool HasStaticType() const { return hasStaticType; }
+protected:
+	std::string name;
+	std::vector<int> shape;
+	int32_t dataType;
+	bool hasStaticType = true; // Does not have type T but static type like int, float ...
+	static int64_t batchSize;
+};
+
+

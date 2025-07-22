@@ -57,28 +57,44 @@ public:
 	std::string GetParamsString()const;
 	std::vector<std::string> GetInputNames() const { return inputNames; }
 	std::vector<std::string> GetOutputNames() const { return outputNames; }
-	std::vector<OnnxVar*> GetInputs() const { return inputs; }
-	std::vector<OnnxVar*> GetOutput() const { return outputs; }
+	std::vector<OnnxTensor*> GetInputs() const { return inputs; }
+	std::vector<OnnxTensor*> GetOutputs() const { return outputs; }
 	std::map<std::string, std::any> GetAttributes() const { return attributes; }
 	std::any GetAttribute(const std::string& name) const {
 		auto it = attributes.find(name);
 		if (it != attributes.end()) {
 			return it->second;
 		}
-		return std::any();
+		return attributes.end();
 	}
-	bool SetVarFromList(const OnnxVars& var);
-	std::string CreateFunctionCall();
-	void PredictDims(const OnnxVars& varsList);
-	static std::string PrintPredictedDims();
+	void SetVarFromList(const OnnxVars& var);
+	std::string CreateFunctionCall() const;
+	//void PredictDims(const OnnxVars& varsList);
+	//static std::string PrintPredictedDims();#
+	void SetTensorTypes();
+	bool NeedsInclude() const;
+	OnnxTensor* FindTensorByName(const std::string& name) const {
+		for (OnnxTensor* tensor : inputs) {
+			if (tensor->Name() == name) {
+				return tensor;
+			}
+		}
+		for (OnnxTensor* tensor : outputs) {
+			if (tensor->Name() == name) {
+				return tensor;
+			}
+		}
+		return nullptr; // Not found
+	}
+	void PreProcess();
 private:
 	std::vector<std::string> inputNames;
 	std::vector<std::string> outputNames;
 	std::string name;
 	std::string op_type;	
 	std::map<std::string, std::any> attributes; // name, value
-	std::vector<OnnxVar*> inputs;
-	std::vector<OnnxVar*> outputs;
+	std::vector<OnnxTensor*> inputs;
+	std::vector<OnnxTensor*> outputs;
 	static PredictedDim predictedDims;
 };
 
@@ -86,7 +102,7 @@ class OnnxNodes
 {
 public:
 	// Vars
-	void Clear() { nodes.clear(); opTypes.clear(); }
+	void Clear() { nodes.clear(); }
 	void InitWithGraph(onnx::GraphProto graph);	
 	int GetCount() const;
 	void Add(const OnnxNode var);
@@ -105,26 +121,32 @@ public:
 	
 private:
 	std::vector<OnnxNode> nodes;
-	std::vector<std::string> opTypes;
+	static std::vector<std::string> opTypes;
 	 // Static variable to store predicted dimensions for all nodes
 };
 
+// HAndler for Operators to map the Operator name to its specific Funktionality
 class OperatorHandler {
 public:
-	OperatorHandler(const OnnxNode node) : node(node) {};
+	OperatorHandler(const OnnxNode* node) : node(node) {};
 	virtual ~OperatorHandler() = default;
 	virtual bool OperatorSpecificNodeGeneration() const { return false; }
 	virtual bool OperatorSpecificVarGeneration() const { return false; }
+	virtual bool OperatorSpecificTensorTypes() const { return false; }
+	virtual bool OperatorSpecificPreProcess() const { return false; }
+	virtual bool OperatorNeedsInclude() const { return true; }
 	virtual std::string GetNodeHandlerString() const { return ""; }
 	virtual std::string GetVarInitialisation() { return ""; }
+	virtual void PreProcess() {}
+	virtual void SetTensorTypes() {}
  protected:
-	const OnnxNode node;
+	const OnnxNode* node;
 };
 
 class OperatorHandlerFactory {
 public:
-	using Creator = std::function<std::unique_ptr<OperatorHandler>(OnnxNode)>;
-	using Map = std::map<std::string, Creator>;
+	using Creator = std::function<std::unique_ptr<OperatorHandler>(const OnnxNode*)>;
+	using Map = std::map<std::string, Creator>; // OpType, OperatorHandler
 
 	static bool registerHandler(const std::string& name, Creator creator) {
 		std::cout << name << std::endl; 
@@ -132,9 +154,9 @@ public:
 		return true;
 	}
 
-	static std::unique_ptr<OperatorHandler> create(const OnnxNode node) {
+	static std::unique_ptr<OperatorHandler> create(const OnnxNode* node) {
 		auto& map = GetMap();
-		auto it = map.find(node.GetOpType());
+		auto it = map.find(node->GetOpType());
 		if (it != map.end()) {
 			return it->second(node);
 		}
@@ -152,7 +174,7 @@ private:
 // Makro für die Registrierung  
 #define REGISTER_OPERATOR_HANDLER(CLASS, NAME) \
            namespace { \
-               static bool CLASS##_registered = OperatorHandlerFactory::registerHandler(NAME, [](const OnnxNode& node) { \
+               static bool CLASS##_registered = OperatorHandlerFactory::registerHandler(NAME, [](const OnnxNode* node) { \
                    return std::make_unique<CLASS>(node); \
                }); \
            }

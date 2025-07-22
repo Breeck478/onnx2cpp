@@ -4,28 +4,31 @@
 #include <deque>
 #include <vector>
 
+#include "OnnxTensor.h"
 
 
 
-class OnnxVar
+class OnnxVar : public OnnxTensor
 {
 public:
-	OnnxVar(onnx::ValueInfoProto valueInfo, bool isInitialising = false, bool isOutput = false);
-	std::string GetName() const;
+	OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput = false, bool isOutput = false, bool isInitialising = false);
+	using OnnxTensor::Shape;
+	void Shape(onnx::TensorShapeProto shapeProto);
 	std::string GetShapeName() const;
-	onnx::TypeProto GetTypeProto() const;
-	std::string GetDataTypeString() const;
+	//onnx::TypeProto GetTypeProto() const;
+	//std::string GetDataTypeString() const;
 	std::string GetVariableString();
 	bool ContainsUnkownDim() const { return containsUnknowDim; }
 	void SetContainsUnkownDim() { containsUnknowDim = true; }
-	bool SetInitialization();
+	bool IsIO() const { return isInput || isOutput; }
+	bool IsInput() const { return isInput; }
+	bool IsOutput() const { return isOutput; }
+	void PreProcess();
 private:
-	std::string name;
-	onnx::TypeProto typeProto;
+	bool isInput = false;
 	bool isOutput = false;
 	bool is_initialized_in_model = false; // true if this variable is initialised in the model
 	bool containsUnknowDim = false; // If false, the variable is initialized by an operator
-	
 };
 
 class OnnxVars
@@ -33,10 +36,11 @@ class OnnxVars
 public:
 	// Vars
 	void Clear() { vars.clear(); }
-	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInitialising = false, bool isOutput = false);
+	void AddFromList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInput = false, bool isOutput = false, bool isInitialising = false);
 	int GetCount() const;
 	void Add(const OnnxVar var);
 	std::vector<std::string> GetVarsAsStrings();
+	std::vector<std::string> GetIOsAsStrings();
 	const OnnxVar& operator[](int i) const;
 	OnnxVar& operator[](int i);
 	std::deque<OnnxVar>::const_iterator begin() const;
@@ -47,11 +51,13 @@ public:
 	std::vector<std::string> GetNames() const;
 	std::string GetName(const int i) const;
 	int GetNameCount() const;
-	bool FindConstPointerByName(const std::string name, OnnxVar*& OutputVar) const;
-	void SetInitializations();
+	bool FindVarPointerByName(const std::string name, OnnxVar*& OutputVar) const;
+	std::vector<OnnxVar*> GetInputVars() const;
+	std::vector<OnnxVar*> GetOutputVars() const;
 private:
 	std::deque<OnnxVar> vars;
-	static std::vector<std::string> names;
+	std::vector<std::string> names;
+	bool isIO = false; // true if this variable is an input or output variable of a Graph
 };
 
 

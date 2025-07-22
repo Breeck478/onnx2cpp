@@ -5,8 +5,10 @@
 #include <variant>
 #include <type_traits>
 
-PredictedDim OnnxNode::predictedDims;
+#include "OnnxGraph.h"
 
+PredictedDim OnnxNode::predictedDims;
+std::vector<std::string> OnnxNodes::opTypes;
 
 OnnxNode::OnnxNode(onnx::NodeProto nodeProto)
 {
@@ -116,7 +118,7 @@ std::string OnnxNode::GetParamsString() const {
 				res += "]";
 			}*/
 			else if (value.type() == typeid(onnx::GraphProto)) {
-				res += "." + key + "= Graph"; // Platzhalter für Graph-Darstellung
+				res += "." + key + OnnxGraph(std::any_cast<onnx::GraphProto>(value)).PrintGraph();
 			}
 			else if (value.type() == typeid(onnx::TypeProto)) {
 				res += "." + key + "= TypeProto"; // Platzhalter für TypeProto-Darstellung
@@ -133,7 +135,7 @@ std::string OnnxNode::GetParamsString() const {
 	}
 	return res;
 }
-std::string OnnxNode::CreateFunctionCall() {
+std::string OnnxNode::CreateFunctionCall() const {
 	std::string res = op_type + "(";
 	res += join(inputNames, ", ");
 	if (inputNames.size() > 0 && outputNames.size() > 0)
@@ -146,19 +148,22 @@ std::string OnnxNode::CreateFunctionCall() {
 	return res;
 }
 
+bool OnnxNode::NeedsInclude() const {
+	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
+	return !handler || handler->OperatorNeedsInclude();
+}
+
 std::string OnnxNode::GetNodeString() {
 	std::string res = "";
-	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(*this);
+	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
 	if (handler) {
 		if (handler->OperatorSpecificVarGeneration()) {
 			res += handler->GetVarInitialisation();
 		}
 		else {
-			for (OnnxVar* var : inputs) {
-				if (var && var->ContainsUnkownDim()) {
-					res += var->GetVariableString() + "\n";
-				}
-			}
+			//for (OnnxTensor* var : inputs) {				
+			//	res += var->GetVariableString() + "\n";
+			//}
 		}
 		if (handler->OperatorSpecificNodeGeneration()) {
 			res += handler->GetNodeHandlerString();
@@ -175,81 +180,103 @@ std::string OnnxNode::GetNodeString() {
 		//}
 		res += CreateFunctionCall();
 	}
-
-
 	return res;
 }
 
 std::string OnnxNode::GetVarInitialisation() {
 	std::string res = "";
-	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(*this);
+	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
 	if (handler && handler->OperatorSpecificVarGeneration()) {
 		res = handler->GetVarInitialisation();
 	}
 	else {
-		for (OnnxVar* var : inputs) {
-			if (var && var->ContainsUnkownDim()) {
-				res += var->GetVariableString() + "\n";
-			}
+		for (OnnxTensor* var : inputs) {
+			res += var->GetVariableString() + "\n";
 		}
 	}
 
 	return res;
 }
 
-bool OnnxNode::SetVarFromList(const OnnxVars& varsList) {
+void OnnxNode::SetVarFromList(const OnnxVars& varsList) {
 	bool res = false;
 	std::vector<std::string> varNames = inputNames;
 	// Search for own var in given List 
 	for (auto name : varNames) {
 		OnnxVar* varPointer = nullptr;
-		if (varsList.FindConstPointerByName(name, varPointer) && !varPointer->ContainsUnkownDim()) {
+		if (varsList.FindVarPointerByName(name, varPointer) ) { // && !varPointer->ContainsUnkownDim()
  			inputs.push_back(varPointer);
-			res = varPointer->SetInitialization(); // Check wether the variable has to initialized by Operator
 		}
 	}
 	varNames = outputNames;
 	for (auto name : varNames) {
 		OnnxVar* outputVar = nullptr;
-		if (varsList.FindConstPointerByName(name, outputVar) && !outputVar->ContainsUnkownDim()) {
+		if (varsList.FindVarPointerByName(name, outputVar) ) { // && !outputVar->ContainsUnkownDim()
 			outputs.push_back(outputVar);
-			res = outputVar->SetInitialization(); // Check wether the variable has to initialized by Operator
 		}
 	}
-	return res;
+	SetTensorTypes();
+}
+
+void OnnxNode::SetTensorTypes() {
+	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
+	if (handler && handler->OperatorSpecificTensorTypes()) {
+		handler->SetTensorTypes();
+		return;
+	}
+	bool containsNonStaticInput = false;
+	for (OnnxTensor* var : inputs) {
+		if (!var->HasStaticType()) {
+			containsNonStaticInput = true;
+			break;
+		}
+	}
+	if (containsNonStaticInput) {
+		for (OnnxTensor* var : outputs) {
+			var->HasStaticType(false);
+		}
+	}
+}
+
+void OnnxNode::PreProcess() {
+	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
+	if (handler && handler->OperatorSpecificPreProcess()) {
+		handler->PreProcess();
+		return;
+	}
 }
 	
-void OnnxNode::PredictDims(const OnnxVars& varsList) {
-	//if (outputs.size() == 1 && outputs[0]->ContainsUnkownDim()) {
+//void OnnxNode::PredictDims(const OnnxVars& varsList) {
+//	//if (outputs.size() == 1 && outputs[0]->ContainsUnkownDim()) {
+//
+//	//}
+//	for (OnnxVar* var : inputs) {
+//		if (var->ContainsUnkownDim()) {
+//			const auto& dims = var->GetTypeProto().tensor_type().shape().dim();
+//			for (const auto dim : dims) {
+//				if (dim.has_dim_param() && dim.dim_param() != "batch_size") {
+//					predictedDims.SetDim(dim.dim_param(), -1);
+//				}
+//			}
+//		}
+//	}
+//	for (OnnxVar* var : outputs) {
+//		if (var->ContainsUnkownDim()) {
+//			const onnx::TypeProto_Tensor tensorType = var->GetTypeProto().tensor_type();
+//			const auto& dims = tensorType.shape().dim();
+//			for (const auto dim : dims) {
+//				if (dim.has_dim_param() && dim.dim_param() != "batch_size") {
+//					std::string name = dim.dim_param();
+//					predictedDims.SetDim(name, -1);
+//				}
+//			}
+//		}
+//	}
+//}
 
-	//}
-	for (OnnxVar* var : inputs) {
-		if (var->ContainsUnkownDim()) {
-			const auto& dims = var->GetTypeProto().tensor_type().shape().dim();
-			for (const auto dim : dims) {
-				if (dim.has_dim_param() && dim.dim_param() != "batch_size") {
-					predictedDims.SetDim(dim.dim_param(), -1);
-				}
-			}
-		}
-	}
-	for (OnnxVar* var : outputs) {
-		if (var->ContainsUnkownDim()) {
-			const onnx::TypeProto_Tensor tensorType = var->GetTypeProto().tensor_type();
-			const auto& dims = tensorType.shape().dim();
-			for (const auto dim : dims) {
-				if (dim.has_dim_param() && dim.dim_param() != "batch_size") {
-					std::string name = dim.dim_param();
-					predictedDims.SetDim(name, -1);
-				}
-			}
-		}
-	}
-}
-
-std::string OnnxNode::PrintPredictedDims() {
-	return predictedDims.Print();
-}
+//std::string OnnxNode::PrintPredictedDims() {
+//	return predictedDims.Print();
+//}
 
 
 
@@ -262,13 +289,12 @@ void OnnxNodes::InitWithGraph(onnx::GraphProto graph) {
 }
 void OnnxNodes::Add(const OnnxNode var) {
 	nodes.push_back(var);
-	std::string opType = var.GetOpType();
-	if ((opTypes.end() == std::find(opTypes.begin(), opTypes.end(), opType))) {
-		opTypes.push_back(opType);
+	if (var.NeedsInclude()) {
+		std::string opType = var.GetOpType();
+		if ((opTypes.end() == std::find(opTypes.begin(), opTypes.end(), opType))) {
+			opTypes.push_back(opType);
+		}
 	}
-	//else {
-	//	std::cout <<"var " << var.GetName() << " is already added" << std::endl;
-	//}
 }
 int OnnxNodes::GetCount() const {
 	return nodes.size();
@@ -307,9 +333,8 @@ int OnnxNodes::GetOpTypeCount() const {
 
 void OnnxNodes::RegisterVariables(OnnxVars& varsList) {
 	for (OnnxNode& node : nodes) {
-		if (node.SetVarFromList(varsList)) {
-			node.PredictDims(varsList);
-		}
+		node.SetVarFromList(varsList);
+
 	}
 }
 

@@ -4,16 +4,17 @@
 #include <vector>
 #include <variant>
 #include <any>
-class OnnxConst
+
+#include "OnnxTensor.h"
+class OnnxConst : public OnnxTensor
 {
 public:
+	using OnnxTensor::Shape;
 	OnnxConst(onnx::TensorProto valueInfo);
-	std::string GetName() const;
-	void SetName(std::string name) { this->name = name; }
+	void Shape(::google::protobuf::RepeatedField<int64_t>);
 	std::string GetShapeName() const;
-	const ::google::protobuf::RepeatedField<int64_t> GetDims() const;
-	std::string GetDataTypeString() const;
-	std::string GetConstantString() const;
+	std::string GetDataTypeString(bool const doInitialize);
+	std::string GetConstantString(bool const doInitialize = true);
 	std::vector<std::any> GetDataAsAny() const;
 	size_t GetDataSize() const;
 	template <typename T>
@@ -29,9 +30,9 @@ public:
 		std::vector<uint64_t>
 	>;
 	TensorData GetData() const;
+	void FillData(const onnx::TensorProto& tensorProto);
+	void PreProcess();
 private:
-	std::string name;
-	::google::protobuf::RepeatedField<int64_t> dims;
 	TensorData data; 
 };
 

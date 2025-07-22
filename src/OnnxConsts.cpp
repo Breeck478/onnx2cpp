@@ -29,11 +29,16 @@ OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
 	}
 }
 
-std::string OnnxConst::GetName() const{
-	return remove_chars(name);
+void OnnxConst::Shape(::google::protobuf::RepeatedField<int64_t> dims) {
+	this->shape.clear();
+	this->shape.reserve(dims.size());
+	for (const auto& dim : dims) {
+		this->shape.push_back(dim);
+	}
 }
+
 std::string OnnxConst::GetShapeName() const {
-	return GetName() + "_shape"; // For xtensor shape
+	return Name() + "_shape"; // For xtensor shape
 }
 
 std::vector<std::any> OnnxConst::GetDataAsAny() const {
@@ -44,10 +49,6 @@ std::vector<std::any> OnnxConst::GetDataAsAny() const {
 		}
 		return result;
 		}, data);
-}
-
-const ::google::protobuf::RepeatedField<int64_t> OnnxConst::GetDims() const {
-	return dims;
 }
 
 OnnxConst::TensorData OnnxConst::GetData() const {
@@ -63,7 +64,7 @@ size_t OnnxConst::GetDataSize() const {
 template <typename T>
 std::vector<T> OnnxConst::GetDataAsT() const {
 	if (!std::holds_alternative<std::vector<T>>(data)) {
-		std::cout << "ERROR: Tensor data type not supported for GetDataAsT" << std::endl;
+		std::runtime_error("ERROR(OnnxConst::GetDataAsT): Tensor data type not supported for Constant " + Name());
 		return {};
 	}
 	return std::get<std::vector<T>>(data);
@@ -88,11 +89,11 @@ std::string OnnxConst::GenerateNestedInitializerFromAny() const {
 	return oss.str();
 }
 
-std::string OnnxConst::GetDataTypeString() const {
+std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 	std::string res = "";
-	if (dims.size() > 0) {
-		std::vector<int64_t> shape(dims.begin(), dims.end());
-		res += "typename xt::xarray<T>::shape_type " + GetShapeName() + " = {";
+	if (shape.size() > 0) {
+		std::vector<int64_t> shape(shape.begin(), shape.end());
+		res += "typename xt::xarray<"+ GetDataTypeAsString() + ">::shape_type " + GetShapeName() + " = {";
 		for (size_t i = 0; i < shape.size(); ++i) {
 			if (shape[i] < 0) {
 				std::cout << "ERROR: Negative dimension in tensor shape" << std::endl;
@@ -106,8 +107,10 @@ std::string OnnxConst::GetDataTypeString() const {
 	if (GetDataSize() > 0) {
 
 		std::ostringstream oss;
+		if (doInitialize) 
+			oss << "xt::xarray<" + GetDataTypeAsString() + "> ";
 
-		oss << "xt::xarray<T> " << GetName() << " = ";
+		oss << Name() << " = ";
 
 		if (std::holds_alternative<std::vector<float>>(data)) {
 			oss << GenerateNestedInitializerFromAny<float>();
@@ -139,35 +142,38 @@ std::string OnnxConst::GetDataTypeString() const {
 		res += oss.str() + ";";
 	}
 
-	if (dims.size() > 0) {
-		res += "\n" + GetName() + " = " + GetName() + ".reshape(" + GetShapeName() + ");";
+	if (shape.size() > 0) {
+		res += "\n" + Name() + " = " + Name() + ".reshape(" + GetShapeName() + ");";
 	}
 	return res;
 }
 
-std::string OnnxConst::GetConstantString() const {
+std::string OnnxConst::GetConstantString(bool const doInitialize) {
 	std::string res = "";
-	res += GetDataTypeString();
+	res += GetDataTypeString(doInitialize);
 	return res;
+}
+
+void OnnxConst::PreProcess() {
+
 }
 
 // Vars
 void OnnxConsts::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::TensorProto>& list){
 	Clear();
-
 	for (onnx::TensorProto tensorProto : list) {
 		Add(OnnxConst(tensorProto));
 	}
 
 }
 void OnnxConsts::Add(const OnnxConst var) {
-	std::string name = remove_chars(var.GetName());
+	std::string name = remove_chars(var.Name());
 	if ((names.end() == std::find(names.begin(), names.end(), name))) {
 		names.push_back(name);
 		vars.push_back(var);
 	}
 	else {
-		std::cout << "var " << var.GetName() << " is already added" << std::endl; // Can´t happen. ERROR
+		std::cout << "var " << var.Name() << " is already added" << std::endl; // Can´t happen. ERROR
 	}
 }
 
@@ -180,9 +186,9 @@ const OnnxConst& OnnxConsts::operator[](int i) const {
 }
 std::vector<std::string> OnnxConsts::GetVarsAsStrings() {
 	std::vector<std::string> res;
-	for (const OnnxConst var : vars)
+	for (OnnxConst var : vars)
 	{
-		res.push_back(var.GetDataTypeString());
+		res.push_back(var.GetConstantString());
 	}
 	return res;
 }
