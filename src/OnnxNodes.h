@@ -8,43 +8,42 @@
 #include <functional>
 #include "OnnxVars.h"
 
-class PredictedDim
+class PredictedDim : public std::map<std::string, int>
 {
 public:
 	PredictedDim() = default;
-	int GetPredictedDim(const std::string& name) { return dims[name]; }
+	int GetPredictedDim(const std::string& name) { return (*this)[name]; }
+	
 	int TryGetDimension(const std::string& name) {
-		if (dims.find(name) == dims.end()) {
-			dims[name] = -1;
+		if (find(name) == end()) {
+			(*this)[name] = -1;
 			return -1; // New Dim registered
 		}
 		else {
-			return dims[name];
+			return (*this)[name];
 		}
 	}
 	void SetDim(const std::string& name, const int dim) {
-		if (dims.find(name) == dims.end()) {
-			dims[name] = dim;
+		if (find(name) == end()) {
+			(*this)[name] = dim;
 		}
 		else {
-			if (dims[name] == -1) {
-				dims[name] = dim; // Set new dimension
+			if ((*this)[name] == -1) {
+				(*this)[name] = dim; // Set new dimension
 
 			}
 			else {
-				std::cout << "Warning: Predicted dimension for " << name << " is already set to " << dims[name] << ", but trying to set it to " << dim << std::endl;
+				std::cout << "Warning: Predicted dimension for " << name << " is already set to " << (*this)[name] << ", but trying to set it to " << dim << std::endl;
 			}
 		}
 	}
 	std::string Print() const {
 		std::string res = "//Predicted Dimensions:\n ";
-		for (const auto& dim : dims) {
+		for (const auto& dim : (*this)) {
 			res += "int " + dim.first + "= " + std::to_string(dim.second) + ";\n";
 		}
 		return res;
 	}
-private:
-	std::map<std::string, int> dims;
 };
 class OnnxNode
 {
