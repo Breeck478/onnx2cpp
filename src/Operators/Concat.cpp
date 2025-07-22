@@ -3,7 +3,7 @@
 
 class ConcatHandler : public OperatorHandler {
 public:
-	ConcatHandler(OnnxNode node) : OperatorHandler(node) {}
+	ConcatHandler(const OnnxNode* node) : OperatorHandler(node) {}
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
@@ -11,13 +11,13 @@ public:
 
 		std::string res = "";
 		try {
-			if (node.GetInputNames().size() > 0) {
-				res += "std::vector<xt::xarray<T>> myVector = {" + join(node.GetInputNames(), ", ") + "};\n";
-				res += "Concat(myVector, " + node.GetOutputNames()[0];
-				if (node.GetAttributes().size() > 0) {
-					res += ", " + node.GetParamsString();
+			if (node->GetInputNames().size() > 0) {
+				res += "std::vector<xt::xarray<T>> myVector = {" + join(node->GetInputNames(), ", ") + "};\n";
+				res += "Concat(myVector, " + node->GetOutputNames()[0];
+				if (node->GetAttributes().size() > 0) {
+					res += ", " + node->GetParamsString();
 				}
-				res += "); // " + node.GetName();
+				res += "); // " + node->GetName();
 			}
 			else {
 				std::cerr << "Concat operator must have inputs." << std::endl;

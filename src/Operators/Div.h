@@ -1,7 +1,7 @@
 #include <xtensor/xarray.hpp>
 
-template <typename T>
-void Div(const xt::xarray<T> &x, const xt::xarray<T> &y, xt::xarray<T> &r)
+template <typename Tx, typename Ty, typename Tr>
+void Div(const xt::xarray<Tx> &x, const xt::xarray<Ty> &y, xt::xarray<Tr> &r)
 {
   r = x / y;
 }
