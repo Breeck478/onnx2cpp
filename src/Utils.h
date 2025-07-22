@@ -10,6 +10,7 @@ public:
 };
 std::string join(const std::vector<std::string>& strings, const std::string& delimiter);
 std::string remove_chars(const std::string& input, const std::string& chars_to_remove = "/.,: ");
+std::vector<std::string> split(const std::string& str, const std::string& delimiter);
 
 template<typename T>
 std::vector<T> ParseRawData(const onnx::TensorProto& tensor) {
