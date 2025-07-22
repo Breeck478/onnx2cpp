@@ -7,25 +7,35 @@ std::vector<std::string> OnnxConsts::names;
 OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
 {
 	this->name = tensorProto.name();
-	this->dims = tensorProto.dims();
-	if (tensorProto.data_type() == onnx::TensorProto_DataType_FLOAT) {
-		
-		this->data = ParseRawData<float>(tensorProto);
-	}
-	else if (tensorProto.data_type() == onnx::TensorProto_DataType_INT32) {
-		this->data = ParseRawData<int32_t>(tensorProto);
-	}
-	else if (tensorProto.data_type() == onnx::TensorProto_DataType_INT64) {
-		this->data = ParseRawData<int64_t>(tensorProto);
-	}
-	else if (tensorProto.data_type() == onnx::TensorProto_DataType_DOUBLE) {
-		this->data = ParseRawData<double>(tensorProto);
-	}
-	else if (tensorProto.data_type() == onnx::TensorProto_DataType_STRING) {
-		this->data = ParseRawData<std::string>(tensorProto);
+	this->Shape(tensorProto.dims());
+	this->dataType = tensorProto.data_type();
+	this->FillData(tensorProto);
+}
+
+void OnnxConst::FillData(const onnx::TensorProto& tensorProto) {
+	if (DataType() == onnx::TensorProto_DataType_FLOAT) { // complex not supported
+		if (tensorProto.float_data().size() > 0)
+			this->data = ParseRepeatedField(tensorProto.float_data());
+		else
+			this->data = ParseByteData<float>(tensorProto.raw_data());
+	} else if (DataType() == onnx::TensorProto_DataType_INT32 || DataType() == onnx::TensorProto_DataType_INT16 || DataType() == onnx::TensorProto_DataType_INT8 || DataType() == onnx::TensorProto_DataType_UINT32 || DataType() == onnx::TensorProto_DataType_UINT16 || DataType() == onnx::TensorProto_DataType_UINT8 || DataType() == onnx::TensorProto_DataType_BOOL) {  // int4, uint4, FLOAT16, BFLOAT16, FLOAT8E4M3FN, FLOAT8E4M3FNUZ, FLOAT8E5M2, FLOAT8E5M2FNUZ, FLOAT4E2M1 not supported
+		if (tensorProto.int32_data().size() > 0)
+			this->data = ParseRepeatedField(tensorProto.int32_data());
+		else
+			this->data = ParseByteData<int32_t>(tensorProto.raw_data());
+	} else if (DataType() == onnx::TensorProto_DataType_STRING) {
+		if (tensorProto.string_data().size() > 0)
+			this->data = ParseRepeatedField(tensorProto.string_data());
+		else
+			this->data = ParseByteData<std::string>(tensorProto.raw_data());
+	} else if (DataType() == onnx::TensorProto_DataType_INT64) {
+		if (tensorProto.int64_data().size() > 0)
+			this->data = ParseRepeatedField(tensorProto.int64_data());
+		else
+			this->data = ParseByteData<int64_t>(tensorProto.raw_data());
 	}
 	else {
-		std::cout << "ERROR: Tensor data type not supported" << std::endl;
+		std::runtime_error("ERROR(OnnxConst::FillData): Tensor data type not supported for Constante " + Name());
 	}
 }
 

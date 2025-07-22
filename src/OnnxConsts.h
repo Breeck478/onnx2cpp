@@ -23,10 +23,16 @@ public:
 	std::string GenerateNestedInitializerFromAny() const;
 	using TensorData = std::variant<
 		std::vector<float>,
+		std::vector<std::string>,
+		std::vector<bool>,
+		std::vector<double>,
+		std::vector<int8_t>,
+		std::vector<int16_t>,
 		std::vector<int32_t>,
 		std::vector<int64_t>,
-		std::vector<double>,
-		std::vector<std::string>,
+		std::vector<uint8_t>,
+		std::vector<uint16_t>,
+		std::vector<uint32_t>,
 		std::vector<uint64_t>
 	>;
 	TensorData GetData() const;
