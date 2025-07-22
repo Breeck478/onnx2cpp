@@ -17,6 +17,7 @@
 
 #include <fstream>
 #include "OnnxVars.h"
+#include "OnnxGraph.h"
 #include "OnnxConsts.h"
 #include "OnnxNodes.h"
 #include "Utils.h"
@@ -128,52 +129,17 @@ int main(){
 			for (onnx::OperatorSetIdProto  func : model.opset_import()) {
 				cout << "OpSet: " << func.domain() << " : " << func.version() << endl;
 			}
-			file << std::fixed << std::setprecision(1);
-			file.precision(1);
-			OnnxVars vars;
-			OnnxVars input;
-			OnnxVars output;
-			OnnxNodes nodes;
-			OnnxConsts consts;
-			vars.InitWithList(graph.value_info(), true);
-			input.InitWithList(graph.input());
-			output.InitWithList(graph.output(), false, true);
-			consts.InitWithList(graph.initializer());
-			nodes.InitWithGraph(graph);
-			nodes.RegisterVariables(vars);
+			onnx::GraphProto graphProto = model.graph();
+			OnnxGraph graph(graphProto, true, staticInputs, staticOutputs, true);
+			graph.PreProcess();
 			file << "// Includes" << endl << endl;
 			file << "#include <xtensor/xarray.hpp>" << endl;
 			file << "#include <tuple>" << endl;
-			for (const std::string type : nodes.GetOpTypes())
-			{
-				file << "#include <Operators/" << type << ".h>" << endl; 
-			}
-			file << "template <typename T>" << endl;
-			file << "void model(";
-			file << join(input.GetVarsAsStrings(), ", ");
-			file << ", ";
-			file << join(output.GetVarsAsStrings(), ", ");
-			file << ") {" << endl;
-			file << endl << "// Initialize variables"  << endl;
-			file << "std::size_t batch_size = 1;" << endl;   // Will be set by the user through the input args
-			file << OnnxNode::PrintPredictedDims() << endl;
+			file << graph.GetIncludes() << endl;
+			file << graph.PrintGraph() << endl;
+			//file << "std::size_t batch_size = " + batchSize + ";" << endl;   // Will be set by the user through the input args
+			// file << OnnxNode::PrintPredictedDims() << endl;
 			//file << join(OnnxVars::GetVarsAsStrings(vars.GetOutput()), ", ");
-			for (const std::string var : vars.GetVarsAsStrings())
-				file << var << ";" << endl;
-			for (const std::string var : consts.GetVarsAsStrings())
-				file << var << endl;
-			
-			file << endl << "// Initialize nodes" << endl;
-			for (OnnxNode node : nodes) {
-				try {
-					file << node.GetNodeString() << endl;
-				}
-				catch (const std::exception& e) {
-					std::cerr << "Error generating" << node.GetName() << "operator: " << e.what() << std::endl;
-					return 0;
-				}
-			}
-			file << "}" << endl;
 			//int result = std::system("clang-format -i model.h");
 			file.close();
 		}
