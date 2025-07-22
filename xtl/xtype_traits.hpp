@@ -13,7 +13,7 @@
 #include <complex>
 #include <chrono>
 #include <type_traits>
-
+//#include "dco.hpp"
 #include "xtl_config.hpp"
 
 namespace xtl
@@ -25,31 +25,43 @@ namespace xtl
     template <class T>
     struct is_scalar : std::is_scalar<T>
     {
+        using value_t = typename dco::mode<T>::value_t;
+        static constexpr bool value = std::is_scalar<value_t>::value;
     };
 
     template <class T>
     struct is_arithmetic : std::is_arithmetic<T>
     {
+        using value_t = typename dco::mode<T>::value_t;
+        static constexpr bool value = std::is_arithmetic<value_t>::value;
     };
 
     template <class T>
     struct is_fundamental : std::is_fundamental<T>
     {
+        using value_t = typename dco::mode<T>::value_t;
+        static constexpr bool value = std::is_fundamental<value_t>::value;
     };
 
     template <class T>
     struct is_signed : std::is_signed<T>
     {
+        using value_t = typename dco::mode<T>::value_t;
+        static constexpr bool value = std::is_signed<value_t>::value;
     };
 
     template <class T>
     struct is_floating_point : std::is_floating_point<T>
     {
+        using value_t = typename dco::mode<T>::value_t;
+        static constexpr bool value = std::is_floating_point<value_t>::value;
     };
 
     template <class T>
     struct is_integral : std::is_integral<T>
     {
+        using value_t = typename dco::mode<T>::value_t;
+        static constexpr bool value = std::is_integral<value_t>::value;
     };
 
     /************************************
