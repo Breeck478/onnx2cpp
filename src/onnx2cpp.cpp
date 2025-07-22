@@ -34,6 +34,7 @@ struct Tensor {
 	Eigen::Tensor<T, 1> data;
 
 };*/
+int64_t OnnxTensor::batchSize = 1; // Default batch size, can be changed by user input
 using namespace std;
 
 static void PrintGraphInfo(onnx::GraphProto graph) {
@@ -99,7 +100,63 @@ static void PrintGraphInfo(onnx::GraphProto graph) {
 		cout << endl;
 	}
 }
-int main(){
+#include <windows.h>
+#include "onnx/defs/schema.h"
+int main(int argc, char *argv[]) {
+	string fileName = "";
+	string batchSize = "1"; // Default batch size, can be changed by user input
+	std::vector<string> staticInputs;
+	std::vector<string>  staticOutputs;
+	cout << "\nCommand-line arguments:\n";
+	int count;
+	for (count = 0; count < argc; count++) {
+		if (string(argv[count]) == "--file") {
+			if (count + 1 < argc) {
+				fileName = argv[count + 1];
+				count++;
+			}
+			else {
+				cout << "Error: --file option requires a file name argument." << endl;
+				return 1;
+			}
+		}
+		else if (string(argv[count]) == "--dynamic_dim") {
+			if (count + 1 < argc) { // todo name=count 
+				batchSize = argv[count + 1];
+				count++;
+			}
+			else {
+				cout << "Error: --batch_size option requires a batch size argument." << endl;
+				return 1;
+			}
+		}
+		else if (string(argv[count]) == "--static_inputs") {
+			if (count + 1 < argc) {
+				string inputs = argv[count + 1];
+				if (inputs[0] == '[' && inputs[inputs.size() - 1] == ']') {
+					inputs = remove_chars(inputs, "[] "); // Remove quotes if they are present
+					staticInputs = split(inputs, ",");
+				}
+				else {
+					cout << "Error: --static_inputs not set proberly" << endl;
+					return 1;
+				}
+			}
+		}
+		else if (string(argv[count]) == "--static_outputs") {
+			if (count + 1 < argc) {
+				string outputs = argv[count + 1];
+				if (outputs[0] == '"' && outputs[-1] == '"') {
+					outputs = remove_chars(outputs, "\" "); // Remove quotes if they are present
+					staticOutputs = split(outputs, ",");
+				}
+				else {
+					cout << "Error: --static_outputs not set proberly" << endl;
+					return 1;
+				}
+			}
+		}
+	}
 	fstream file;
 	std::cout << std::fixed << std::setprecision(1);
 	std::cout.precision(1);
