@@ -16,7 +16,6 @@
 #include <string>
 
 #include <fstream>
-#include "OnnxVars.h"
 #include "OnnxGraph.h"
 #include "OnnxConsts.h"
 #include "OnnxNodes.h"
@@ -27,13 +26,6 @@
 
 #include <xtensor/xarray.hpp>
 
-/*template<typename T>
-struct Tensor {
-	std::string name;
-	std::vector<int64_t> dims;
-	Eigen::Tensor<T, 1> data;
-
-};*/
 int64_t OnnxTensor::batchSize = 1; // Default batch size, can be changed by user input
 using namespace std;
 
@@ -158,20 +150,16 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	fstream file;
-	std::cout << std::fixed << std::setprecision(1);
-	std::cout.precision(1);
-	file.open("model.h", fstream::out | fstream::trunc);
+	file.open("model.h", fstream::out | fstream::trunc); // Open file for writing. Create a new file if file with this name does not exists or clear existing file
 	if (file.is_open() && file.good()) {
 		try
 		{
-			
 			onnx::ModelProto model;
-			onnx::LoadProtoFromPath("ModelMoreOps.onnx", model);  // Will be set by the user through the input args
-			onnx::shape_inference::InferShapes(model);
-			onnx::GraphProto graph = model.graph();
-			for (onnx::StringStringEntryProto str : graph.metadata_props()) {
-				cout << "Metadata: " << str.key() << " : " << str.value() << endl;
-			} 
+			onnx::LoadProtoFromPath(fileName, model);
+			onnx::shape_inference::DataValueMap aMap;
+			onnx::shape_inference::InferShapes(model, onnx::OpSchemaRegistry::Instance(), onnx::ShapeInferenceOptions().error_mode, &aMap);
+			onnx::shape_inference::SymbolTableImpl symbolTable;
+			symbolTable.addFromGraph(model.graph());
 			for (onnx::FunctionProto func : model.functions()) {
 				cout << "Function: " << func.name() << endl;
 				for (const auto& input : func.input())
