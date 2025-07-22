@@ -55,8 +55,8 @@ void OnnxGraph::PreProcess() {
 		constant.PreProcess();
 	for (auto& var : vars)
 		var.PreProcess();
-	for (auto& node : nodes) 
-		node.PreProcess();
+	for (auto* node : nodes) 
+		node->PreProcess();
 }
 
 std::string OnnxGraph::PrintGraph() {
@@ -78,12 +78,12 @@ std::string OnnxGraph::PrintGraph() {
 	for (const std::string str : consts.GetVarsAsStrings())
 		res += str + "\n";
 	res += "// Nodes:\n";
-	for (auto& node : nodes) {
+	for (auto* node : nodes) {
 		try {
-			res += node.GetNodeString() + "\n";
+			res += node->GetNodeString() + "\n";
 		}
 		catch (const std::exception& e) {
-			std::cerr << "Error generating" << node.GetName() << "operator: " << e.what() << std::endl;
+			std::cerr << "Error generating" << node->GetName() << "operator: " << e.what() << std::endl;
 			return 0;
 		}
 	}

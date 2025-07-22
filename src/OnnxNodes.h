@@ -7,6 +7,7 @@
 #include <memory>
 #include <functional>
 #include "OnnxVars.h"
+#include <typeinfo>
 
 class PredictedDim : public std::map<std::string, int>
 {
@@ -45,6 +46,31 @@ public:
 		return res;
 	}
 };
+//forward declaration of OnnxNode
+class OnnxNode;
+
+
+// Handler for Operators to map the Operator name to its specific Funktionality
+class OperatorHandler {
+public:
+	OperatorHandler() : node(nullptr) {} // Default constructor
+	OperatorHandler(const OnnxNode* node) : node(node) {};
+	virtual ~OperatorHandler() = default;
+	virtual bool OperatorSpecificNodeGeneration() const { return false; }
+	virtual bool OperatorSpecificVarGeneration() const { return false; }
+	virtual bool OperatorSpecificTensorTypes() const { return false; }
+	virtual bool OperatorSpecificPreProcess() const { return false; }
+	virtual bool OperatorNeedsInclude() const { return true; }
+	virtual std::string GetNodeHandlerString() const { return ""; }
+	virtual std::string GetVarInitialisation() { return ""; }
+	virtual void PreProcess() {}
+	virtual void SetTensorTypes() {}
+protected:
+	const OnnxNode* node;
+};
+
+
+// Onnx Node
 class OnnxNode
 {
 public:
@@ -86,6 +112,8 @@ public:
 		return nullptr; // Not found
 	}
 	void PreProcess();
+	OperatorHandler* Handler() const { return handler.get(); }
+	bool HasHandler() const { return  handler != nullptr; }
 private:
 	std::vector<std::string> inputNames;
 	std::vector<std::string> outputNames;
@@ -95,22 +123,29 @@ private:
 	std::vector<OnnxTensor*> inputs;
 	std::vector<OnnxTensor*> outputs;
 	static PredictedDim predictedDims;
+	std::unique_ptr<OperatorHandler> handler; // Operator handler for this node
 };
 
 class OnnxNodes
 {
 public:
 	// Vars
+	~OnnxNodes() {
+		for (auto* node : nodes) {
+			delete node; // Clean up dynamically allocated nodes
+		}
+		nodes.clear();
+	}
 	void Clear() { nodes.clear(); }
 	void InitWithGraph(onnx::GraphProto graph);	
 	int GetCount() const;
-	void Add(const OnnxNode var);
-	const OnnxNode& operator[](int i) const;
-	OnnxNode& operator[](int i);
-	std::vector<OnnxNode>::const_iterator begin() const;
-	std::vector<OnnxNode>::const_iterator end() const;
-	std::vector<OnnxNode>::iterator begin();
-	std::vector<OnnxNode>::iterator end();
+	void Add(const OnnxNode* var);
+	const OnnxNode* operator[](int i) const;
+	OnnxNode* operator[](int i);
+	std::vector<OnnxNode*>::const_iterator begin() const;
+	std::vector<OnnxNode*>::const_iterator end() const;
+	std::vector<OnnxNode*>::iterator begin();
+	std::vector<OnnxNode*>::iterator end();
 	 // Print predicted dimensions for all nodes
 	// names
 	std::vector<std::string> GetOpTypes() const;
@@ -119,28 +154,11 @@ public:
 	void RegisterVariables(OnnxVars& varsList);
 	
 private:
-	std::vector<OnnxNode> nodes;
+	std::vector<OnnxNode*> nodes;
 	static std::vector<std::string> opTypes;
 	 // Static variable to store predicted dimensions for all nodes
 };
 
-// HAndler for Operators to map the Operator name to its specific Funktionality
-class OperatorHandler {
-public:
-	OperatorHandler(const OnnxNode* node) : node(node) {};
-	virtual ~OperatorHandler() = default;
-	virtual bool OperatorSpecificNodeGeneration() const { return false; }
-	virtual bool OperatorSpecificVarGeneration() const { return false; }
-	virtual bool OperatorSpecificTensorTypes() const { return false; }
-	virtual bool OperatorSpecificPreProcess() const { return false; }
-	virtual bool OperatorNeedsInclude() const { return true; }
-	virtual std::string GetNodeHandlerString() const { return ""; }
-	virtual std::string GetVarInitialisation() { return ""; }
-	virtual void PreProcess() {}
-	virtual void SetTensorTypes() {}
- protected:
-	const OnnxNode* node;
-};
 
 class OperatorHandlerFactory {
 public:

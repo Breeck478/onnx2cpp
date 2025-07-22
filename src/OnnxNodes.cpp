@@ -75,6 +75,7 @@ OnnxNode::OnnxNode(onnx::NodeProto nodeProto)
 			}
 	this->name = remove_chars(nodeProto.name());
 	this->op_type = nodeProto.op_type();
+	this->handler = OperatorHandlerFactory::create(this);
 }
 
 std::string OnnxNode::GetName() const{
@@ -149,24 +150,22 @@ std::string OnnxNode::CreateFunctionCall() const {
 }
 
 bool OnnxNode::NeedsInclude() const {
-	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
-	return !handler || handler->OperatorNeedsInclude();
+	return !HasHandler() || Handler()->OperatorNeedsInclude();
 }
 
 std::string OnnxNode::GetNodeString() {
 	std::string res = "";
-	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
-	if (handler) {
-		if (handler->OperatorSpecificVarGeneration()) {
-			res += handler->GetVarInitialisation();
+	if (HasHandler()) {
+		if (Handler()->OperatorSpecificVarGeneration()) {
+			res += Handler()->GetVarInitialisation();
 		}
 		else {
 			//for (OnnxTensor* var : inputs) {				
 			//	res += var->GetVariableString() + "\n";
 			//}
 		}
-		if (handler->OperatorSpecificNodeGeneration()) {
-			res += handler->GetNodeHandlerString();
+		if (Handler()->OperatorSpecificNodeGeneration()) {
+			res += Handler()->GetNodeHandlerString();
 		}
 		else {
 			res += CreateFunctionCall();
@@ -185,9 +184,8 @@ std::string OnnxNode::GetNodeString() {
 
 std::string OnnxNode::GetVarInitialisation() {
 	std::string res = "";
-	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
-	if (handler && handler->OperatorSpecificVarGeneration()) {
-		res = handler->GetVarInitialisation();
+	if (HasHandler() && Handler()->OperatorSpecificVarGeneration()) {
+		res = Handler()->GetVarInitialisation();
 	}
 	else {
 		for (OnnxTensor* var : inputs) {
@@ -219,9 +217,8 @@ void OnnxNode::SetVarFromList(const OnnxVars& varsList) {
 }
 
 void OnnxNode::SetTensorTypes() {
-	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
-	if (handler && handler->OperatorSpecificTensorTypes()) {
-		handler->SetTensorTypes();
+	if (HasHandler() && Handler()->OperatorSpecificTensorTypes()) {
+		Handler()->SetTensorTypes();
 		return;
 	}
 	bool containsNonStaticInput = false;
@@ -239,9 +236,8 @@ void OnnxNode::SetTensorTypes() {
 }
 
 void OnnxNode::PreProcess() {
-	std::unique_ptr<OperatorHandler> handler = OperatorHandlerFactory::create(this);
-	if (handler && handler->OperatorSpecificPreProcess()) {
-		handler->PreProcess();
+	if (HasHandler() && Handler()->OperatorSpecificPreProcess()) {
+		Handler()->PreProcess();
 		return;
 	}
 }
@@ -284,13 +280,13 @@ void OnnxNode::PreProcess() {
 void OnnxNodes::InitWithGraph(onnx::GraphProto graph) {
 	Clear();
 	for (onnx::NodeProto nodeProto : graph.node()) {
-		Add(OnnxNode(nodeProto));
+		Add(new OnnxNode(nodeProto)); // New Node ptr gets added to the list. it will never be moved unless it gets destroyed
 	}
 }
-void OnnxNodes::Add(const OnnxNode var) {
-	nodes.push_back(var);
-	if (var.NeedsInclude()) {
-		std::string opType = var.GetOpType();
+void OnnxNodes::Add(const OnnxNode* var) {
+	nodes.push_back(const_cast<OnnxNode*>(var));
+	if (var->NeedsInclude()) {
+		std::string opType = var->GetOpType();
 		if ((opTypes.end() == std::find(opTypes.begin(), opTypes.end(), opType))) {
 			opTypes.push_back(opType);
 		}
@@ -299,23 +295,23 @@ void OnnxNodes::Add(const OnnxNode var) {
 int OnnxNodes::GetCount() const {
 	return nodes.size();
 }
-const OnnxNode& OnnxNodes::operator[](int i) const {
+const OnnxNode* OnnxNodes::operator[](int i) const {
 	return nodes[i];
 }
 
-OnnxNode& OnnxNodes::operator[](int i) {
+OnnxNode* OnnxNodes::operator[](int i) {
 	return nodes[i];
 }
-std::vector<OnnxNode>::const_iterator OnnxNodes::begin() const {
+std::vector<OnnxNode*>::const_iterator OnnxNodes::begin() const {
 	return nodes.begin();
 }
-std::vector<OnnxNode>::const_iterator OnnxNodes::end() const {
+std::vector<OnnxNode*>::const_iterator OnnxNodes::end() const {
 	return nodes.end();
 }
-std::vector<OnnxNode>::iterator OnnxNodes::begin() {
+std::vector<OnnxNode*>::iterator OnnxNodes::begin() {
 	return nodes.begin();
 }
-std::vector<OnnxNode>::iterator OnnxNodes::end() {
+std::vector<OnnxNode*>::iterator OnnxNodes::end() {
 	return nodes.end();
 }
 
@@ -332,8 +328,8 @@ int OnnxNodes::GetOpTypeCount() const {
 }
 
 void OnnxNodes::RegisterVariables(OnnxVars& varsList) {
-	for (OnnxNode& node : nodes) {
-		node.SetVarFromList(varsList);
+	for (OnnxNode* node : nodes) {
+		node->SetVarFromList(varsList);
 
 	}
 }
