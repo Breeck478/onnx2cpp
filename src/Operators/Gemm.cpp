@@ -24,9 +24,5 @@ std::string GetNodeHandlerString() const override {
 
 	return res;
 }
-
-
-
-//GemmHandler(OnnxNode node) : OperatorHandler(node) {}
 };
 REGISTER_OPERATOR_HANDLER(GemmHandler, "Gemm")

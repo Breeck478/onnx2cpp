@@ -52,93 +52,6 @@ std::string OnnxVar::GetShapeName() const {
 }
 
 
-
-//std::string OnnxVar::GetDataTypeString() const {
-//	std::string res = "";
-//	if (typeProto.has_tensor_type())
-//	{
-//		const onnx::TypeProto_Tensor tensorType = typeProto.tensor_type();
-//		//res = Utils::GetDataTypeString(tensorType.elem_type());
-//		res = "";// "std::vector<T> const& " + name;
-//		//const auto& dims = tensorType.shape().dim();
-//		//if (dims.size() > 0) {
-//			//if (is_initialized_in_model) {
-//			//	res += "typename xt::xarray<T>::shape_type " + GetShapeName() + " = {";
-//			//	for (size_t i = 0; i < dims.size(); ++i)
-//			//	{
-//			//		if (dims[i].has_dim_value())
-//			//		{
-//			//			res += std::to_string(dims[i].dim_value());
-//			//		}
-//			//		else if (dims[i].has_dim_param())
-//			//		{
-//			//			res += dims[i].dim_param();
-//			//		}
-//			//		else
-//			//		{
-//			//			res += "0"; // Default value for unknown dimensions
-//			//		}
-//			//		if (i < dims.size() - 1)
-//			//			res += ", ";
-//			//	}
-//			//	res += "}; \n";
-//			//}
-//
-//			res += "xt::xarray<";
-//			res += "T>";
-//			if (isOutput)
-//				res += "&";
-//			res += " " + Name();
-//			//if (is_initialized_in_model) {
-//			//	res += "(" + GetShapeName() + ", 0.0)"; // Initialize with zeros
-//			//}
-//			//for (const auto& dim : dims)
-//			//{
-//			//	if (dim.has_dim_value())
-//			//	{
-//			//		res += "[" + std::to_string(dim.dim_value()) + "]";
-//			//	}
-//			//	else if (dim.has_dim_param())
-//			//	{
-//			//		res += "[" + dim.dim_param() + "]";
-//			//	}
-//			//	else
-//			//	{
-//			//		res += "[]";
-//			//	}
-//			//}
-//		}
-//		else if (typeProto.has_sequence_type())
-//			res = "Sequence";
-//		else if (typeProto.has_map_type())
-//			res = "Map";
-//		else if (typeProto.has_optional_type())
-//			res = "Optional";
-//		else if (typeProto.has_sparse_tensor_type())
-//	{
-//		res = "Sparse Tensor";
-//		const auto& dims = typeProto.tensor_type().shape().dim();
-//		for (const auto& dim : dims)
-//		{
-//			if (dim.has_dim_value())
-//			{
-//				res += "[" + std::to_string(dim.dim_value()) + "]";
-//			}
-//			else if (dim.has_dim_param())
-//			{
-//				res += "[" + dim.dim_param() + "]";
-//			}
-//			else
-//			{
-//				res += "[]";
-//			}
-//		}
-//	}
-//	
-//
-//	return res;
-//}
-
 std::string OnnxVar::GetVariableString() {
 	std::string res = "";
 	res += "xt::xarray<" + GetDataTypeAsString() + "> ";
@@ -157,10 +70,10 @@ void OnnxVar::PreProcess() {
 
 
 // Vars
-void OnnxVars::AddFromList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInput, bool isOutput, bool isInitialising){
+void OnnxVars::AddFromList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInput, bool isOutput){
 	
 	for (onnx::ValueInfoProto valueInfo : list) {
-		Add(OnnxVar(valueInfo, isInput, isOutput, isInitialising));
+		Add(OnnxVar(valueInfo, isInput, isOutput));
 	}
 
 }
