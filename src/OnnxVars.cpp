@@ -7,7 +7,7 @@
 // std::vector<std::string> OnnxVars::names;
 
 
-OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput, bool isOutput, bool isInitialising) : isInput(isInput), isOutput(isOutput), is_initialized_in_model(isInitialising){
+OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput, bool isOutput) : isInput(isInput), isOutput(isOutput){
 	this->name = valueInfo.name();
 	auto typeProto = valueInfo.type();
 	if (typeProto.has_tensor_type()) {
@@ -182,11 +182,11 @@ int OnnxVars::GetCount() const {
 const OnnxVar& OnnxVars::operator[](int i) const {
 	return vars[i];
 }
-std::vector<std::string> OnnxVars::GetVarsAsStrings() {
+std::vector<std::string> OnnxVars::GetVarsAsStrings() const {
 	std::vector<std::string> res;
 	for (OnnxVar var : vars)
 	{	
-		if (var.IsIO()) {
+		if (var.IsIO() || !var.NeedsInit()) {
 			// Skip input and output variables, they are not initialized in the model
 			continue;
 		}
@@ -202,12 +202,11 @@ std::vector<std::string> OnnxVars::GetVarsAsStrings() {
 	return res;
 }
 
-std::vector<std::string> OnnxVars::GetIOsAsStrings() {
+std::vector<std::string> OnnxVars::GetIOsAsStrings() const {
 	std::vector<std::string> res;
 	for (OnnxVar var : vars)
 	{
-		if (!var.IsIO()) {
-			// Skip non IO variables, they are initialized later in the model
+		if (!var.IsIO() || !var.NeedsInit()) {
 			continue;
 		}
 		std::string varString = var.GetVariableString();

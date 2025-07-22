@@ -50,7 +50,7 @@ public:
 	void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::TensorProto>& list);
 	int GetCount() const;
 	void Add(const OnnxConst var);
-	std::vector<std::string> GetVarsAsStrings();
+	std::vector<std::string> GetVarsAsStrings() const;
 	const OnnxConst& operator[](int i) const;
 	OnnxConst& operator[](int i);
 	std::deque<OnnxConst>::const_iterator begin() const;

@@ -10,8 +10,9 @@
 PredictedDim OnnxNode::predictedDims;
 std::vector<std::string> OnnxNodes::opTypes;
 
-OnnxNode::OnnxNode(onnx::NodeProto nodeProto)
+OnnxNode::OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr)
 {
+	this->graph = graphPtr;
 	for (std::string val : nodeProto.input())
 	{
 		this->inputNames.push_back(remove_chars(val));
@@ -277,10 +278,10 @@ void OnnxNode::PreProcess() {
 
 
 // Vars
-void OnnxNodes::InitWithGraph(onnx::GraphProto graph) {
+void OnnxNodes::InitWithGraph(onnx::GraphProto graph, OnnxGraph* graphPtr) {
 	Clear();
 	for (onnx::NodeProto nodeProto : graph.node()) {
-		Add(new OnnxNode(nodeProto)); // New Node ptr gets added to the list. it will never be moved unless it gets destroyed
+		Add(new OnnxNode(nodeProto, graphPtr)); // New Node ptr gets added to the list. it will never be moved unless it gets destroyed
 	}
 }
 void OnnxNodes::Add(const OnnxNode* var) {

@@ -48,7 +48,8 @@ public:
 };
 //forward declaration of OnnxNode
 class OnnxNode;
-
+// Forward declaration of OnnxGraph;
+class OnnxGraph;
 
 // Handler for Operators to map the Operator name to its specific Funktionality
 class OperatorHandler {
@@ -74,7 +75,7 @@ protected:
 class OnnxNode
 {
 public:
-	OnnxNode(onnx::NodeProto nodeProto);
+	OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr);
 	std::string GetName() const;
 	std::string GetOpType() const { return op_type; }
 	std::string GetNodeString();
@@ -114,6 +115,7 @@ public:
 	void PreProcess();
 	OperatorHandler* Handler() const { return handler.get(); }
 	bool HasHandler() const { return  handler != nullptr; }
+	OnnxGraph* GetGraph() const { return graph; }
 private:
 	std::vector<std::string> inputNames;
 	std::vector<std::string> outputNames;
@@ -124,6 +126,7 @@ private:
 	std::vector<OnnxTensor*> outputs;
 	static PredictedDim predictedDims;
 	std::unique_ptr<OperatorHandler> handler; // Operator handler for this node
+	OnnxGraph* graph = nullptr; // Pointer to the graph this node belongs to, if any
 };
 
 class OnnxNodes
@@ -137,7 +140,7 @@ public:
 		nodes.clear();
 	}
 	void Clear() { nodes.clear(); }
-	void InitWithGraph(onnx::GraphProto graph);	
+	void InitWithGraph(onnx::GraphProto graph, OnnxGraph* graphPtr);
 	int GetCount() const;
 	void Add(const OnnxNode* var);
 	const OnnxNode* operator[](int i) const;

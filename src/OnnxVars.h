@@ -11,7 +11,7 @@
 class OnnxVar : public OnnxTensor
 {
 public:
-	OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput = false, bool isOutput = false, bool isInitialising = false);
+	OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput = false, bool isOutput = false);
 	using OnnxTensor::Shape;
 	void Shape(onnx::TensorShapeProto shapeProto);
 	std::string GetShapeName() const;
@@ -24,10 +24,12 @@ public:
 	bool IsInput() const { return isInput; }
 	bool IsOutput() const { return isOutput; }
 	void PreProcess();
+	bool NeedsInit() const { return needsInit; }
+	void NeedsInit(bool needsInit) { this->needsInit = needsInit; }
 private:
 	bool isInput = false;
 	bool isOutput = false;
-	bool is_initialized_in_model = false; // true if this variable is initialised in the model
+	bool needsInit = true; 
 	bool containsUnknowDim = false; // If false, the variable is initialized by an operator
 };
 
@@ -36,11 +38,11 @@ class OnnxVars
 public:
 	// Vars
 	void Clear() { vars.clear(); }
-	void AddFromList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInput = false, bool isOutput = false, bool isInitialising = false);
+	void AddFromList(const ::google::protobuf::RepeatedPtrField<onnx::ValueInfoProto>& list, bool isInput = false, bool isOutput = false);
 	int GetCount() const;
 	void Add(const OnnxVar var);
-	std::vector<std::string> GetVarsAsStrings();
-	std::vector<std::string> GetIOsAsStrings();
+	std::vector<std::string> GetVarsAsStrings() const;
+	std::vector<std::string> GetIOsAsStrings() const;
 	const OnnxVar& operator[](int i) const;
 	OnnxVar& operator[](int i);
 	std::deque<OnnxVar>::const_iterator begin() const;

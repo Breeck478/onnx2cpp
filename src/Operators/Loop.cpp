@@ -49,16 +49,17 @@ public:
 		node->GetOutputs()[0]->HasStaticType(true); // output 0 is the condition and is always bool
 	}
 	void PreProcess() override {
-		// This operator does not need specific preprocessing
-		// but we can add any specific logic if needed in the future
-		try {
-			onnx::GraphProto graphProto = std::any_cast<onnx::GraphProto>(node->GetAttribute("body"));
-			this->graph = OnnxGraph(graphProto, false);
+		try {		
+			// create map without aaded vars for later use
+			std::map<OnnxVar*, OnnxVar*> inToOut; // input var to output var 
+			for (int i = 1; i < Graph().GetInputs().size(); i++) {
+				inToOut[Graph().GetInputs()[i]] = Graph().GetOutputs()[i - 1];
+			}
+			// Add Vars from the main(outer) graph to the Loop Graph
+			Graph().AddExternVars(node->GetGraph()->GetVars());
+			// Mark the inputs and outputs of the Loop Graph as static or non-static 
 			std::vector<std::string> inputNames = Graph().GetInputNames();
 			std::vector<std::string> outputNames = Graph().GetOutputNames();
-			//outputNames.erase(outputNames.begin()); // always erase first output arg because it is the output condition which is alway a bool
-			//inputNames.erase(inputNames.begin());
-			//inputNames.erase(inputNames.begin() + 1);
 			for (int i = inputNames.size() - 1; i >= 0; i--) {
 				if ((i < (node->GetInputs().size())) && !(node->GetInputs()[i]->HasStaticType())) {
 					inputNames.erase(inputNames.begin() + i);
@@ -72,7 +73,17 @@ public:
 					i--;
 				}
 			}
+			// Set static ins and outs
 			this->graph.SetStaticIOs(inputNames, outputNames);
+
+			// Now check map, wether in and out types do match. If one of them is non static the other one has to be static as well
+			// Could check here if the static types would be correct
+			for (auto [in, out] : inToOut) {
+				if (!in->HasStaticType() || !out->HasStaticType()) {
+					out->HasStaticType(false); 
+					in->HasStaticType(false); 
+				}
+			}
 			
 		}
 		catch (const std::bad_any_cast& e) {
@@ -86,48 +97,33 @@ public:
 		try {
 			if (node->GetInputs().size() >= 2 && node->GetOutputs().size() >= 1 && node->GetAttributes().size() == 1) {
 				
-				
-				std::vector<std::string> inputNames = Graph().GetInputNames();
-				std::vector<std::string> outputNames = Graph().GetOutputNames();
-				for (int i = inputNames.size() - 1; i >= 0; i--) {
-					if ((i < (node->GetInputs().size())) && !(node->GetInputs()[i]->HasStaticType())) {
-						inputNames.erase(inputNames.begin() + i);
-						i--;
-					}
+				std::vector<std::string> inputNames;
+				std::vector<std::string> outputNames;
+				for (int i = 0; i < node->GetInputNames().size(); i++) {
+					inputNames.push_back(node->GetInputNames()[i] + "_In");
+					if (i == 0)
+						continue;
+					outputNames.push_back(node->GetInputNames()[i] + "_Out");
 				}
-				// Ignore first Output value because it is the condition, which is not an output of the node but from the graph itself to set it for the next iterration
-				for (int i = outputNames.size() - 1; i > 0; i--) {
-					if (((i - 1) < (node->GetOutputs().size())) && !(node->GetOutputs()[i - 1]->HasStaticType())) {
-						outputNames.erase(outputNames.begin() + i);
-						i--;
-					}
+				res += Graph().PrintGraph();
+				for (int i = 1; i < inputNames.size(); i++) {
+					res += "xt::xarray<" + Graph().GetInputs()[i]->GetDataTypeAsString() + "> " + inputNames[i] + " = " + node->GetInputNames()[i] + ";\n";
 				}
-				OnnxGraph graph = Graph();
-				graph.SetStaticIOs(inputNames, outputNames);
-				res += "// Node vars in;\n";
-				for (auto name : node->GetInputNames())
-					res += "// " + name + ";\n";
-				res += "\n// Node vars out;\n";
-				for (auto name : node->GetOutputNames())
-					res += "// " + name + ";\n";
-				res += "\n// Graph vars in;\n";
-				for (auto name : inputNames)
-					res += "// " + name + ";\n";
-				res += "\n// Graph vars out;\n";
-				for (auto name : outputNames)
-					res += "// " + name + ";\n";
-				std::string condOutputName = node->GetInputNames()[1]+"Output";
-				res += graph.PrintGraph();
-				res += "xt::xarray<" + node->GetInputs()[1]->GetDataTypeAsString() + "> " + condOutputName + " = " + node->GetInputNames()[1] + ";\n";
+				for (int i = 0; i < outputNames.size(); i++) {
+					res += "xt::xarray<" + Graph().GetInputs()[i+1]->GetDataTypeAsString() + "> " + outputNames[i] + ";\n";
+				}
 				res += "// Loop Graph:\n";
-				res += "for (int loopCounter = 0; loopCounter < " + node->GetInputNames()[0] + "[0] && " + node->GetInputNames()[1] + "[0]; ++loopCounter) {\n";
+				res += "for (int " + inputNames[0] + " = 0; "+inputNames[0]+" < " + node->GetInputNames()[0] + "[0] && " + inputNames[1] + "[0]; ++" + inputNames[0] + ") {\n";
 				res += "\t// Loop body for " + node->GetName() + "\n";
-				res += graph.Name() + "(" + join(node->GetInputNames(), ", ") + ", " + condOutputName + ", " + join(node->GetOutputNames(), ", ") + "); // " + node->GetName() + "\n";
-				res += node->GetInputNames()[1] + " = " + condOutputName + ";\n";
-				for (int i = 2; i < node->GetInputs().size() && i - 2 < node->GetOutputs().size(); i++) {
-					res += node->GetInputNames()[i] + " = " + node->GetOutputNames()[i - 2] + ";\n";
+				res += Graph().Name() + "(" + join(inputNames, ", ") + ", " + join(outputNames, ", ") + "); // " + node->GetName() + "\n";
+				for (int i = 0; i+1 < inputNames.size() && i < outputNames.size(); i++) {
+					res += inputNames[i+1] + " = " + outputNames[i] + ";\n";
 				}
 				res += "}\n";
+				for (int i = 0; i < node->GetOutputNames().size() && i + 1 < outputNames.size(); i++) {
+					res += node->GetOutputNames()[i] + " = " + outputNames[i + 1] + ";\n";
+				}
+
 			}
 			else {
 				std::cerr << "Constant operator must have exactly one output and no inputs." << std::endl;
@@ -143,7 +139,11 @@ public:
 	}
 
 
-	OnnxGraph Graph() const {
+	const OnnxGraph& Graph() const {
+		return graph;
+	}
+	
+	OnnxGraph& Graph() {
 		return graph;
 	}
 private:

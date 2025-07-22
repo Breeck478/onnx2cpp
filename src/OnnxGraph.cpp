@@ -9,7 +9,7 @@ OnnxGraph::OnnxGraph(onnx::GraphProto& graph, bool isInitial, std::vector<std::s
 	vars.AddFromList(graph.output(), false, true);
 	vars.AddFromList(graph.value_info());
 	consts.InitWithList(graph.initializer());
-	nodes.InitWithGraph(graph);
+	nodes.InitWithGraph(graph, this);
 	if (isInitialGraph) {
 		// If this is the initial graph, we need to register IOs
 		// This is done to set the static or non-static type of the IOs
@@ -59,7 +59,15 @@ void OnnxGraph::PreProcess() {
 		node->PreProcess();
 }
 
-std::string OnnxGraph::PrintGraph() {
+void OnnxGraph::AddExternVars(const OnnxVars& vars) {
+	// Add Vars from another source. E.g. for Loop-Operator from outside Graph
+	for (OnnxVar var : vars) {
+		var.NeedsInit(false); // Do not need to initialize these vars, they are already initialized in the graph
+		this->vars.Add(var);
+	}
+}
+
+std::string OnnxGraph::PrintGraph() const {
 	std::string res = "// Graph:\n";
 	if (isInitialGraph) {
 		if (doUseTemplate) {
@@ -70,7 +78,7 @@ std::string OnnxGraph::PrintGraph() {
 	else {
 		res += "auto " + Name() + " = [&](" + join(vars.GetIOsAsStrings(), ", ") + "){\n";
 	}
-	res += PrintSpecificGraph(GraphPosition::Begin);
+	//res += PrintSpecificGraph(GraphPosition::Begin);
 	res += "// Vars:\n";
 	for (const std::string str : vars.GetVarsAsStrings())
 		res += str + "\n";
@@ -87,7 +95,7 @@ std::string OnnxGraph::PrintGraph() {
 			return 0;
 		}
 	}
-	res += PrintSpecificGraph(GraphPosition::End);
+	//res += PrintSpecificGraph(GraphPosition::End);
 	if (isInitialGraph) {
 		res += "}\n";
 	}
@@ -106,7 +114,7 @@ std::string OnnxGraph::GetIncludes() {
 }
 
 
-std::vector<std::string> OnnxGraph::GetInputNames() {
+std::vector<std::string> OnnxGraph::GetInputNames() const {
 	auto& inputs = vars.GetInputVars();
 	std::vector<std::string> inputNames;
 	for (auto& input : inputs) {
@@ -115,7 +123,7 @@ std::vector<std::string> OnnxGraph::GetInputNames() {
 	return inputNames;
 }
 
-std::vector<std::string> OnnxGraph::GetOutputNames() {
+std::vector<std::string> OnnxGraph::GetOutputNames() const {
 	auto& outputs = vars.GetOutputVars();
 	std::vector<std::string> outputNames;
 	for (auto& output : outputs) {
