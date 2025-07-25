@@ -6,6 +6,8 @@
 #include "OnnxConsts.h"
 #include "OnnxNodes.h"
 
+#include <sstream>
+
 #include <vector>
 enum GraphPosition {
 	Begin,
@@ -21,9 +23,9 @@ public:
 	std::vector<std::string> GetOutputNames() const;
 	std::vector<OnnxVar*> GetInputs() const { return vars.GetInputVars(); }
 	std::vector<OnnxVar*> GetOutputs() const { return vars.GetOutputVars(); }
-	std::string PrintGraph() const;
+	void PrintGraph(std::ostringstream & stream) const;
 	virtual std::string PrintSpecificGraph(const GraphPosition position);
-	std::string GetIncludes();
+	void GetIncludes(std::ostringstream & stream);
 	std::string Name() const { return name; }
 	void SetStaticIOs(std::vector <std::string> &inputs, std::vector<std::string> &outputs);
 	void PreProcess();

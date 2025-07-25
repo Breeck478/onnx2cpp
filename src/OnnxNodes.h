@@ -9,6 +9,8 @@
 #include "OnnxVars.h"
 #include <typeinfo>
 
+#include <sstream>
+
 class PredictedDim : public std::map<std::string, int>
 {
 public:
@@ -62,8 +64,8 @@ public:
 	virtual bool OperatorSpecificTensorTypes() const { return false; }
 	virtual bool OperatorSpecificPreProcess() const { return false; }
 	virtual bool OperatorNeedsInclude() const { return true; }
-	virtual std::string GetNodeHandlerString() const { return ""; }
-	virtual std::string GetVarInitialisation() { return ""; }
+	virtual void GetNodeHandlerString(std::ostringstream & stream) const {}
+	virtual void GetVarInitialisation(std::ostringstream & stream) {}
 	virtual void PreProcess() {}
 	virtual void SetTensorTypes() {}
 protected:
@@ -78,8 +80,8 @@ public:
 	OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr);
 	std::string GetName() const;
 	std::string GetOpType() const { return op_type; }
-	std::string GetNodeString();
-	std::string GetVarInitialisation();
+	void GetNodeString(std::ostringstream & stream);
+	void GetVarInitialisation(std::ostringstream & stream);
 	std::string GetParamsString()const;
 	std::vector<std::string> GetInputNames() const { return inputNames; }
 	std::vector<std::string> GetOutputNames() const { return outputNames; }
@@ -94,7 +96,7 @@ public:
 		return attributes.end();
 	}
 	void SetVarFromList(const OnnxVars& var);
-	std::string CreateFunctionCall() const;
+	void CreateFunctionCall(std::ostringstream & stream) const;
 	//void PredictDims(const OnnxVars& varsList);
 	//static std::string PrintPredictedDims();#
 	void SetTensorTypes();

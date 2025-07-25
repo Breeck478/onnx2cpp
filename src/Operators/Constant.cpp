@@ -15,9 +15,8 @@ public:
 	bool OperatorNeedsInclude() const override {
 		return false; // This operator does not need an include
 	}
-	std::string GetNodeHandlerString() const override {
+	void GetNodeHandlerString(std::ostringstream & stream) const override {
 
-		std::string res = "";
 		try {
 			if (node->GetOutputNames().size() > 0 && node->GetInputNames().size() == 0) {
 				for (auto att : node->GetAttributes())
@@ -26,11 +25,11 @@ public:
 						auto value = std::any_cast<onnx::TensorProto>(att.second);
 						OnnxConst constant(value);
 						constant.Name(node->GetOutputNames()[0]);
-						res += constant.GetConstantString(false);
+						stream << constant.GetConstantString(false);
 					}
 					else if (att.first.rfind("value_", 0) == 0) {
 						std::cout << att.first << std::endl;
-						res += att.first + " = ";
+						stream << att.first + " = ";
 					}
 					else {
 						std::cerr << "Unknown attribute in Constant operator: " << att.first << std::endl;
@@ -39,19 +38,12 @@ public:
 			}
 			else {
 				std::cerr << "Constant operator must have exactly one output and no inputs." << std::endl;
-				return "";
 			}
 
 		}
 		catch (const std::exception& e) {
 			std::cerr << "Error generating Constant operator: " << e.what() << std::endl;
-			return "";
 		}
-		return res;
 	}
-
-
-
-	//GemmHandler(OnnxNode node) : OperatorHandler(node) {}
 };
 REGISTER_OPERATOR_HANDLER(ConstantHandler, "Constant")

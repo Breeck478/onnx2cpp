@@ -67,50 +67,46 @@ void OnnxGraph::AddExternVars(const OnnxVars& vars) {
 	}
 }
 
-std::string OnnxGraph::PrintGraph() const {
-	std::string res = "// Graph:\n";
+void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
+	stream << "// Graph:\n";
 	if (isInitialGraph) {
 		if (doUseTemplate) {
-			res += "template <typename T>\n";
+			stream << "template <typename T>\n";
 		}
-		res += "void " + Name() + "(" + join(vars.GetIOsAsStrings(), ", ") + "){\n";
+		stream << "void " + Name() + "(" + join(vars.GetIOsAsStrings(), ", ") + "){\n";
 	}
 	else {
-		res += "auto " + Name() + " = [&](" + join(vars.GetIOsAsStrings(), ", ") + "){\n";
+		stream << "auto " + Name() + " = [&](" + join(vars.GetIOsAsStrings(), ", ") + "){\n";
 	}
 	//res += PrintSpecificGraph(GraphPosition::Begin);
-	res += "// Vars:\n";
+	stream << "// Vars:\n";
 	for (const std::string str : vars.GetVarsAsStrings())
-		res += str + "\n";
-	res += "// Consts:\n";
+		stream << str + "\n";
+	stream << "// Consts:\n";
 	for (const std::string str : consts.GetVarsAsStrings())
-		res += str + "\n";
-	res += "// Nodes:\n";
+		stream << str + "\n";
+	stream << "// Nodes:\n";
 	for (auto* node : nodes) {
 		try {
-			res += node->GetNodeString() + "\n";
+			node->GetNodeString(stream);
 		}
 		catch (const std::exception& e) {
 			std::cerr << "Error generating" << node->GetName() << "operator: " << e.what() << std::endl;
-			return 0;
 		}
 	}
 	//res += PrintSpecificGraph(GraphPosition::End);
 	if (isInitialGraph) {
-		res += "}\n";
+		stream << "}\n";
 	}
 	else {
-		res += "}; // " + Name() + "\n";
+		stream << "}; // " + Name() + "\n";
 	}
-	return res;
 }
 
-std::string OnnxGraph::GetIncludes() {
-	std::string res = "";
+void OnnxGraph::GetIncludes(std::ostringstream & stream) {
 	for (const std::string& type : nodes.GetOpTypes()) {
-		res += "#include <Operators/" + type + ".h>\n";
+		stream << "#include <Operators/" + type + ".h>\n";
 	}
-	return res;
 }
 
 

@@ -10,7 +10,7 @@ public:
 		return true; // This operator has specific generation logic
 	}
 	void SetTensorTypes() override {
-		// Do nothing. outputtypes are always boll independent on what the input type is
+		// Do nothing. outputtypes are always bool. Independent on what the input type is
 	}
 
 

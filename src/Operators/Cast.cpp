@@ -13,23 +13,19 @@ public:
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-	std::string GetNodeHandlerString() const override {
+	void GetNodeHandlerString(std::ostringstream & stream) const override {
 
-		std::string res = "";
 		try {
 			int64_t to = std::any_cast<int64_t>(node->GetAttribute("to"));
-			res += "DCO_ENABLE_EXPLICIT_TYPE_CAST_TO(" + GetDataTypeString(to) + ")\n";
-			res += node->CreateFunctionCall();
+			std::ostringstream tmpStore;
+			tmpStore.swap(stream);
+			stream << "DCO_ENABLE_EXPLICIT_TYPE_CAST_TO(" + GetDataTypeString(to) + ")\n";
+			stream << tmpStore.str();
+			node->CreateFunctionCall(stream);
 		}
 		catch (const std::exception& e) {
 			std::cerr << "Error generating Cast operator: " << e.what() << std::endl;
-			return "";
 		}
-		return res;
 	}
-
-
-
-	//GemmHandler(OnnxNode node) : OperatorHandler(node) {}
 };
 REGISTER_OPERATOR_HANDLER(CastHandler, "Cast")

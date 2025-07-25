@@ -120,7 +120,7 @@ std::string OnnxNode::GetParamsString() const {
 				res += "]";
 			}*/
 			else if (value.type() == typeid(onnx::GraphProto)) {
-				res += "." + key + OnnxGraph(std::any_cast<onnx::GraphProto>(value)).PrintGraph();
+				res += "." + key + "= Graph";//  OnnxGraph(std::any_cast<onnx::GraphProto>(value)).PrintGraph();
 			}
 			else if (value.type() == typeid(onnx::TypeProto)) {
 				res += "." + key + "= TypeProto"; // Platzhalter für TypeProto-Darstellung
@@ -137,28 +137,26 @@ std::string OnnxNode::GetParamsString() const {
 	}
 	return res;
 }
-std::string OnnxNode::CreateFunctionCall() const {
-	std::string res = op_type + "(";
-	res += join(inputNames, ", ");
+void OnnxNode::CreateFunctionCall(std::ostringstream & stream) const {
+	stream << op_type + "(";
+	stream << join(inputNames, ", ");
 	if (inputNames.size() > 0 && outputNames.size() > 0)
-		res += ", ";
-	res += join(outputNames, ", ");
+		stream << ", ";
+	stream << join(outputNames, ", ");
 	if (attributes.size() > 0) {
-		res += ", " + GetParamsString();
+		stream << ", " + GetParamsString();
 	}
-	res += "); // " + name;
-	return res;
+	stream << "); // " + name;
 }
 
 bool OnnxNode::NeedsInclude() const {
 	return !HasHandler() || Handler()->OperatorNeedsInclude();
 }
 
-std::string OnnxNode::GetNodeString() {
-	std::string res = "";
+void OnnxNode::GetNodeString(std::ostringstream & stream) {
 	if (HasHandler()) {
 		if (Handler()->OperatorSpecificVarGeneration()) {
-			res += Handler()->GetVarInitialisation();
+			Handler()->GetVarInitialisation(stream);
 		}
 		else {
 			//for (OnnxTensor* var : inputs) {				
@@ -166,10 +164,10 @@ std::string OnnxNode::GetNodeString() {
 			//}
 		}
 		if (Handler()->OperatorSpecificNodeGeneration()) {
-			res += Handler()->GetNodeHandlerString();
+			Handler()->GetNodeHandlerString(stream);
 		}
 		else {
-			res += CreateFunctionCall();
+			CreateFunctionCall(stream);
 		}
 	}
 	else {
@@ -178,23 +176,20 @@ std::string OnnxNode::GetNodeString() {
 		//		res += var->GetVariableString() + "\n";
 			//}
 		//}
-		res += CreateFunctionCall();
+		 CreateFunctionCall(stream);
 	}
-	return res;
+	stream << "\n"; // Add a newline after the function call
 }
 
-std::string OnnxNode::GetVarInitialisation() {
-	std::string res = "";
+void OnnxNode::GetVarInitialisation(std::ostringstream & stream) {
 	if (HasHandler() && Handler()->OperatorSpecificVarGeneration()) {
-		res = Handler()->GetVarInitialisation();
+		 Handler()->GetVarInitialisation(stream);
 	}
 	else {
 		for (OnnxTensor* var : inputs) {
-			res += var->GetVariableString() + "\n";
+			stream << var->GetVariableString() + "\n";
 		}
 	}
-
-	return res;
 }
 
 void OnnxNode::SetVarFromList(const OnnxVars& varsList) {

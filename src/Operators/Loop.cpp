@@ -91,9 +91,8 @@ public:
 			throw; // Re-throw the exception to handle it in the main processing flow
 		}
 	}
-	std::string GetNodeHandlerString() const override {
+	void GetNodeHandlerString(std::ostringstream & stream) const override {
 
-		std::string res = "";
 		try {
 			if (node->GetInputs().size() >= 2 && node->GetOutputs().size() >= 1 && node->GetAttributes().size() == 1) {
 				
@@ -105,37 +104,34 @@ public:
 						continue;
 					outputNames.push_back(node->GetInputNames()[i] + "_Out");
 				}
-				res += Graph().PrintGraph();
+				Graph().PrintGraph(stream);
 				for (int i = 1; i < inputNames.size(); i++) {
-					res += "xt::xarray<" + Graph().GetInputs()[i]->GetDataTypeAsString() + "> " + inputNames[i] + " = " + node->GetInputNames()[i] + ";\n";
+					stream << "xt::xarray<" + Graph().GetInputs()[i]->GetDataTypeAsString() + "> " + inputNames[i] + " = " + node->GetInputNames()[i] + ";\n";
 				}
 				for (int i = 0; i < outputNames.size(); i++) {
-					res += "xt::xarray<" + Graph().GetInputs()[i+1]->GetDataTypeAsString() + "> " + outputNames[i] + ";\n";
+					stream << "xt::xarray<" + Graph().GetInputs()[i+1]->GetDataTypeAsString() + "> " + outputNames[i] + ";\n";
 				}
-				res += "// Loop Graph:\n";
-				res += "for (int " + inputNames[0] + " = 0; "+inputNames[0]+" < " + node->GetInputNames()[0] + "[0] && " + inputNames[1] + "[0]; ++" + inputNames[0] + ") {\n";
-				res += "\t// Loop body for " + node->GetName() + "\n";
-				res += Graph().Name() + "(" + join(inputNames, ", ") + ", " + join(outputNames, ", ") + "); // " + node->GetName() + "\n";
+				stream << "// Loop Graph:\n";
+				stream << "for (int " + inputNames[0] + " = 0; "+inputNames[0]+" < " + node->GetInputNames()[0] + "[0] && " + inputNames[1] + "[0]; ++" + inputNames[0] + ") {\n";
+				stream << "\t// Loop body for " + node->GetName() + "\n";
+				stream << Graph().Name() + "(" + join(inputNames, ", ") + ", " + join(outputNames, ", ") + "); // " + node->GetName() + "\n";
 				for (int i = 0; i+1 < inputNames.size() && i < outputNames.size(); i++) {
-					res += inputNames[i+1] + " = " + outputNames[i] + ";\n";
+					stream << inputNames[i+1] + " = " + outputNames[i] + ";\n";
 				}
-				res += "}\n";
+				stream << "}\n";
 				for (int i = 0; i < node->GetOutputNames().size() && i + 1 < outputNames.size(); i++) {
-					res += node->GetOutputNames()[i] + " = " + outputNames[i + 1] + ";\n";
+					stream << node->GetOutputNames()[i] + " = " + outputNames[i + 1] + ";\n";
 				}
 
 			}
 			else {
-				std::cerr << "Constant operator must have exactly one output and no inputs." << std::endl;
-				return "";
+				std::cerr << "Loop operator must have at least two inputs, one output and exactly one Graph attribute" << std::endl;
 			}
 
 		}
 		catch (const std::exception& e) {
-			std::cerr << "Error generating Constant operator: " << e.what() << std::endl;
-			return "";
+			std::cerr << "Error generating Loop operator: " << e.what() << std::endl;
 		}
-		return res;
 	}
 
 

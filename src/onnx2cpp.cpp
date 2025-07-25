@@ -15,7 +15,7 @@
 #include <vector>
 #include <string>
 
-#include <fstream>
+#include <sstream>
 #include "OnnxGraph.h"
 #include "OnnxConsts.h"
 #include "OnnxNodes.h"
@@ -150,7 +150,7 @@ int main(int argc, char *argv[]) {
 		}
 	}
 	fstream file;
-	file.open("model.h", fstream::out | fstream::trunc); // Open file for writing. Create a new file if file with this name does not exists or clear existing file
+	file.open("model.h", ostringstream ::out | ostringstream ::trunc); // Open file for writing. Create a new file if file with this name does not exists or clear existing file
 	if (file.is_open() && file.good()) {
 		try
 		{
@@ -177,11 +177,13 @@ int main(int argc, char *argv[]) {
 			onnx::GraphProto graphProto = model.graph();
 			OnnxGraph graph(graphProto, true, staticInputs, staticOutputs, true);
 			graph.PreProcess();
-			file << "// Includes" << endl << endl;
-			file << "#include <xtensor/xarray.hpp>" << endl;
-			file << "#include <tuple>" << endl;
-			file << graph.GetIncludes() << endl;
-			file << graph.PrintGraph() << endl;
+			ostringstream oss;
+			oss << "// Includes" << endl << endl;
+			oss << "#include <xtensor/xarray.hpp>" << endl;
+			oss << "#include <tuple>" << endl;
+			graph.GetIncludes(oss);
+			graph.PrintGraph(oss);
+			file << oss.str();
 			//file << "std::size_t batch_size = " + batchSize + ";" << endl;   // Will be set by the user through the input args
 			// file << OnnxNode::PrintPredictedDims() << endl;
 			//file << join(OnnxVars::GetVarsAsStrings(vars.GetOutput()), ", ");
