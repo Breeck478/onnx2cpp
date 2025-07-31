@@ -2,9 +2,9 @@
 
 #include <onnx/onnx_pb.h>
 #include "OnnxTensor.h"
-#include "OnnxVars.h"
-#include "OnnxConsts.h"
-#include "OnnxNodes.h"
+#include "OnnxVar.h"
+#include "OnnxConst.h"
+#include "OnnxNode.h"
 
 #include <sstream>
 

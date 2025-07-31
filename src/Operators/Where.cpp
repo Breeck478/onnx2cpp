@@ -1,5 +1,5 @@
-#include "OnnxNodes.h"
-#include "OnnxConsts.h"
+#include "OnnxNode.h"
+#include "OnnxConst.h"
 #include "Utils.h"
 
 #include <string>

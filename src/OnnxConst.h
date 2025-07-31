@@ -35,6 +35,8 @@ public:
 		std::vector<uint32_t>,
 		std::vector<uint64_t>
 	>;
+	std::string PrintShape();
+	std::string PrintReshape();
 	TensorData GetData() const;
 	void FillData(const onnx::TensorProto& tensorProto);
 	void PreProcess();

@@ -1,5 +1,5 @@
 #pragma once
-#include "OnnxConsts.h"
+#include "OnnxConst.h"
 #include "Utils.h"
 #include <algorithm>
 #include <iostream>
@@ -98,12 +98,11 @@ std::string OnnxConst::GenerateNestedInitializerFromAny() const {
 	oss << "}";
 	return oss.str();
 }
-
-std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
+std::string OnnxConst::PrintShape() {
 	std::string res = "";
 	if (shape.size() > 0) {
 		std::vector<int64_t> shape(shape.begin(), shape.end());
-		res += "typename xt::xarray<"+ GetDataTypeAsString() + ">::shape_type " + GetShapeName() + " = {";
+		res += "typename xt::xarray<" + GetDataTypeAsString() + ">::shape_type " + GetShapeName() + " = {";
 		for (size_t i = 0; i < shape.size(); ++i) {
 			if (shape[i] < 0) {
 				std::cout << "ERROR: Negative dimension in tensor shape" << std::endl;
@@ -114,6 +113,19 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 		}
 		res += "};\n"; // Initialize with zeros
 	}
+	return res;
+}
+
+std::string OnnxConst::PrintReshape() {
+	std::string res = "";
+	if (shape.size() > 0) {
+		res += "\n" + Name() + " = " + Name() + ".reshape(" + GetShapeName() + ");";
+	}
+	return res;
+}
+
+std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
+	std::string res = "";
 	if (GetDataSize() > 0) {
 
 		std::ostringstream oss;
@@ -124,23 +136,37 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 
 		if (std::holds_alternative<std::vector<float>>(data)) {
 			oss << GenerateNestedInitializerFromAny<float>();
-
 		}
 		else if (std::holds_alternative<std::vector<int32_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<int32_t>();
-
+		}
+		else if (std::holds_alternative<std::vector<int16_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<int16_t>();
+		}
+		else if (std::holds_alternative<std::vector<int8_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<int8_t>();
+		}
+		else if (std::holds_alternative<std::vector<uint8_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<uint8_t>();
+		}
+		else if (std::holds_alternative<std::vector<uint16_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<uint16_t>();
+		}
+		else if (std::holds_alternative<std::vector<uint32_t>>(data)) {
+			oss << GenerateNestedInitializerFromAny<uint32_t>();
+		}
+		else if (std::holds_alternative<std::vector<bool>>(data)) {
+			oss << GenerateNestedInitializerFromAny<bool>();
 		}
 		else if (std::holds_alternative<std::vector<int64_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<int64_t>();
-
 		}
 		else if (std::holds_alternative<std::vector<double>>(data)) {
 			oss << GenerateNestedInitializerFromAny<double>();
-
 		}
 		else if (std::holds_alternative<std::vector<std::string>>(data)) {
 			oss << GenerateNestedInitializerFromAny<std::string>();
-			GetDataAsT<std::string>();
+			//GetDataAsT<std::string>();
 		}
 		else if (std::holds_alternative<std::vector<uint64_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<uint64_t>();
@@ -151,16 +177,14 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 		}
 		res += oss.str() + ";";
 	}
-
-	if (shape.size() > 0) {
-		res += "\n" + Name() + " = " + Name() + ".reshape(" + GetShapeName() + ");";
-	}
 	return res;
 }
 
 std::string OnnxConst::GetConstantString(bool const doInitialize) {
 	std::string res = "";
+	res += PrintShape();
 	res += GetDataTypeString(doInitialize);
+	res += PrintReshape();
 	return res;
 }
 

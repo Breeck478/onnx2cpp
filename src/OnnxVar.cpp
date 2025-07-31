@@ -1,5 +1,5 @@
 #pragma once
-#include "OnnxVars.h"
+#include "OnnxVar.h"
 #include "Utils.h"
 #include <iostream>
 #include <deque>

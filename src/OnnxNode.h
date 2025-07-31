@@ -6,7 +6,7 @@
 #include <any>
 #include <memory>
 #include <functional>
-#include "OnnxVars.h"
+#include "OnnxVar.h"
 #include <typeinfo>
 
 #include <sstream>
