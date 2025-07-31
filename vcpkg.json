@@ -1,0 +1,15 @@
+{
+  "name": "onnx2cpp",
+  "version-string": "0.0.1",
+  "license": "MIT",
+  "dependencies": [
+    "onnx",
+    "xtensor",
+    "xtensor-blas",
+    {
+      "name": "onnxruntime-gpu",
+      "platform": "!linux"
+    }
+    
+  ]
+}

@@ -407,3 +407,6 @@ MigrationBackup/
 # Build Verzeichnis out
 out/
 build/
+
+# vcpkg Verzeichnis
+vcpkg_installed/
