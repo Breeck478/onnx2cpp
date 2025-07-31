@@ -1,4 +1,24 @@
-﻿
+﻿#pragma once
+#include <vector>
+#include <string>
+#include <iostream>
 
-
+#include <onnx/onnx_pb.h>
+class onnx2cpp {
+public:
+	static std::string MakeCppFile(onnx::ModelProto &model, std::ostream &stream, int batchSize = 1, std::vector<std::string> staticInputs = std::vector<std::string>(), std::vector<std::string> staticOutputs = std::vector<std::string>());
+	static std::string MakeCppFile(onnx::ModelProto& model, std::ostream& stream, bool allStatic);
+	void ParseInputs(int argc, char* argv[]);
+	std::string ModelFileName() { return modelFileName; }
+	std::string OutputFileName() { return outputFileName; }
+	int BatchSize() { return batchSize; }
+	std::vector<std::string> StaticInputs() { return staticInputs; }
+	std::vector<std::string> StaticOutputs() { return staticOutputs; }
+private:
+	std::string onnx2cpp::modelFileName = "";
+	std::string onnx2cpp::outputFileName = "Model.h";
+	int onnx2cpp::batchSize = 1; // Default batch size, can be changed by user input
+	std::vector<std::string> onnx2cpp::staticInputs;
+	std::vector<std::string> onnx2cpp::staticOutputs;
+};
 

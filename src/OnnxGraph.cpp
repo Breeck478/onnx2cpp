@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-OnnxGraph::OnnxGraph(onnx::GraphProto& graph, bool isInitial, std::vector<std::string> staticInputs, std::vector<std::string> staticOutputs, bool doUseTemplate): name(graph.name()), isInitialGraph(isInitial), staticInputs(staticInputs), staticOutputs(staticOutputs), doUseTemplate(doUseTemplate){
+OnnxGraph::OnnxGraph(onnx::GraphProto& graph, bool isInitial, std::vector<std::string> staticInputs, std::vector<std::string> staticOutputs): name(graph.name()), isInitialGraph(isInitial), staticInputs(staticInputs), staticOutputs(staticOutputs){
 	vars.AddFromList(graph.input(), true);
 	vars.AddFromList(graph.output(), false, true);
 	vars.AddFromList(graph.value_info());
@@ -13,8 +13,6 @@ OnnxGraph::OnnxGraph(onnx::GraphProto& graph, bool isInitial, std::vector<std::s
 	if (isInitialGraph) {
 		// If this is the initial graph, we need to register IOs
 		// This is done to set the static or non-static type of the IOs
-		// depending on user input
-		// Inputs and Outputs are set to static or non-static type
 		// depending on user input
 		RegisterIOs();
 	}
@@ -28,12 +26,14 @@ void OnnxGraph::RegisterIOs() {
 	for (OnnxTensor* var : vars.GetInputVars()) {
 		auto it = std::find(staticInputs.begin(), staticInputs.end(), var->Name());
 		if (it == staticInputs.end()) {
+			doUseTemplate = true;
 			var->HasStaticType(false);
 		}
 	}
 	for (OnnxTensor* var : vars.GetOutputVars()) {
 		auto it = std::find(staticOutputs.begin(), staticOutputs.end(), var->Name());
 		if (it == staticOutputs.end()) {
+			doUseTemplate = true;
 			var->HasStaticType(false);
 		}
 	}
@@ -70,6 +70,10 @@ void OnnxGraph::AddExternVars(const OnnxVars& vars) {
 void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 	stream << "// Graph:\n";
 	if (isInitialGraph) {
+		stream << "// Includes" << std::endl << std::endl;
+		stream << "#include <xtensor/xarray.hpp>" << std::endl;
+		stream << "#include <tuple>" << std::endl;
+		GetIncludes(stream);
 		if (doUseTemplate) {
 			stream << "template <typename T>\n";
 		}
@@ -103,7 +107,7 @@ void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 	}
 }
 
-void OnnxGraph::GetIncludes(std::ostringstream & stream) {
+void OnnxGraph::GetIncludes(std::ostringstream & stream) const {
 	for (const std::string& type : nodes.GetOpTypes()) {
 		stream << "#include <Operators/" + type + ".h>\n";
 	}
