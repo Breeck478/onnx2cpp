@@ -15,20 +15,57 @@ endif()
 project (onnx2cpp)
 set(CMAKE_BUILD_TYPE Debug)
 include_directories(src)
+find_package(ONNX CONFIG REQUIRED)
+find_package(xtensor REQUIRED)
 aux_source_directory(./src/Operators SOURCES)
 message(WARNING ${SOURCES})
-add_executable (onnx2cpp src/onnx2cpp.cpp src/OnnxVars.cpp src/Utils.cpp src/OnnxNodes.cpp src/OnnxConsts.cpp ${SOURCES}  "src/Operators/Gemm.cpp" "src/Operators/ConstantOfShape.cpp""src/Operators/Concat.cpp" "src/Operators/Pow.cpp" "src/Operators/Constant.cpp" "src/OnnxTensor.cpp" "src/Operators/Equal.cpp" "src/Operators/Where.cpp" "src/Operators/Greater.cpp" "src/OnnxGraph.cpp" "src/Operators/Loop.cpp" "src/Operators/Cast.cpp")
+add_executable (onnx2cpp src/Main.cpp
+src/onnx2cpp.cpp 
+src/OnnxVar.cpp
+src/Utils.cpp 
+src/OnnxNode.cpp
+src/OnnxConst.cpp
+${SOURCES}  
+src/Operators/Gemm.cpp
+src/Operators/ConstantOfShape.cpp
+src/Operators/Concat.cpp
+src/Operators/Pow.cpp
+src/Operators/Constant.cpp
+src/OnnxTensor.cpp
+src/Operators/Equal.cpp
+src/Operators/Where.cpp
+src/Operators/Greater.cpp
+src/OnnxGraph.cpp
+src/Operators/Loop.cpp
+src/Operators/Cast.cpp)
 
-find_package(ONNX CONFIG REQUIRED)
 target_link_libraries(onnx2cpp PRIVATE ONNX::onnx ONNX::onnx_proto)
-find_package(xtensor REQUIRED)
 target_link_libraries(onnx2cpp PRIVATE xtensor)
-#set_property(TARGET onnx2cpp/onnx2cpp PROPERTY CXX_STANDARD 20)
-#add_subdirectory(protobuf)
-# Schließen Sie Unterprojekte ein'.
-#add_subdirectory(onnx)
-#
-#include_directories(${Protobuf_INCLUDE_DIRS})
-#include_directories(onnx2cpp)
-#include_directories(Protobuf)
 
+add_library(onnx2cpp_lib STATIC
+src/onnx2cpp.cpp
+src/OnnxGraph.cpp
+src/OnnxVar.cpp
+src/Utils.cpp 
+src/OnnxNode.cpp
+src/OnnxConst.cpp
+${SOURCES}  
+src/Operators/Gemm.cpp
+src/Operators/ConstantOfShape.cpp
+src/Operators/Concat.cpp
+src/Operators/Pow.cpp
+src/Operators/Constant.cpp
+src/OnnxTensor.cpp
+src/Operators/Equal.cpp
+src/Operators/Where.cpp
+src/Operators/Greater.cpp
+src/Operators/Loop.cpp
+src/Operators/Cast.cpp)
+
+
+target_link_libraries(onnx2cpp_lib PRIVATE ONNX::onnx ONNX::onnx_proto)
+target_link_libraries(onnx2cpp_lib PRIVATE xtensor)
+
+
+enable_testing()
+add_subdirectory(test)
