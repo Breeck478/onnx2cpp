@@ -1,11 +1,14 @@
 #include <xtensor/xarray.hpp>
+#include <xtensor/xbuilder.hpp>
 #include <tuple>
 struct ConcatParams
 {
 	const int axis = 1;
 };
 template <typename T>
-void Concat(const std::tuple<xt::xarray<T>> &x, xt::xarray<T> &r, ConcatParams params = ConcatParams())
+void Concat(const std::vector<xt::xarray<T>> x, xt::xarray<T>& r, ConcatParams params = ConcatParams())
 {
-  r = xt::concatenate(x, params.axis);
-} 
+	for (const xt::xarray<T>& arr : x) {
+		r = xt::concatenate(xt::xtuple(arr, r), params.axis);
+	}	
+}

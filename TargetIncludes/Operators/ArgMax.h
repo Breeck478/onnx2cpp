@@ -9,6 +9,7 @@
 #include <xtensor/xadapt.hpp>
 #include <xtensor/xstrides.hpp>
 #include <xtensor/xeval.hpp>
+#include <xtensor/xsort.hpp>
 struct ArgMaxParams
 {
   const int axis = 0;
@@ -18,7 +19,7 @@ struct ArgMaxParams
 template <typename T>
 void ArgMax(
     const xt::xarray<T> &data,
-    xt::xarray<T> &reduced,
+    xt::xarray<int64_t> &reduced,
     const ArgMaxParams &params = ArgMaxParams())
 {
   int axis = params.axis;
@@ -43,7 +44,7 @@ void ArgMax(
     // _argmax_use_numpy_select_last_index
     xt::xarray<T> tempData = xt::flip(data, axis);
     xt::xarray<T> tempRes = xt::argmax(tempData, axis);
-    tempRes = tempData.shape[axis] - tempRes - 1;
+    tempRes = tempData.shape()[axis] - tempRes - 1;
     if (keepdims == 1)
     {
       reduced = xt::cast<int>(xt::expand_dims(tempRes, axis));
