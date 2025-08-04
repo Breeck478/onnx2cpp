@@ -6,7 +6,7 @@ public:
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-	void GetNodeHandlerString(std::ostringstream & stream) const override {
+	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 		stream << "Gemm(";
 
 

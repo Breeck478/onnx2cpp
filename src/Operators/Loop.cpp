@@ -32,7 +32,12 @@
 
 class LoopHandler : public OperatorHandler {
 public:
-	LoopHandler(const OnnxNode* node) : OperatorHandler(node), graph(std::any_cast<onnx::GraphProto>(node->GetAttribute("body")), false) {}
+	LoopHandler(const OnnxNode* node) : OperatorHandler(node), graph(std::any_cast<onnx::GraphProto>(node->GetAttribute("body")), false) {
+		if (!node->GetAttribute("body").has_value())
+		{
+			throw std::bad_any_cast();
+		}
+	}
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
@@ -45,7 +50,7 @@ public:
 	bool OperatorSpecificTensorTypes() const override { 
 		return false; 
 	}
-	virtual void SetTensorTypes() {
+	virtual void SetOpSpecificTensorTypes() {
 		node->GetOutputs()[0]->HasStaticType(true); // output 0 is the condition and is always bool
 	}
 	void PreProcess() override {
@@ -91,7 +96,7 @@ public:
 			throw; // Re-throw the exception to handle it in the main processing flow
 		}
 	}
-	void GetNodeHandlerString(std::ostringstream & stream) const override {
+	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {
 			if (node->GetInputs().size() >= 2 && node->GetOutputs().size() >= 1 && node->GetAttributes().size() == 1) {

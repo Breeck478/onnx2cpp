@@ -4,7 +4,7 @@
 
 #include <algorithm>
 
-OnnxGraph::OnnxGraph(onnx::GraphProto& graph, bool isInitial, std::vector<std::string> staticInputs, std::vector<std::string> staticOutputs): name(graph.name()), isInitialGraph(isInitial), staticInputs(staticInputs), staticOutputs(staticOutputs){
+OnnxGraph::OnnxGraph(onnx::GraphProto graph, bool isInitial, std::vector<std::string> staticInputs, std::vector<std::string> staticOutputs): name(graph.name()), isInitialGraph(isInitial), staticInputs(staticInputs), staticOutputs(staticOutputs){
 	vars.AddFromList(graph.input(), true);
 	vars.AddFromList(graph.output(), false, true);
 	vars.AddFromList(graph.value_info());
@@ -68,12 +68,11 @@ void OnnxGraph::AddExternVars(const OnnxVars& vars) {
 }
 
 void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
-	stream << "// Graph:\n";
 	if (isInitialGraph) {
-		stream << "// Includes" << std::endl << std::endl;
-		stream << "#include <xtensor/xarray.hpp>" << std::endl;
-		stream << "#include <tuple>" << std::endl;
+		// start with all includes neccesary for the Operators
 		GetIncludes(stream);
+		stream << "#include <vector>" << std::endl;
+		stream << "#include <xtensor/xarray.hpp>" << std::endl;		
 		if (doUseTemplate) {
 			stream << "template <typename T>\n";
 		}
@@ -115,7 +114,7 @@ void OnnxGraph::GetIncludes(std::ostringstream & stream) const {
 
 
 std::vector<std::string> OnnxGraph::GetInputNames() const {
-	auto& inputs = vars.GetInputVars();
+	auto inputs = vars.GetInputVars();
 	std::vector<std::string> inputNames;
 	for (auto& input : inputs) {
 		inputNames.push_back(input->Name());
@@ -124,7 +123,7 @@ std::vector<std::string> OnnxGraph::GetInputNames() const {
 }
 
 std::vector<std::string> OnnxGraph::GetOutputNames() const {
-	auto& outputs = vars.GetOutputVars();
+	auto outputs = vars.GetOutputVars();
 	std::vector<std::string> outputNames;
 	for (auto& output : outputs) {
 		outputNames.push_back(output->Name());

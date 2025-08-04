@@ -15,10 +15,10 @@ public:
 	std::vector<std::string> StaticInputs() { return staticInputs; }
 	std::vector<std::string> StaticOutputs() { return staticOutputs; }
 private:
-	std::string onnx2cpp::modelFileName = "";
-	std::string onnx2cpp::outputFileName = "Model.h";
-	int onnx2cpp::batchSize = 1; // Default batch size, can be changed by user input
-	std::vector<std::string> onnx2cpp::staticInputs;
-	std::vector<std::string> onnx2cpp::staticOutputs;
+	std::string modelFileName = "";
+	std::string outputFileName = "Model.h";
+	int batchSize = 1; // Default batch size, can be changed by user input
+	std::vector<std::string> staticInputs;
+	std::vector<std::string> staticOutputs;
 };
 

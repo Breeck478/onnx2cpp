@@ -156,7 +156,7 @@ bool OnnxNode::NeedsInclude() const {
 void OnnxNode::GetNodeString(std::ostringstream & stream) {
 	if (HasHandler()) {
 		if (Handler()->OperatorSpecificVarGeneration()) {
-			Handler()->GetVarInitialisation(stream);
+			Handler()->GetOpSpecificVarGen(stream);
 		}
 		else {
 			//for (OnnxTensor* var : inputs) {				
@@ -164,7 +164,7 @@ void OnnxNode::GetNodeString(std::ostringstream & stream) {
 			//}
 		}
 		if (Handler()->OperatorSpecificNodeGeneration()) {
-			Handler()->GetNodeHandlerString(stream);
+			Handler()->GetOpSpecificNodeGenString(stream);
 		}
 		else {
 			CreateFunctionCall(stream);
@@ -181,9 +181,9 @@ void OnnxNode::GetNodeString(std::ostringstream & stream) {
 	stream << "\n"; // Add a newline after the function call
 }
 
-void OnnxNode::GetVarInitialisation(std::ostringstream & stream) {
+void OnnxNode::GetOpSpecificVarGen(std::ostringstream & stream) {
 	if (HasHandler() && Handler()->OperatorSpecificVarGeneration()) {
-		 Handler()->GetVarInitialisation(stream);
+		 Handler()->GetOpSpecificVarGen(stream);
 	}
 	else {
 		for (OnnxTensor* var : inputs) {
@@ -209,12 +209,12 @@ void OnnxNode::SetVarFromList(const OnnxVars& varsList) {
 			outputs.push_back(outputVar);
 		}
 	}
-	SetTensorTypes();
+	SetOpSpecificTensorTypes();
 }
 
-void OnnxNode::SetTensorTypes() {
+void OnnxNode::SetOpSpecificTensorTypes() {
 	if (HasHandler() && Handler()->OperatorSpecificTensorTypes()) {
-		Handler()->SetTensorTypes();
+		Handler()->SetOpSpecificTensorTypes();
 		return;
 	}
 	bool containsNonStaticInput = false;

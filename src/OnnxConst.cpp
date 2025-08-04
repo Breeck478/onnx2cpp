@@ -15,22 +15,48 @@ OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
 void OnnxConst::FillData(const onnx::TensorProto& tensorProto) {
 	if (DataType() == onnx::TensorProto_DataType_FLOAT) { // complex not supported
 		if (tensorProto.float_data().size() > 0)
-			this->data = ParseRepeatedField(tensorProto.float_data());
+			this->data = ParseRepeatedField<float, float>(tensorProto.float_data());
 		else
 			this->data = ParseByteData<float>(tensorProto.raw_data());
 	} else if (DataType() == onnx::TensorProto_DataType_INT32 || DataType() == onnx::TensorProto_DataType_INT16 || DataType() == onnx::TensorProto_DataType_INT8 || DataType() == onnx::TensorProto_DataType_UINT32 || DataType() == onnx::TensorProto_DataType_UINT16 || DataType() == onnx::TensorProto_DataType_UINT8 || DataType() == onnx::TensorProto_DataType_BOOL) {  // int4, uint4, FLOAT16, BFLOAT16, FLOAT8E4M3FN, FLOAT8E4M3FNUZ, FLOAT8E5M2, FLOAT8E5M2FNUZ, FLOAT4E2M1 not supported
 		if (tensorProto.int32_data().size() > 0)
-			this->data = ParseRepeatedField(tensorProto.int32_data());
+			if (DataType() == onnx::TensorProto_DataType_BOOL)
+				this->data = ParseRepeatedField<int32_t, bool>(tensorProto.int32_data());
+			else if (DataType() == onnx::TensorProto_DataType_INT8)
+				this->data = ParseRepeatedField<int32_t, int8_t>(tensorProto.int32_data());
+			else if (DataType() == onnx::TensorProto_DataType_INT16)
+				this->data = ParseRepeatedField<int32_t, int16_t>(tensorProto.int32_data());
+			else if (DataType() == onnx::TensorProto_DataType_UINT8)
+				this->data = ParseRepeatedField<int32_t, uint8_t>(tensorProto.int32_data());
+			else if (DataType() == onnx::TensorProto_DataType_UINT16)
+				this->data = ParseRepeatedField<int32_t, uint16_t>(tensorProto.int32_data());
+			else if (DataType() == onnx::TensorProto_DataType_UINT32)
+				this->data = ParseRepeatedField<int32_t, uint32_t>(tensorProto.int32_data());
+			else
+				this->data = ParseRepeatedField<int32_t, int32_t>(tensorProto.int32_data());
 		else
-			this->data = ParseByteData<int32_t>(tensorProto.raw_data());
+			if (DataType() == onnx::TensorProto_DataType_BOOL)
+				this->data = ParseByteData<bool>(tensorProto.raw_data());
+			else if (DataType() == onnx::TensorProto_DataType_INT8)
+				this->data = ParseByteData<int8_t>(tensorProto.raw_data());
+			else if (DataType() == onnx::TensorProto_DataType_INT16)
+				this->data = ParseByteData<int16_t>(tensorProto.raw_data());
+			else if (DataType() == onnx::TensorProto_DataType_UINT8)
+				this->data = ParseByteData<uint8_t>(tensorProto.raw_data());
+			else if (DataType() == onnx::TensorProto_DataType_UINT16)
+				this->data = ParseByteData<uint16_t>(tensorProto.raw_data());
+			else if (DataType() == onnx::TensorProto_DataType_UINT32)
+				this->data = ParseByteData<uint32_t>(tensorProto.raw_data());
+			else
+				this->data = ParseByteData<int32_t>(tensorProto.raw_data());
 	} else if (DataType() == onnx::TensorProto_DataType_STRING) {
 		if (tensorProto.string_data().size() > 0)
-			this->data = ParseRepeatedField(tensorProto.string_data());
+			this->data = ParseRepeatedField<std::string, std::string>(tensorProto.string_data());
 		else
 			this->data = ParseByteData<std::string>(tensorProto.raw_data());
 	} else if (DataType() == onnx::TensorProto_DataType_INT64) {
 		if (tensorProto.int64_data().size() > 0)
-			this->data = ParseRepeatedField(tensorProto.int64_data());
+			this->data = ParseRepeatedField<int64_t, int64_t>(tensorProto.int64_data());
 		else
 			this->data = ParseByteData<int64_t>(tensorProto.raw_data());
 	}
@@ -88,7 +114,7 @@ std::string OnnxConst::GenerateNestedInitializerFromAny() const {
 	for (int64_t i = 0; i < vals.size(); ++i) {
 		const T& val = std::any_cast<T>(vals[i]);
 		if constexpr (std::is_floating_point_v<T>) {
-			oss << std::fixed << std::setprecision(20) << val << "f";
+			oss << std::fixed << std::setprecision(20) << val;
 		}
 		else {
 			oss << val;
@@ -101,15 +127,15 @@ std::string OnnxConst::GenerateNestedInitializerFromAny() const {
 std::string OnnxConst::PrintShape() {
 	std::string res = "";
 	if (shape.size() > 0) {
-		std::vector<int64_t> shape(shape.begin(), shape.end());
+		std::vector<int64_t> shapeVector(shape.begin(), shape.end());
 		res += "typename xt::xarray<" + GetDataTypeAsString() + ">::shape_type " + GetShapeName() + " = {";
-		for (size_t i = 0; i < shape.size(); ++i) {
-			if (shape[i] < 0) {
+		for (size_t i = 0; i < shapeVector.size(); ++i) {
+			if (shapeVector[i] < 0) {
 				std::cout << "ERROR: Negative dimension in tensor shape" << std::endl;
 				return res;
 			}
 			if (i > 0) res += ", ";
-			res += std::to_string(shape[i]);
+			res += std::to_string(shapeVector[i]);
 		}
 		res += "};\n"; // Initialize with zeros
 	}
@@ -137,6 +163,9 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 		if (std::holds_alternative<std::vector<float>>(data)) {
 			oss << GenerateNestedInitializerFromAny<float>();
 		}
+		else if (std::holds_alternative<std::vector<bool>>(data)) {
+			oss << GenerateNestedInitializerFromAny<bool>();
+		}
 		else if (std::holds_alternative<std::vector<int32_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<int32_t>();
 		}
@@ -155,9 +184,7 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 		else if (std::holds_alternative<std::vector<uint32_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<uint32_t>();
 		}
-		else if (std::holds_alternative<std::vector<bool>>(data)) {
-			oss << GenerateNestedInitializerFromAny<bool>();
-		}
+
 		else if (std::holds_alternative<std::vector<int64_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<int64_t>();
 		}
@@ -166,16 +193,18 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 		}
 		else if (std::holds_alternative<std::vector<std::string>>(data)) {
 			oss << GenerateNestedInitializerFromAny<std::string>();
-			//GetDataAsT<std::string>();
+			GetDataAsT<std::string>();
 		}
 		else if (std::holds_alternative<std::vector<uint64_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<uint64_t>();
-
 		}
 		else {
 			std::cout << "ERROR: Tensor data type not supported" << std::endl;
 		}
 		res += oss.str() + ";";
+	}
+	else {
+		res += "xt::xarray<" + GetDataTypeAsString() + "> " + Name() + ";"; // Initialize with zeros
 	}
 	return res;
 }

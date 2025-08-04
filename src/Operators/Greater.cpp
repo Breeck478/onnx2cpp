@@ -9,7 +9,7 @@ public:
 	bool OperatorSpecificTensorTypes() const override {
 		return true; // This operator has specific generation logic
 	}
-	void SetTensorTypes() override {
+	void SetOpSpecificTensorTypes() override {
 		// Do nothing. outputtypes are always bool independent on what the input type is
 	}
 };

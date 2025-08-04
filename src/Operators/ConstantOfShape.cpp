@@ -9,7 +9,7 @@ public:
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-	void GetNodeHandlerString(std::ostringstream & stream) const override {
+	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {
 			if (node->GetOutputNames().size() == 1 && node->GetInputNames().size() == 1) {

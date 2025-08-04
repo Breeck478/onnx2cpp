@@ -15,7 +15,7 @@ public:
 	bool OperatorNeedsInclude() const override {
 		return false; // This operator does not need an include
 	}
-	void GetNodeHandlerString(std::ostringstream & stream) const override {
+	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {
 			if (node->GetOutputNames().size() > 0 && node->GetInputNames().size() == 0) {

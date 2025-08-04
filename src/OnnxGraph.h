@@ -16,7 +16,7 @@ enum GraphPosition {
 
 class OnnxGraph {
 public:
-	OnnxGraph(onnx::GraphProto& graph, bool isInitial = false, std::vector<std::string> staticInputs = std::vector<std::string>(), std::vector<std::string> staticOutputs = std::vector<std::string>());
+	OnnxGraph(onnx::GraphProto graph, bool isInitial = false, std::vector<std::string> staticInputs = std::vector<std::string>(), std::vector<std::string> staticOutputs = std::vector<std::string>());
 	void IsInitialGraph(bool isInitial) { this->isInitialGraph = isInitial; }
 	void RegisterIOs();
 	std::vector<std::string> GetInputNames() const;

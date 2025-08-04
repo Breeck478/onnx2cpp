@@ -8,12 +8,12 @@ public:
 	bool OperatorSpecificNodeGeneration() const override {
 		return false; // This operator has specific generation logic
 	}
-	void GetNodeHandlerString(std::ostringstream & stream) const override {
+	void GetOpSpecificNodeGenString(std::ostringstream &stream) const override {
 
 		try {
-			auto& nodeInputs = node->GetInputs();
+			auto nodeInputs = node->GetInputs();
 			if (nodeInputs.size() == 2) {
-				auto& shape = nodeInputs[1]->Shape();
+				auto shape = nodeInputs[1]->Shape();
 				stream << node->GetOutputNames()[0] + " = ";
 				/*int scalar = node.GetInputs()[1]->GetTypeProto().tensor_type().dim();
 				for (int i = 0; i < scalar; ++i) {

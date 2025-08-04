@@ -64,10 +64,10 @@ public:
 	virtual bool OperatorSpecificTensorTypes() const { return false; }
 	virtual bool OperatorSpecificPreProcess() const { return false; }
 	virtual bool OperatorNeedsInclude() const { return true; }
-	virtual void GetNodeHandlerString(std::ostringstream & stream) const {}
-	virtual void GetVarInitialisation(std::ostringstream & stream) {}
+	virtual void GetOpSpecificNodeGenString(std::ostringstream & stream) const {}
+	virtual void GetOpSpecificVarGen(std::ostringstream & stream) {}
+	virtual void SetOpSpecificTensorTypes() {}
 	virtual void PreProcess() {}
-	virtual void SetTensorTypes() {}
 protected:
 	const OnnxNode* node;
 };
@@ -81,7 +81,7 @@ public:
 	std::string GetName() const;
 	std::string GetOpType() const { return op_type; }
 	void GetNodeString(std::ostringstream & stream);
-	void GetVarInitialisation(std::ostringstream & stream);
+	void GetOpSpecificVarGen(std::ostringstream & stream);
 	std::string GetParamsString()const;
 	std::vector<std::string> GetInputNames() const { return inputNames; }
 	std::vector<std::string> GetOutputNames() const { return outputNames; }
@@ -99,7 +99,7 @@ public:
 	void CreateFunctionCall(std::ostringstream & stream) const;
 	//void PredictDims(const OnnxVars& varsList);
 	//static std::string PrintPredictedDims();#
-	void SetTensorTypes();
+	void SetOpSpecificTensorTypes();
 	bool NeedsInclude() const;
 	OnnxTensor* FindTensorByName(const std::string& name) const {
 		for (OnnxTensor* tensor : inputs) {
@@ -171,7 +171,7 @@ public:
 	using Map = std::map<std::string, Creator>; // OpType, OperatorHandler
 
 	static bool registerHandler(const std::string& name, Creator creator) {
-		std::cout << name << std::endl; 
+		//std::cout << name << std::endl; 
 		GetMap()[name] = creator;
 		return true;
 	}
