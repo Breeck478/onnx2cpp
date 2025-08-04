@@ -26,7 +26,7 @@ target_sources(testgen PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/../src/onnx2cpp.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Loop.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Cast.cpp)
  
-if(CMAKE_SYSTEM_NAME STREQUAL "Windows") # onnxruntime only avvailable for Windows
+if(CMAKE_SYSTEM_NAME STREQUAL "Windows" and CMAKE_SIZEOF_VOID_P EQUAL 8) # onnxruntime only avvailable for Windows in 64 bit
 	find_package(onnxruntime CONFIG REQUIRED)
 	add_executable(testgenOrt TestInitializer.cpp)
 	target_link_libraries(testgenOrt PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto onnxruntime::onnxruntime)
@@ -129,7 +129,7 @@ endfunction()
 
 
 function( ONNX_backend_node_test_onnxruntime node_name)
-	if(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+	if(CMAKE_SYSTEM_NAME STREQUAL "Windows" and CMAKE_SIZEOF_VOID_P EQUAL 8)
 		ONNX_type_test_onnxruntime(
 			${node_name}
 			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}

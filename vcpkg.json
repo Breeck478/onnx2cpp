@@ -8,7 +8,7 @@
     "xtensor-blas",
     {
       "name": "onnxruntime-gpu",
-      "platform": "!linux"
+      "platform": "(windows & x64)"
     }
     
   ]
