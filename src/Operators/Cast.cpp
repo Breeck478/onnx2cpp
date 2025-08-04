@@ -13,13 +13,15 @@ public:
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-	void GetNodeHandlerString(std::ostringstream & stream) const override {
+	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {
 			int64_t to = std::any_cast<int64_t>(node->GetAttribute("to"));
 			std::ostringstream tmpStore;
 			tmpStore.swap(stream);
+			stream << "#ifdef DCO_ENABLE_EXPLICIT_TYPE_CAST_TO \n";
 			stream << "DCO_ENABLE_EXPLICIT_TYPE_CAST_TO(" + GetDataTypeString(to) + ")\n";
+			stream << "#endif  \n";
 			stream << tmpStore.str();
 			node->CreateFunctionCall(stream);
 		}
