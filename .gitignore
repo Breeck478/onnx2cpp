@@ -407,6 +407,7 @@ MigrationBackup/
 # Build Verzeichnis out
 out/
 build/
+TestInclude/dcoInclude/dco
 
 # vcpkg Verzeichnis
 vcpkg_installed/
