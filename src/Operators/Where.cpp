@@ -3,6 +3,7 @@
 #include "Utils.h"
 
 #include <string>
+using namespace toCpp;
 class WhereHandler : public OperatorHandler {
 public:
 	WhereHandler(const OnnxNode* node) : OperatorHandler(node) {}

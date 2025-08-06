@@ -6,7 +6,7 @@
 #include <type_traits>
 
 #include "OnnxGraph.h"
-
+using namespace toCpp;
 PredictedDim OnnxNode::predictedDims;
 std::vector<std::string> OnnxNodes::opTypes;
 

@@ -8,27 +8,7 @@
 
 #include <vector>
 #include <map>
-
-//class LoopGraph : public OnnxGraph {
-//public:
-//	LoopGraph(onnx::GraphProto& graph, bool isInitial = false, std::vector<std::string> staticInputs = std::vector<std::string>(), std::vector<std::string> staticOutputs = std::vector<std::string>()) : OnnxGraph(graph, isInitial, staticInputs, staticOutputs) {
-//		// LoopGraph specific initialization if needed
-//	}
-//	std::string PrintSpecificGraph(const GraphPosition position) override {
-//		std::string res = "";
-//		if (position == GraphPosition::Begin) {
-//			
-//		}
-//		else if (position == GraphPosition::End) {
-//			
-//		}
-//		else {
-//			res += "// Unknown position in LoopGraph\n";
-//		}
-//		return res;
-//	}
-//};
-
+using namespace toCpp;
 
 class LoopHandler : public OperatorHandler {
 public:

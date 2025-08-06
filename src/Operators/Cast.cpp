@@ -7,6 +7,7 @@
 #include <any>
 
 #include <string>
+using namespace toCpp;
 class CastHandler : public OperatorHandler {
 public:
 	CastHandler(const OnnxNode* node) : OperatorHandler(node) {}

@@ -5,7 +5,7 @@
 #include <deque>
 
 // std::vector<std::string> OnnxVars::names;
-
+using namespace toCpp;
 
 OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput, bool isOutput) : isInput(isInput), isOutput(isOutput){
 	this->name = valueInfo.name();

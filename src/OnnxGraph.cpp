@@ -3,7 +3,7 @@
 #include "OnnxGraph.h"
 
 #include <algorithm>
-
+using namespace toCpp;
 OnnxGraph::OnnxGraph(onnx::GraphProto graph, bool isInitial, std::vector<std::string> staticInputs, std::vector<std::string> staticOutputs): name(graph.name()), isInitialGraph(isInitial), staticInputs(staticInputs), staticOutputs(staticOutputs){
 	vars.AddFromList(graph.input(), true);
 	vars.AddFromList(graph.output(), false, true);
@@ -72,7 +72,7 @@ void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 		// start with all includes neccesary for the Operators
 		GetIncludes(stream);
 		stream << "#include <vector>" << std::endl;
-		stream << "#include <xtensor/xarray.hpp>" << std::endl;		
+		//stream << "#include <xtensor/xarray.hpp>" << std::endl;		
 		if (doUseTemplate) {
 			stream << "template <typename T>\n";
 		}

@@ -3,6 +3,7 @@
 #include "Utils.h"
 
 #include <string>
+using namespace toCpp;
 class GreaterHandler : public OperatorHandler {
 public:
 	GreaterHandler(const OnnxNode* node) : OperatorHandler(node) {}

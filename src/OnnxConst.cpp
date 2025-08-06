@@ -3,6 +3,7 @@
 #include "Utils.h"
 #include <algorithm>
 #include <iostream>
+using namespace toCpp;
 std::vector<std::string> OnnxConsts::names;
 OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
 {
@@ -13,55 +14,47 @@ OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
 }
 
 void OnnxConst::FillData(const onnx::TensorProto& tensorProto) {
-	if (DataType() == onnx::TensorProto_DataType_FLOAT) { // complex not supported
-		if (tensorProto.float_data().size() > 0)
-			this->data = ParseRepeatedField<float, float>(tensorProto.float_data());
-		else
-			this->data = ParseByteData<float>(tensorProto.raw_data());
-	} else if (DataType() == onnx::TensorProto_DataType_INT32 || DataType() == onnx::TensorProto_DataType_INT16 || DataType() == onnx::TensorProto_DataType_INT8 || DataType() == onnx::TensorProto_DataType_UINT32 || DataType() == onnx::TensorProto_DataType_UINT16 || DataType() == onnx::TensorProto_DataType_UINT8 || DataType() == onnx::TensorProto_DataType_BOOL) {  // int4, uint4, FLOAT16, BFLOAT16, FLOAT8E4M3FN, FLOAT8E4M3FNUZ, FLOAT8E5M2, FLOAT8E5M2FNUZ, FLOAT4E2M1 not supported
-		if (tensorProto.int32_data().size() > 0)
-			if (DataType() == onnx::TensorProto_DataType_BOOL)
-				this->data = ParseRepeatedField<int32_t, bool>(tensorProto.int32_data());
-			else if (DataType() == onnx::TensorProto_DataType_INT8)
-				this->data = ParseRepeatedField<int32_t, int8_t>(tensorProto.int32_data());
-			else if (DataType() == onnx::TensorProto_DataType_INT16)
-				this->data = ParseRepeatedField<int32_t, int16_t>(tensorProto.int32_data());
-			else if (DataType() == onnx::TensorProto_DataType_UINT8)
-				this->data = ParseRepeatedField<int32_t, uint8_t>(tensorProto.int32_data());
-			else if (DataType() == onnx::TensorProto_DataType_UINT16)
-				this->data = ParseRepeatedField<int32_t, uint16_t>(tensorProto.int32_data());
-			else if (DataType() == onnx::TensorProto_DataType_UINT32)
-				this->data = ParseRepeatedField<int32_t, uint32_t>(tensorProto.int32_data());
-			else
-				this->data = ParseRepeatedField<int32_t, int32_t>(tensorProto.int32_data());
-		else
-			if (DataType() == onnx::TensorProto_DataType_BOOL)
-				this->data = ParseByteData<bool>(tensorProto.raw_data());
-			else if (DataType() == onnx::TensorProto_DataType_INT8)
-				this->data = ParseByteData<int8_t>(tensorProto.raw_data());
-			else if (DataType() == onnx::TensorProto_DataType_INT16)
-				this->data = ParseByteData<int16_t>(tensorProto.raw_data());
-			else if (DataType() == onnx::TensorProto_DataType_UINT8)
-				this->data = ParseByteData<uint8_t>(tensorProto.raw_data());
-			else if (DataType() == onnx::TensorProto_DataType_UINT16)
-				this->data = ParseByteData<uint16_t>(tensorProto.raw_data());
-			else if (DataType() == onnx::TensorProto_DataType_UINT32)
-				this->data = ParseByteData<uint32_t>(tensorProto.raw_data());
-			else
-				this->data = ParseByteData<int32_t>(tensorProto.raw_data());
-	} else if (DataType() == onnx::TensorProto_DataType_STRING) {
-		if (tensorProto.string_data().size() > 0)
-			this->data = ParseRepeatedField<std::string, std::string>(tensorProto.string_data());
-		else
-			this->data = ParseByteData<std::string>(tensorProto.raw_data());
-	} else if (DataType() == onnx::TensorProto_DataType_INT64) {
-		if (tensorProto.int64_data().size() > 0)
-			this->data = ParseRepeatedField<int64_t, int64_t>(tensorProto.int64_data());
-		else
-			this->data = ParseByteData<int64_t>(tensorProto.raw_data());
-	}
-	else {
-		std::runtime_error("ERROR(OnnxConst::FillData): Tensor data type not supported for Constante " + Name());
+	switch (DataType()) {
+	case (onnx::TensorProto_DataType_FLOAT):
+		this->data = ExtractDataFromTensor<float>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_INT64):
+		this->data = ExtractDataFromTensor<int64_t>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_INT32):
+		this->data = ExtractDataFromTensor<int32_t>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_INT16):
+		this->data = ExtractDataFromTensor<int16_t>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_INT8):
+		this->data = ExtractDataFromTensor<int8_t>(tensorProto);
+
+	case (onnx::TensorProto_DataType_UINT64):
+		this->data = ExtractDataFromTensor<uint64_t>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_UINT32):
+		this->data = ExtractDataFromTensor<uint32_t>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_UINT16):
+		this->data = ExtractDataFromTensor<uint16_t>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_UINT8):
+		this->data = ExtractDataFromTensor<uint8_t>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_DOUBLE):
+		this->data = ExtractDataFromTensor<double>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_STRING):
+		this->data = ExtractDataFromTensor<std::string>(tensorProto);
+		break;
+	case (onnx::TensorProto_DataType_BOOL):
+		this->data = ExtractDataFromTensor<bool>(tensorProto);
+		break;
+	default:
+		throw std::runtime_error("ERROR(OnnxConst::FillData): Tensor data type " + GetDataTypeString(DataType()) + " not supported for Constant " + Name());
+
+
 	}
 }
 
@@ -100,7 +93,7 @@ size_t OnnxConst::GetDataSize() const {
 template <typename T>
 std::vector<T> OnnxConst::GetDataAsT() const {
 	if (!std::holds_alternative<std::vector<T>>(data)) {
-		std::runtime_error("ERROR(OnnxConst::GetDataAsT): Tensor data type not supported for Constant " + Name());
+		throw std::runtime_error("ERROR(OnnxConst::GetDataAsT): Tensor data type not supported for Constant " + Name());
 		return {};
 	}
 	return std::get<std::vector<T>>(data);
@@ -150,7 +143,7 @@ std::string OnnxConst::PrintReshape() {
 	return res;
 }
 
-std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
+std::string OnnxConst::GetDataAsString(bool const doInitialize) {
 	std::string res = "";
 	if (GetDataSize() > 0) {
 
@@ -184,7 +177,6 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 		else if (std::holds_alternative<std::vector<uint32_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<uint32_t>();
 		}
-
 		else if (std::holds_alternative<std::vector<int64_t>>(data)) {
 			oss << GenerateNestedInitializerFromAny<int64_t>();
 		}
@@ -209,10 +201,48 @@ std::string OnnxConst::GetDataTypeString(bool const doInitialize) {
 	return res;
 }
 
+template<typename T>
+static std::vector<T> OnnxConst::ExtractDataFromTensor(const onnx::TensorProto& tensor) {
+	std::vector<T> result;
+	if (tensor.raw_data().size() > 0) {
+		return ParseByteData<T>(tensor.raw_data());
+	}
+	switch (tensor.data_type()) {
+	case (onnx::TensorProto_DataType_FLOAT):
+		return ParseRepeatedField<float, T>(tensor.float_data());
+	case (onnx::TensorProto_DataType_INT64):
+		return ParseRepeatedField<int64_t, T>(tensor.int64_data());
+	case (onnx::TensorProto_DataType_INT32):
+		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+	case (onnx::TensorProto_DataType_INT16):
+		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+	case (onnx::TensorProto_DataType_INT8):
+		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+	case (onnx::TensorProto_DataType_UINT64):
+		return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
+	case (onnx::TensorProto_DataType_UINT32):
+		return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
+	case (onnx::TensorProto_DataType_UINT16):
+		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+	case (onnx::TensorProto_DataType_UINT8):
+		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+	case (onnx::TensorProto_DataType_DOUBLE):
+		return ParseRepeatedField<double, T>(tensor.double_data());
+	case (onnx::TensorProto_DataType_STRING):
+		return ParseRepeatedField<std::string, T>(tensor.string_data());
+	case (onnx::TensorProto_DataType_BOOL):
+		return ParseRepeatedFieldBool<int32_t, T>(tensor.int32_data());
+	default:
+		throw std::runtime_error("ERROR(OnnxConst::ExtractDataFromTensor): Tensor data type " + GetDataTypeString(tensor.data_type()) + " not supported for Constant " + tensor.name());
+	}
+}
+
+
+
 std::string OnnxConst::GetConstantString(bool const doInitialize) {
 	std::string res = "";
 	res += PrintShape();
-	res += GetDataTypeString(doInitialize);
+	res += GetDataAsString(doInitialize);
 	res += PrintReshape();
 	return res;
 }

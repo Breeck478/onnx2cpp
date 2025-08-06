@@ -3,6 +3,7 @@
 #include "Utils.h"
 
 #include <string>
+using namespace toCpp;
 class EqualHandler : public OperatorHandler {
 public:
 	EqualHandler(const OnnxNode* node) : OperatorHandler(node) {}

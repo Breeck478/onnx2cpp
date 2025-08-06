@@ -1,5 +1,6 @@
 #include "OnnxNode.h"
 #include "Utils.h"
+using namespace toCpp;
 class GemmHandler : public OperatorHandler {
 public:
 	GemmHandler(const OnnxNode* node) : OperatorHandler(node) {}

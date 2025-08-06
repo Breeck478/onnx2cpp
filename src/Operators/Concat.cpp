@@ -1,5 +1,6 @@
 #include "OnnxNode.h" 
 #include "Utils.h"
+using namespace toCpp;
 class ConcatHandler : public OperatorHandler {
 public:
 	ConcatHandler(const OnnxNode* node) : OperatorHandler(node) {}

@@ -1,7 +1,7 @@
 #pragma once
 #include "Utils.h"
-
-std::string GetDataTypeString(const int enumValue) {
+using namespace toCpp;
+std::string toCpp::GetDataTypeString(const int enumValue) {
     switch (enumValue)
     {
     case    onnx::TensorProto_DataType_UNDEFINED: return "undefined";
@@ -34,7 +34,7 @@ std::string GetDataTypeString(const int enumValue) {
 }
 
 
-std::string join(const std::vector<std::string>& strings, const std::string& delimiter) {
+std::string toCpp::join(const std::vector<std::string>& strings, const std::string& delimiter) {
     std::string result;
     for (size_t i = 0; i < strings.size(); ++i) {
         result += strings[i];
@@ -45,7 +45,7 @@ std::string join(const std::vector<std::string>& strings, const std::string& del
     return result;
 }
 
-std::string remove_chars(const std::string& input, const std::string& chars_to_remove) {
+std::string toCpp::remove_chars(const std::string& input, const std::string& chars_to_remove) {
     std::string result = input;
     result.erase(std::remove_if(result.begin(), result.end(),
         [&chars_to_remove](char c) {
@@ -55,7 +55,7 @@ std::string remove_chars(const std::string& input, const std::string& chars_to_r
     return result;
 }
 
-std::vector<std::string> split(const std::string& str, const std::string& delimiter) {
+std::vector<std::string> toCpp::split(const std::string& str, const std::string& delimiter) {
 	std::vector<std::string> result;
 	size_t start = 0;
 	size_t end = str.find(delimiter);
@@ -67,3 +67,5 @@ std::vector<std::string> split(const std::string& str, const std::string& delimi
 	result.push_back(str.substr(start, end));
 	return result;
 }
+
+

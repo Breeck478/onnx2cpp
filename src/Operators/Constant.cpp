@@ -1,8 +1,8 @@
 #include "OnnxNode.h"
 #include "OnnxConst.h"
 #include "Utils.h"
-
 #include <string>
+using namespace toCpp;
 class ConstantHandler : public OperatorHandler {
 public:
 	ConstantHandler(const OnnxNode* node) : OperatorHandler(node) {}
@@ -25,7 +25,8 @@ public:
 						auto value = std::any_cast<onnx::TensorProto>(att.second);
 						OnnxConst constant(value);
 						constant.Name(node->GetOutputNames()[0]);
-						stream << constant.GetConstantString(false);
+						std::string res = constant.GetConstantString(false);
+						stream << res;
 					}
 					else if (att.first.rfind("value_", 0) == 0) {
 						std::cout << att.first << std::endl;

@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+using namespace toCpp;
 int main(int argc, char* argv[]) {
 	onnx2cpp onnx2cppInstance = onnx2cpp();
 	onnx2cppInstance.ParseInputs(argc, argv);

@@ -6,6 +6,7 @@
 #include "Utils.h"
 #include <onnx/shape_inference/implementation.h>
 #include "onnx/defs/schema.h"
+using namespace toCpp;
 int64_t OnnxTensor::batchSize = 1; // Default batch size, can be changed by user input
 using namespace std;
 

@@ -1,7 +1,7 @@
 #include "OnnxNode.h" 
 #include "OnnxTensor.h" 
 #include "Utils.h"
-
+using namespace toCpp;
 class PowHandler : public OperatorHandler {
 public:
 	PowHandler(const OnnxNode* node) : OperatorHandler(node) {}

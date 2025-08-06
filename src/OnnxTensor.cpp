@@ -3,7 +3,7 @@
 
 #include <algorithm>
 #include <iostream>
-
+using namespace toCpp;
 std::string OnnxTensor::GetDataTypeAsString() const {
 	if (hasStaticType) {
 		return GetDataTypeString(dataType);

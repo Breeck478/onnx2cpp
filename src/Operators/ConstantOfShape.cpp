@@ -3,6 +3,7 @@
 #include "Utils.h"
 
 #include <string>
+using namespace toCpp;
 class ConstantOfShapeHandler : public OperatorHandler {
 public:
 	ConstantOfShapeHandler(const OnnxNode* node) : OperatorHandler(node) {}
