@@ -12,7 +12,7 @@
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <memory>
 #include <vector>
-
+using namespace toCpp;
 
 onnx::ValueInfoProto makeValueInfoFromTensorProto(const onnx::TensorProto& tensorProto)
 {
@@ -41,7 +41,7 @@ bool load_input_data(const std::string& filename, onnx::TensorProto& result)
    fclose(f);
 
    if (nread != size)
-       std::runtime_error("Problem reading input data");
+	   throw std::runtime_error("Problem reading input data");
 
    ::google::protobuf::io::ArrayInputStream input_stream(data.data(), size); // Use data.data() here as well
    ::google::protobuf::io::CodedInputStream coded_stream(&input_stream);
@@ -83,11 +83,27 @@ std::unique_ptr<OnnxVar> get_inputVar_from_file(std::string& partial_path, int i
 	std::unique_ptr<OnnxVar> valueInfoPointer = std::make_unique<OnnxVar>(valueInfo);
 	return valueInfoPointer;
 }
+
 #ifdef ORT_COMPARE
-Ort::Value tensorProtoToOrtValue(const onnx::TensorProto& tensorProto, Ort::AllocatorWithDefaultOptions& allocator) {
+template <typename T>
+Ort::Value MakeOrtValueFromDataAndShape(Ort::AllocatorWithDefaultOptions& allocator, std::vector<int64_t> shape, std::vector<T> data) {
+	Ort::Value tensor = Ort::Value::CreateTensor<T>(allocator, shape.data(), shape.size());
+	T* tensor_data = tensor.GetTensorMutableData<T>();
+	if constexpr (!std::is_same_v<T, bool>) {
+		std::memcpy(tensor_data, data.data(), data.size() * sizeof(T));
+	}
+	else {
+		for (size_t i = 0; i < data.size(); ++i) {
+			tensor_data[i] = data[i] != 0;
+		}
+	}
+	return tensor;
+}
+
+Ort::Value TensorProtoToOrtValue(const onnx::TensorProto& tensorProto, Ort::AllocatorWithDefaultOptions& allocator) {
 	// Shape extrahieren
 	std::vector<int64_t> shape;
-	for (int i = 0; i < tensorProto.dims_size(); i++) {
+	for (int64_t i = 0; i < tensorProto.dims_size(); i++) {
 		shape.push_back(tensorProto.dims(i));
 	}
 
@@ -96,56 +112,117 @@ Ort::Value tensorProtoToOrtValue(const onnx::TensorProto& tensorProto, Ort::Allo
 	// Je nach Datentyp unterschiedlich behandeln
 	switch (tensorProto.data_type()) {
 	case onnx::TensorProto::FLOAT: {
-		std::vector<float> data;
-
-		// Daten aus TensorProto extrahieren
-		if (tensorProto.float_data_size() > 0) {
-			for (int i = 0; i < tensorProto.float_data_size(); i++) {
-				data.push_back(tensorProto.float_data(i));
-			}
-		}
-		else if (!tensorProto.raw_data().empty()) {
-			const std::string& raw_data = tensorProto.raw_data();
-			const char* raw_ptr = raw_data.data();
-			size_t float_count = raw_data.size() / sizeof(float);
-
-			data.resize(float_count);
-			std::memcpy(data.data(), raw_ptr, raw_data.size());
-		}
-
-		Ort::Value tensor = Ort::Value::CreateTensor<float>(allocator, shape.data(), shape.size());
-		float* tensor_data = tensor.GetTensorMutableData<float>();
-		std::memcpy(tensor_data, data.data(), data.size() * sizeof(float));
-		return tensor;
+		std::vector<float> data = OnnxConst::ExtractDataFromTensor<float>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
-
-	case onnx::TensorProto::INT32: {
-		std::vector<int32_t> data;
-
-		if (tensorProto.int32_data_size() > 0) {
-			for (int i = 0; i < tensorProto.int32_data_size(); i++) {
-				data.push_back(tensorProto.int32_data(i));
-			}
-		}
-		else if (!tensorProto.raw_data().empty()) {
-			const std::string& raw_data = tensorProto.raw_data();
-			const char* raw_ptr = raw_data.data();
-			size_t int_count = raw_data.size() / sizeof(int32_t);
-
-			data.resize(int_count);
-			std::memcpy(data.data(), raw_ptr, raw_data.size());
-		}
-		Ort::Value tensor = Ort::Value::CreateTensor<int32_t>(allocator, shape.data(), shape.size());
-		int32_t* tensor_data = tensor.GetTensorMutableData<int32_t>();
-		std::memcpy(tensor_data, data.data(), data.size() * sizeof(int32_t));
-		return tensor;
-		//return Ort::Value::CreateTensor<int32_t>(allocator, data.data(), data.size(),	shape.data(), shape.size());
+	case onnx::TensorProto_DataType_INT64: {
+		std::vector<int64_t> data = OnnxConst::ExtractDataFromTensor<int64_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
-
-								
+	case onnx::TensorProto_DataType_INT32: {
+		std::vector<int32_t> data = OnnxConst::ExtractDataFromTensor<int32_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_INT16: {
+		std::vector<int16_t> data = OnnxConst::ExtractDataFromTensor<int16_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_INT8: {
+		std::vector<int8_t> data = OnnxConst::ExtractDataFromTensor<int8_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_UINT64: {
+		std::vector<uint64_t> data = OnnxConst::ExtractDataFromTensor<uint64_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_UINT32: {
+		std::vector<uint32_t> data = OnnxConst::ExtractDataFromTensor<uint32_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_UINT16: {
+		std::vector<uint16_t> data = OnnxConst::ExtractDataFromTensor<uint16_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_UINT8: {
+		std::vector<uint8_t> data = OnnxConst::ExtractDataFromTensor<uint8_t>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_DOUBLE: {
+		std::vector<double> data = OnnxConst::ExtractDataFromTensor<double>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_STRING: {
+		throw std::runtime_error("Error(TensorProtoToOrtValue): String type not supported by runtime "); // is not supported by ONNX Runtime. Dont know why. Could add new TypeToTensorType in onnxruntime_cxx_inline.h for string. But might be on purpose by ONNX?
+		//std::vector<std::string> data = OnnxConst::ExtractDataFromTensor<std::string>(tensorProto);
+		//return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
+	case onnx::TensorProto_DataType_BOOL: {
+		std::vector<bool> data = OnnxConst::ExtractDataFromTensor<bool>(tensorProto);
+		return MakeOrtValueFromDataAndShape(allocator, shape, data);
+	}
 	default:
-		throw std::runtime_error("Nicht unterstützter TensorProto Datentyp");
+		throw std::runtime_error("Error(TensorProtoToOrtValue): Not supported TensorProto datatype: " + GetDataTypeString(tensorProto.data_type()));
 	}
+}
+
+template<typename T>
+void ExtractDataFromOrtValue(onnx::TensorProto& tensorProto, const Ort::Value& ortTensor) {
+	const T* data = ortTensor.GetTensorData<T>();
+	size_t num_elements = ortTensor.GetTensorTypeAndShapeInfo().GetElementCount();
+	std::string raw(reinterpret_cast<const char*>(data), num_elements * sizeof(T));
+	tensorProto.set_raw_data(raw);
+}
+
+
+void SetTensorProtoFromOrtValue(onnx::TensorProto& tensorProto, const Ort::Value& ortTensor, const std::string name) {
+	tensorProto.set_name(name);
+	tensorProto.set_data_type(ortTensor.GetTensorTypeAndShapeInfo().GetElementType());
+	std::vector<int64_t> shape = ortTensor.GetTensorTypeAndShapeInfo().GetShape();
+	for (size_t j = 0; j < ortTensor.GetTensorTypeAndShapeInfo().GetShape().size(); ++j) {
+		tensorProto.add_dims(shape[j]);
+	}
+	switch (ortTensor.GetTensorTypeAndShapeInfo().GetElementType()) {
+	case onnx::TensorProto_DataType_FLOAT:
+		ExtractDataFromOrtValue<float>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_INT64):
+		ExtractDataFromOrtValue<int64_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_INT32):
+		ExtractDataFromOrtValue<int32_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_INT16):
+		ExtractDataFromOrtValue<int16_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_INT8):
+		ExtractDataFromOrtValue<int8_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_UINT64):
+		ExtractDataFromOrtValue<uint64_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_UINT32):
+		ExtractDataFromOrtValue<uint32_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_UINT16):
+		ExtractDataFromOrtValue<uint16_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_UINT8):
+		ExtractDataFromOrtValue<uint8_t>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_DOUBLE):
+		ExtractDataFromOrtValue<double>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_STRING):
+		ExtractDataFromOrtValue<std::string>(tensorProto, ortTensor);
+		break;
+	case (onnx::TensorProto_DataType_BOOL):
+		ExtractDataFromOrtValue<bool>(tensorProto, ortTensor);
+		break;
+	default:
+		throw std::runtime_error("ERROR(SetTensorProtoFromOrtValue): Tensor data type " + GetDataTypeString(tensorProto.data_type()) + " not supported for Constant " + tensorProto.name());
+	}
+
+
 }
 
 void get_ort_results(const std::string& modelPath, std::vector<onnx::TensorProto> inputs, std::vector<std::unique_ptr<OnnxConst>>& outputs)
@@ -166,18 +243,25 @@ void get_ort_results(const std::string& modelPath, std::vector<onnx::TensorProto
 	std::vector<Ort::Value> ortInputs;
 	Ort::AllocatorWithDefaultOptions allocator;
 	for (size_t i = 0; i < inputs.size(); ++i) {
-		Ort::Value inputTensor = tensorProtoToOrtValue(inputs[i], allocator);
+		try {
+			Ort::Value inputTensor = TensorProtoToOrtValue(inputs[i], allocator);
+
 		if (inputTensor.IsTensor()) {
 			auto outputInfo = inputTensor.GetTensorTypeAndShapeInfo();
 			std::vector<int64_t> outputShape = outputInfo.GetShape();
 			size_t num_elems = 1;
 			for (auto d : outputShape) num_elems *= d; // Gesamtanzahl der Werte berechnen
 
-			// Beispiel für float-Ausgabe:
+			// Beispiel fï¿½r float-Ausgabe:
 			float* outputData = inputTensor.GetTensorMutableData<float>();
 			std::vector<float> outputVec(outputData, outputData + num_elems);
 		}
 		ortInputs.push_back(std::move(inputTensor));
+		}
+		catch (const std::exception& e) {
+			std::cerr << "ERROR(get_ort_results): Error converting input tensor: " << e.what() << std::endl;
+			exit(1);
+		}
 	}
 	try {
 		auto output_tensors = session.Run(session.GetInputNames(), ortInputs, session.GetOutputNames());
@@ -185,49 +269,39 @@ void get_ort_results(const std::string& modelPath, std::vector<onnx::TensorProto
 			Ort::Value& output_tensor = output_tensors[i];
 			// Convert Ort::Value to onnx::TensorProto
 			onnx::TensorProto tensorProto;
-			tensorProto.set_name(session.GetOutputNames()[i]);
-			tensorProto.set_data_type(output_tensor.GetTensorTypeAndShapeInfo().GetElementType());
-			std::vector<int64_t> shape = output_tensor.GetTensorTypeAndShapeInfo().GetShape();
-			for (size_t j = 0; j < output_tensor.GetTensorTypeAndShapeInfo().GetShape().size(); ++j) {
-				tensorProto.add_dims(shape[j]);
-			}
+			SetTensorProtoFromOrtValue(tensorProto, output_tensor, session.GetOutputNames()[i]);
 
-			auto outputType = output_tensor.GetTensorTypeAndShapeInfo().GetElementType();
-			std::cout << "//Output Element Type: " << outputType << std::endl;
-			if (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_FLOAT) {
-				//const float* data = output_tensor.GetTensorData<float>();
-				//tensorProto.mutable_float_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
-				if (output_tensor.IsTensor()) {
-					auto outputInfo = output_tensor.GetTensorTypeAndShapeInfo();
-					std::vector<int64_t> outputShape = outputInfo.GetShape();
-					size_t num_elems = 1;
-					for (auto d : outputShape) num_elems *= d; // Gesamtanzahl der Werte berechnen
 
-					// Beispiel für float-Ausgabe:
-					float* outputData = output_tensor.GetTensorMutableData<float>();
-					std::vector<float> outputVec(outputData, outputData + num_elems);
-				}
-				const float* data = output_tensor.GetTensorData<float>();
-				size_t num_elements = output_tensor.GetTensorTypeAndShapeInfo().GetElementCount();
-				tensorProto.mutable_raw_data()->assign(reinterpret_cast<const char*>(data), reinterpret_cast<const char*>(data) + num_elements * sizeof(float));
-			}
-			else if (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_INT32) {
-				const int32_t* data = output_tensor.GetTensorData<int32_t>();
-				tensorProto.mutable_int32_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
-			}
-			else {
-				std::cerr << "Unsupported tensor type in ONNX Runtime output." << std::endl;
-				exit(1);
-			}
+			
+			//switch (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_FLOAT) {
+			//	//const float* data = output_tensor.GetTensorData<float>();
+			//	//tensorProto.mutable_float_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
+			//	const float* data = output_tensor.GetTensorData<float>();
+			//	size_t num_elements = output_tensor.GetTensorTypeAndShapeInfo().GetElementCount();
+			//	tensorProto.mutable_raw_data()->assign(reinterpret_cast<const char*>(data), reinterpret_cast<const char*>(data) + num_elements * sizeof(float));
+			//}
+			//else if (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_INT32) {
+			//	const int32_t* data = output_tensor.GetTensorData<int32_t>();
+			//	tensorProto.mutable_int32_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
+			//}
+			//else if (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_INT64) {
+			//	const int64_t* data = output_tensor.GetTensorData<int64_t>();
+			//	tensorProto.mutable_int64_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
+			//}
+			//else {
+			//	std::cerr << "ERROR(get_ort_results): Unsupported tensor type in ONNX Runtime output." << std::endl;
+			//	exit(1);
+			//}
 			std::unique_ptr<OnnxConst> out = std::make_unique<OnnxConst>(tensorProto);
 			outputs.push_back(std::move(out));
 		}
 	}
 	catch (const Ort::Exception& e) {
-		std::cerr << "Error during ONNX Runtime session run: " << e.what() << std::endl;
+		std::cerr << "ERROR(get_ort_results): Error during ONNX Runtime session run: " << e.what() << std::endl;
 		exit(1);
 	}
 }
+
 #endif
 int main(int argc, char* argv[])
 {
@@ -240,8 +314,10 @@ int main(int argc, char* argv[])
 		std::cerr << " <test_data_set> integer value: select the test dataset to run this test against. (Most tests have only 0)" << std::endl;
 		exit(1);
 	}
-	std::cout << "#include <xtensor/xio.hpp>" << std::endl;
+	//std::cout << "#include <xtensor/xio.hpp>" << std::endl;
+	std::cout << "#include <xtensor.hpp>" << std::endl;
 	// Load the ONNX model
+	float accuracy = std::stod(argv[2]);
 	onnx::ModelProto onnx_model;
 	std::string dir(argv[1]);
 	std::string model_fn = dir + "/model.onnx";
@@ -293,7 +369,7 @@ int main(int argc, char* argv[])
 		get_ort_results(model_fn, protoInputs, references);
 	}
 	catch (const std::exception& e) {
-		std::cerr << "Error during ONNX Runtime processing: " << e.what() << std::endl;
+		std::cout << "Error during ONNX Runtime processing: " << e.what() << std::endl;
 		exit(1);
 	}
 #else
@@ -316,6 +392,7 @@ int main(int argc, char* argv[])
 	std::vector<std::string> referenceNames;
 
 	std::cout << "int main(void) {" << std::endl;
+	std::cout << "try {" << std::endl;
 	std::cout << "// Graph inputs" << std::endl;
 	for (size_t i = 0; i < inputs.size(); ++i) {
 		std::cout << inputs[i]->GetConstantString() << std::endl;
@@ -338,16 +415,27 @@ int main(int argc, char* argv[])
 	if (!inputs.empty() && !outputs.empty()) {
 		hasInAndOut = ", ";
 	}
+	
 	std::cout << functionName << "(" << join(inputNames, ", ") << hasInAndOut << join(outputNames, ", ") << "); " << std::endl;
 	for (size_t i = 0; i < outputs.size(); ++i) {
 		if (i < references.size()) {
-			std::cout << "if(" << outputNames[i] << "!=" << referenceNames[i] << "){" << std::endl;
+			std::cout << "if(" << outputNames[i] << ".shape() !=" << referenceNames[i] << ".shape()){" << std::endl;
+			std::cout << "std::cout << \"Test failed because shape is not equal for output " << outputNames[i] << ".\\n Expected: \\n\" << " << referenceNames[i] << " << \"\\n Actual: \\n\" << " << outputNames[i] << " << std::endl;" << std::endl;
+			std::cout << "return 1; " << std::endl;
+			std::cout << "}" << std::endl;
+			std::cout << "for(std::size_t i = 0; i < "<< outputNames[i]<< ".size(); ++i){" << std::endl;
+			std::cout << "if((" << outputNames[i] << ".flat(i) - " << referenceNames[i] << ".flat(i)) > "<< accuracy << "){" << std::endl;
 			std::cout << "std::cout << \"Test failed for output " << outputNames[i] << ".\\n Expected: \\n\" << " << referenceNames[i] << " << \"\\n Actual: \\n\" << " << outputNames[i] << " << std::endl;" << std::endl;
 			std::cout << "return 1; " << std::endl;
 			std::cout << "}" << std::endl;
+			std::cout << "}" << std::endl;
 		}
 	}
-
+	std::cout << "} catch (const std::exception& e) {" << std::endl;
+	std::cout << "std::cerr << \"Exception caught: \" << e.what() << std::endl;" << std::endl;
+	std::cout << "return 1;" << std::endl;
+	std::cout << "}" << std::endl;
+	std::cout << "std::cout << \"Test passed!\" << std::endl;" << std::endl;
 	std::cout << "return 0;" << std::endl;
 	std::cout << "}" << std::endl;
 

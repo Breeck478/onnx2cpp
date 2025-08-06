@@ -1,4 +1,4 @@
-#include <xtensor/xarray.hpp>
+#include <xtensor.hpp>
 
 template<typename T>
 void Sin(const xt::xarray<T>& x, xt::xarray<T>& r){
