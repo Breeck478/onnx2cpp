@@ -17,6 +17,11 @@ OnnxGraph::OnnxGraph(onnx::GraphProto graph, bool isInitial, std::vector<std::st
 		RegisterIOs();
 	}
 }
+OnnxGraph::OnnxGraph() {
+	name = "Undefined"; // Default name, can be changed later
+	isInitialGraph = false; // Default is not initial graph
+	doUseTemplate = false; // Default is not to use template
+}
 
 void OnnxGraph::RegisterIOs() {
 	// Set all IOs to static or non tatic type depending on user Input

@@ -17,12 +17,17 @@ namespace toCpp {
 		std::string GetShapeName() const;
 		//onnx::TypeProto GetTypeProto() const;
 		//std::string GetDataTypeString() const;
-		std::string GetVariableString();
+		std::string GetVariableString(const bool ignorStatic = false);
 		bool ContainsUnkownDim() const { return containsUnknowDim; }
 		void SetContainsUnkownDim() { containsUnknowDim = true; }
 		bool IsIO() const { return isInput || isOutput; }
 		bool IsInput() const { return isInput; }
 		bool IsOutput() const { return isOutput; }
+		// for testduit to get correct initial string
+		void SetIO(bool isInput, bool isOutput) {
+			this->isInput = isInput;
+			this->isOutput = isOutput;
+		}
 		void PreProcess();
 		bool NeedsInit() const { return needsInit; }
 		void NeedsInit(bool needsInit) { this->needsInit = needsInit; }

@@ -1,4 +1,4 @@
-#include <xtensor/xarray.hpp>
+#include <xtensor.hpp>
 
 template<typename T>
 void Reshape(const xt::xarray<T>& x, , const xt::xarray<T>& y, xt::xarray<T>& r) {

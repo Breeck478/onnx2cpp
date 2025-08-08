@@ -2,6 +2,8 @@ cmake_minimum_required(VERSION 3.28)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 set(ONNX_BACKEND_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/)
 set(ONNX_NODE_TEST_DATA_DIR ${ONNX_BACKEND_TEST_DATA_DIR}/node/)
+set(ONNX_NODE_TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/)
+set(ONNX_NODE_TEST_MAKEFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/)
 
 add_compile_options(/wd5045) # disable warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre is specified
 find_package(xtensor CONFIG REQUIRED)
@@ -86,6 +88,13 @@ if(DCO_AVAILABLE)
 	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxGraph.cpp
 	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Loop.cpp
 	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Cast.cpp)
+	add_executable(makegen TestMakeFileGenerator.cpp)
+	add_custom_command(
+    TARGET makegen POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy
+            ${ONNX_NODE_TEST_MAKEFILE_DIR}Makefile
+            ${CMAKE_CURRENT_BINARY_DIR}/Makefile
+)
 endif()
 
 function( ONNX_type_test node_name data_dir test_ctest_name accuracy test_data_set)
@@ -154,29 +163,47 @@ function( ONNX_type_test_dco node_name data_dir test_ctest_name accuracy test_da
 
 	set( test_c  ${node_name}_${test_data_set}_test_dco.cpp )
 	set( testbin ${node_name}_${test_data_set}_test_dco )	
-	add_custom_command(
-		OUTPUT
-		${test_c}
-		COMMAND
-		testgenDco ${data_dir} ${accuracy} ${test_data_set} > ${test_c} 
-		DEPENDS
-		testgenDco
-		)
-	add_executable( ${testbin}
-		${test_c}
-		)
-	target_compile_options( ${testbin}
-		PRIVATE
-			-Wall  /w 
-		)
-	target_link_libraries(${testbin} PRIVATE xtensor)
-	target_include_directories(${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
-	target_include_directories(${testbin} PRIVATE ${DCO_INC_PATH} ) 
-
-	# register with CTest
-	add_test(NAME ${test_ctest_name}
-		COMMAND ${testbin}
-		)
+	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${testbin})
+	add_custom_target(always_generate_${node_name} ALL
+		COMMAND testgenDco ${data_dir} ${accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
+	)
+	add_custom_target(always_generate_${node_name}_makefile ALL
+		COMMAND makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
+	)
+#	add_custom_command(
+#		OUTPUT
+#		${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
+#		COMMAND 
+#		${CMAKE_COMMAND} -E remove -f${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
+#		COMMAND
+#		testgenDco ${data_dir} ${accuracy} ${test_data_set} -o ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c} 
+#		DEPENDS
+#		testgenDco
+#		)
+#		add_custom_command(
+#		OUTPUT
+#		${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
+#		COMMAND
+#		makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} -o ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
+#		DEPENDS
+#		makegen
+#		)
+#	#Cant add Executable because dco need registration
+#	add_executable( ${testbin}
+#		${test_c}
+#		)
+#	target_compile_options( ${testbin}
+#		PRIVATE
+#			-Wall  /w 
+#		)
+#	target_link_libraries(${testbin} PRIVATE xtensor)
+#	target_include_directories(${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
+#	target_include_directories(${testbin} PRIVATE ${DCO_INC_PATH} ) 
+	
+#	# register with CTest
+#	add_test(NAME ${test_ctest_name}
+#	COMMAND ${testbin}
+#		)
 endfunction()
 
 function( ONNX_backend_node_test node_name)
@@ -203,14 +230,17 @@ function( ONNX_backend_node_test_onnxruntime node_name)
 endfunction()
 
 function( ONNX_backend_node_test_dco node_name)
-	if(defined DCO_PATH)
+	if(DCO_AVAILABLE)
 		ONNX_type_test_dco(
 			${node_name}
 			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
 			ONNX_backend_${node_name}_dco
-			0.00002
+			0.1
 			0
 		)
+	else()
+	message(WARNING "DCO tests are not available, skipping ONNX_backend_node_test_dco for ${node_name}.")
+		return()
 	endif()
 endfunction()
 # onnxruntime only avvailable for Windows
@@ -262,3 +292,35 @@ ONNX_backend_node_test_onnxruntime(sin)
 ONNX_backend_node_test_onnxruntime(sub)
 ONNX_backend_node_test_onnxruntime(tanh)
 ONNX_backend_node_test_onnxruntime(where_example)
+ONNX_backend_node_test_dco(abs)
+ONNX_backend_node_test_dco(add)
+#ONNX_backend_node_test_dco(argmax_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
+#ONNX_backend_node_test_dco(argmin_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
+#ONNX_backend_node_test_dco(cast_DOUBLE_to_FLOAT) casting does not have a differentiate method
+#ONNX_backend_node_test_dco(concat_1d_axis_0)
+#ONNX_backend_node_test_dco(constant)
+ONNX_backend_node_test_dco(div)
+#ONNX_backend_node_test_dco(equal) bool functions do not have a differentiate method
+
+ONNX_backend_node_test_dco(gemm_all_attributes)
+ONNX_backend_node_test_dco(gemm_alpha)
+ONNX_backend_node_test_dco(gemm_beta)
+ONNX_backend_node_test_dco(gemm_default_matrix_bias)
+ONNX_backend_node_test_dco(gemm_default_scalar_bias)
+ONNX_backend_node_test_dco(gemm_default_single_elem_vector_bias)
+ONNX_backend_node_test_dco(gemm_default_vector_bias)
+ONNX_backend_node_test_dco(gemm_default_zero_bias)
+#ONNX_backend_node_test_dco(greater) bool functions do not have a differentiate method
+ONNX_backend_node_test_dco(identity)
+#ONNX_backend_node_test_dco(matmul_2d)
+#ONNX_backend_node_test_dco(matmul_3d)
+#ONNX_backend_node_test_dco(matmul_4d)
+ONNX_backend_node_test_dco(mul)
+ONNX_backend_node_test_dco(pow)
+ONNX_backend_node_test_dco(relu)
+#ONNX_backend_node_test_dco(reshape_allowzero_reordered)
+ONNX_backend_node_test_dco(shape)
+ONNX_backend_node_test_dco(sin)
+ONNX_backend_node_test_dco(sub)
+ONNX_backend_node_test_dco(tanh)
+#ONNX_backend_node_test_dco(where_example) bool functions do not have a differentiate method

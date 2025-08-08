@@ -4,8 +4,8 @@
 #include <algorithm>
 #include <iostream>
 using namespace toCpp;
-std::string OnnxTensor::GetDataTypeAsString() const {
-	if (hasStaticType) {
+std::string OnnxTensor::GetDataTypeAsString(const bool ignorStatic) const {
+	if (ignorStatic || hasStaticType) {
 		return GetDataTypeString(dataType);
 	}
 	else {

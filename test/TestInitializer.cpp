@@ -321,7 +321,7 @@ int main(int argc, char* argv[])
 	onnx::ModelProto onnx_model;
 	std::string dir(argv[1]);
 	std::string model_fn = dir + "/model.onnx";
-	onnx::LoadProtoFromPath(model_fn, onnx_model);
+	onnx::LoadProtoFromPath(model_fn, onnx_model); 
 	// Print model to file specified by cmake
 	std::string functionName = onnx2cpp::MakeCppFile(onnx_model, std::cout, true);
 	// Print testsuite to get executed by CTest
@@ -424,7 +424,7 @@ int main(int argc, char* argv[])
 			std::cout << "return 1; " << std::endl;
 			std::cout << "}" << std::endl;
 			std::cout << "for(std::size_t i = 0; i < "<< outputNames[i]<< ".size(); ++i){" << std::endl;
-			std::cout << "if((" << outputNames[i] << ".flat(i) - " << referenceNames[i] << ".flat(i)) > "<< accuracy << "){" << std::endl;
+			std::cout << "if(std::abs(" << outputNames[i] << ".flat(i) - " << referenceNames[i] << ".flat(i)) > "<< accuracy << "){" << std::endl;
 			std::cout << "std::cout << \"Test failed for output " << outputNames[i] << ".\\n Expected: \\n\" << " << referenceNames[i] << " << \"\\n Actual: \\n\" << " << outputNames[i] << " << std::endl;" << std::endl;
 			std::cout << "return 1; " << std::endl;
 			std::cout << "}" << std::endl;

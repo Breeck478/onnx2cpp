@@ -1,4 +1,4 @@
-#include <xtensor/xarray.hpp>
+#include <xtensor.hpp>
 
 
 template <typename Tx, typename Ty, typename Tr>

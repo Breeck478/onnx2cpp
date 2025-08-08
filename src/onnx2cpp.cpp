@@ -2,7 +2,7 @@
 //
 #pragma once
 #include "onnx2cpp.h"
-#include "OnnxGraph.h"
+
 #include "Utils.h"
 #include <onnx/shape_inference/implementation.h>
 #include "onnx/defs/schema.h"
@@ -92,7 +92,7 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto &model, ostream &stream, int batch
 
 }
 
-string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allStatic) {
+string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allStatic, OnnxGraph &graphOut) {
 	try
 	{
 		onnx::shape_inference::DataValueMap aMap;
@@ -113,6 +113,7 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allS
 		ostringstream oss;
 		graph.PrintGraph(oss);
 		stream << oss.str();
+		graphOut = graph; // Assign the graph to the output parameter
 		return graph.Name(); // return graph name for function call in testsuit
 	}
 	catch (const std::exception& e)
@@ -123,6 +124,39 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allS
 	return ""; // Return empty string if an error occurs
 
 }
+
+string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allStatic) {
+	try
+	{
+		onnx::shape_inference::DataValueMap aMap;
+		onnx::shape_inference::InferShapes(model, onnx::OpSchemaRegistry::Instance(), onnx::ShapeInferenceOptions().error_mode, &aMap);
+		onnx::shape_inference::SymbolTableImpl symbolTable;
+		symbolTable.addFromGraph(model.graph());
+		onnx::GraphProto graphProto = model.graph();
+		std::vector<std::string> staticInputs;
+		std::vector<std::string> staticOutputs;
+		if (allStatic) {
+			for (const auto& input : model.graph().input())
+				staticInputs.push_back(input.name());
+			for (const auto& output : model.graph().output())
+				staticOutputs.push_back(output.name());
+		}
+		OnnxGraph graph(graphProto, true, staticInputs, staticOutputs);
+		graph.PreProcess();
+		ostringstream oss;
+		graph.PrintGraph(oss);
+		stream << oss.str();
+		return graph.Name(); // return graph name for function call in testsuit
+	}
+	catch (const std::exception& e)
+	{
+		cout << "Error: " << e.what() << endl;
+		return ""; // Return empty string if an error occurs
+	}
+	return ""; // Return empty string if an error occurs
+
+}
+
 
 
 

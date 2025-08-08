@@ -11,7 +11,7 @@ namespace toCpp {
 		void Name(std::string name) { this->name = name; }
 		std::string Name() const { return remove_chars(name); }
 		std::vector<int> Shape() const;
-		std::string GetDataTypeAsString() const;
+		std::string GetDataTypeAsString(const bool ignorStatic = false) const;
 		void DataType(int32_t type) { this->dataType = type; }
 		int32_t DataType()const { return dataType; }
 		std::string GetVariableString();

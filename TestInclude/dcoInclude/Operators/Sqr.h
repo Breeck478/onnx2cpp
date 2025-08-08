@@ -1,7 +1,7 @@
-#include <xtensor/xarray.hpp>
+#include <xtensor.hpp>
 
 template<typename T>
-void Sqr(const xt::xarray<T>& x, xt::xarray<T>& r){
+void Tanh(const xt::xarray<T>& x, xt::xarray<T>& r){
   r = x * x;
 }
 

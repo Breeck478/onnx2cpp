@@ -4,12 +4,12 @@
 #include <cassert>
 #include <iostream>
 // #include <xtensor/dotUtil.h>
-#include <xtensor/xarray.hpp>
+#include <xtensor.hpp>
 #include <xtensor-blas/xlinalg.hpp>
-#include <xtensor/xadapt.hpp>
-#include <xtensor/xstrides.hpp>
-#include <xtensor/xeval.hpp>
-#include <xtensor/xsort.hpp>
+//#include <xtensor/xadapt.hpp>
+//#include <xtensor/xstrides.hpp>
+//#include <xtensor/xeval.hpp>
+//#include <xtensor/xsort.hpp>
 struct ArgMinParams
 {
   const int axis = 0;
@@ -32,11 +32,11 @@ void ArgMin(
     xt::xarray<T> tempRes = xt::argmin(data, axis);
     if ((keepdims == 1) && (tempRes.dimension() < data.dimension()))
     {
-      reduced = xt::cast<int>(xt::expand_dims(tempRes, axis));
+      reduced = xt::cast<int64_t>(xt::expand_dims(tempRes, axis));
     }
     else
     {
-      reduced = xt::cast<int>(tempRes);
+      reduced = xt::cast<int64_t>(tempRes);
     }
   }
   else
@@ -47,11 +47,11 @@ void ArgMin(
     tempRes = tempData.shape()[axis] - tempRes - 1;
     if (keepdims == 1)
     {
-      reduced = xt::cast<int>(xt::expand_dims(tempRes, axis));
+      reduced = xt::cast<int64_t>(xt::expand_dims(tempRes, axis));
     }
     else
     {
-      reduced = xt::cast<int>(tempRes);
+      reduced = xt::cast<int64_t>(tempRes);
     }
   }
 }
