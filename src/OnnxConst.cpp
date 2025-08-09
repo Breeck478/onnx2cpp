@@ -195,9 +195,6 @@ std::string OnnxConst::GetDataAsString(bool const doInitialize) {
 		}
 		res += oss.str() + ";";
 	}
-	else {
-		res += "xt::xarray<" + GetDataTypeAsString() + "> " + Name() + ";"; // Initialize with zeros
-	}
 	return res;
 }
 
@@ -242,6 +239,10 @@ static std::vector<T> OnnxConst::ExtractDataFromTensor(const onnx::TensorProto& 
 std::string OnnxConst::GetConstantString(bool const doInitialize) {
 	std::string res = "";
 	res += PrintShape();
+	if (GetDataSize() <= 0) {
+		res += "xt::xarray<" + GetDataTypeAsString() + "> " + Name() + " = xt::zeros<" + GetDataTypeAsString() + ">(" + GetShapeName() + ");\n"; // Initialize with zeros
+		return res;
+	}
 	res += GetDataAsString(doInitialize);
 	res += PrintReshape();
 	return res;
