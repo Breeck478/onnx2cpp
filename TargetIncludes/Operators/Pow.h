@@ -1,9 +1,0 @@
-#include <xtensor/xarray.hpp>
-
-
-template <typename Tx, typename Ty, typename Tr>
-void Pow(const xt::xarray<Tx> &x, const xt::xarray<Ty> &y, xt::xarray<Tr> &r)
-{
-  r = xt::power(x, y);
-}
-
