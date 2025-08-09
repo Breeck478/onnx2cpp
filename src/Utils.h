@@ -16,7 +16,7 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (dataField.size() <= 0) {
-			throw std::runtime_error("Tensor has no raw_data field.");
+			return result; ; // throw std::runtime_error("Tensor has no raw_data field.");
 		}
 
 		size_t count = dataField.size();
@@ -45,7 +45,7 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (rpf.size() <= 0) {
-			throw std::runtime_error("ERROR(ParseRepeatedField): Given repeated field does not hold any Data");
+			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedField): Given repeated field does not hold any Data");
 		}
 
 		size_t count = rpf.size();
@@ -68,7 +68,7 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (rpf.size() <= 0) {
-			throw std::runtime_error("ERROR(ParseRepeatedFiel): Given repeated field does not hold any Data");
+			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedFiel): Given repeated field does not hold any Data");
 		}
 
 		size_t count = rpf.size();
@@ -88,7 +88,7 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (rpf.size() <= 0) {
-			throw std::runtime_error("ERROR(ParseRepeatedField): Given repeated field does not hold any Data");
+			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedField): Given repeated field does not hold any Data");
 		}
 
 		size_t count = rpf.size();
