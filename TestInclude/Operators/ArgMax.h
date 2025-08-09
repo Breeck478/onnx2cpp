@@ -1,15 +1,5 @@
-#include <cmath>
-#include <vector>
-#include <stdexcept>
-#include <cassert>
-#include <iostream>
-// #include <xtensor/dotUtil.h>
 #include <xtensor.hpp>
 #include <xtensor-blas/xlinalg.hpp>
-//#include <xtensor/xadapt.hpp>
-//#include <xtensor/xstrides.hpp>
-//#include <xtensor/xeval.hpp>
-//#include <xtensor/xsort.hpp>
 struct ArgMaxParams
 {
   const int axis = 0;

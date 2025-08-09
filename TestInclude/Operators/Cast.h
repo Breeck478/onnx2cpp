@@ -1,25 +1,18 @@
-#include <cmath>
-#include <vector>
-#include <stdexcept>
-#include <cassert>
-#include <iostream>
 #include <xtensor.hpp>
-#include <xtensor-blas/xlinalg.hpp>
-//#include <xtensor/xadapt.hpp>
-//#include <xtensor/xstrides.hpp>
-//#include <xtensor/xeval.hpp>
+#include <optional>
 struct CastParams
 {
   const std::string round_mode = "up";
   const int saturate = 1;
-  const int to = 0;
+  const std::optional<int> to = 0;
 };
 template <typename Tx, typename Tr>
-void Cast(const xt::xarray<Tx>& x, xt::xarray<Tr>& r, const CastParams& params = CastParams())
+void Cast(const xt::xarray<Tx>& input, xt::xarray<Tr>& output, const CastParams& params = CastParams())
 {
- /*   std::string round_mode = params.round_mode;
-    int saturate = params.saturate;
-    int to = params.to;*/
-	r = xt::cast<Tr>(x);
+	// Check if params.to is set because it is required by onnx and check if Tr matches data type defined by params.to
+	/*if (params.to.has_value() && typeid(Tr) != typeid(params.to.value())) {
+		throw std::runtime_error("Type mismatch: cannot cast to the specified type.");
+	}*/
+	output = xt::cast<Tr>(input);
 
 }

@@ -14,6 +14,9 @@ public:
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
+	bool OperatorSpecificTensorTypes() const override {
+		return true; // The output type is alway given by the output Tensor type
+	}
 	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {

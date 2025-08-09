@@ -1,9 +1,10 @@
 #include <xtensor.hpp>
 
 
+//a,b and c do not have to be the same type because it could be an dco type
 template <typename Tx, typename Ty, typename Tr>
-void Add(const xt::xarray<Tx> &x, const xt::xarray<Ty>& y, xt::xarray<Tr> &r)
+void Add(const xt::xarray<Tx> &a, const xt::xarray<Ty>& b, xt::xarray<Tr> &c)
 {
-	r = x + y;
+	c = a + b;
 }
 

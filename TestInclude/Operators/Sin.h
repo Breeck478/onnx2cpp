@@ -1,8 +1,8 @@
 #include <xtensor.hpp>
 
 template<typename T>
-void Sin(const xt::xarray<T>& x, xt::xarray<T>& r){
-  r = xt::sin(x);
+void Sin(const xt::xarray<T>& input, xt::xarray<T>& output){
+	output = xt::sin(input);
 }
 
 

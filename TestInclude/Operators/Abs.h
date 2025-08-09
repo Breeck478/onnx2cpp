@@ -2,8 +2,8 @@
 
 
 template <typename Tx, typename Tr>
-void Abs(const xt::xarray<Tx> &x, xt::xarray<Tr> &r)
+void Abs(const xt::xarray<Tx> &x, xt::xarray<Tr> &y)
 {
-  r = xt::abs(x);
+  y = xt::abs(x);
 }
 
