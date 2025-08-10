@@ -420,7 +420,7 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < outputs.size(); ++i) {
 		if (i < references.size()) {
 			std::cout << "if(" << outputNames[i] << ".shape() !=" << referenceNames[i] << ".shape()){" << std::endl;
-			std::cout << "std::cout << \"Test failed because shape is not equal for output " << outputNames[i] << ".\\n Expected: \\n\" << " << referenceNames[i] << " << \"\\n Actual: \\n\" << " << outputNames[i] << " << std::endl;" << std::endl;
+			std::cout << "std::cout << \"Test failed because shape is not equal for output-shape " << outputNames[i] << ".\\n Expected: \\n\" << xt::adapt(" << referenceNames[i] << ".shape()) << \"\\n Actual: \\n\" << xt::adapt(" << outputNames[i] << ".shape()) << std::endl;" << std::endl;
 			std::cout << "return 1; " << std::endl;
 			std::cout << "}" << std::endl;
 			std::cout << "for(std::size_t i = 0; i < "<< outputNames[i]<< ".size(); ++i){" << std::endl;

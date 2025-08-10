@@ -307,7 +307,7 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < outputNames.size(); ++i) {
 		if (i < referenceNames.size()) {
 			file << "if(" << functionResNames[i] << ".shape() !=" << referenceNames[i] << ".shape()){\n";
-			file << "std::cout << \"Test failed because shape is not equal for function Result " << functionResNames[i] << ".\\n Expected: \\n\" << " << referenceNames[i] << " << \"\\n Actual: \\n\" << " << functionResNames[i] << " << std::endl;\n";
+			file << "std::cout << \"Test failed because shape is not equal for function tesult shape " << functionResNames[i] << ".\\n Expected: \\n\" << xt::adapt(" << referenceNames[i] << ".shape()) << \"\\n Actual: \\n\" << xt::adapt(" << functionResNames[i] << ".shape()) << std::endl;";
 			file << "return 1; \n";
 			file << "}\n";
 			file << "for(std::size_t i = 0; i < "<< functionResNames[i]<< ".size(); ++i){\n";
