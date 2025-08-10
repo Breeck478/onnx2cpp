@@ -14,7 +14,7 @@ public:
 
 		try {
 			if (node->GetOutputNames().size() == 1 && node->GetInputNames().size() == 1) {
-				for (auto att : node->GetAttributes())
+				for (auto& att : node->GetAttributes())
 				{
 					if (att.first == "value") {
 						auto value = std::any_cast<onnx::TensorProto>(att.second);

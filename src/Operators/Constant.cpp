@@ -19,7 +19,7 @@ public:
 
 		try {
 			if (node->GetOutputNames().size() > 0 && node->GetInputNames().size() == 0) {
-				for (auto att : node->GetAttributes())
+				for (auto& att : node->GetAttributes())
 				{
 					if (att.first == "value" || att.first == "sparse_value") {
 						auto value = std::any_cast<onnx::TensorProto>(att.second);

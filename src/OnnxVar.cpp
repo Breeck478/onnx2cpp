@@ -9,7 +9,7 @@ using namespace toCpp;
 
 OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput, bool isOutput) : isInput(isInput), isOutput(isOutput){
 	this->name = valueInfo.name();
-	auto typeProto = valueInfo.type();
+	auto& typeProto = valueInfo.type();
 	if (typeProto.has_tensor_type()) {
 		this->dataType = typeProto.tensor_type().elem_type();
 		this->Shape(typeProto.tensor_type().shape());
@@ -24,7 +24,7 @@ OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput, bool isOutput) : 
 }
 
 void OnnxVar::Shape(onnx::TensorShapeProto shapeProto) {
-	auto dims = shapeProto.dim();
+	auto& dims = shapeProto.dim();
 	this->shape.clear();
 	this->shape.reserve(dims.size());
 	for (const auto& dim : dims) {

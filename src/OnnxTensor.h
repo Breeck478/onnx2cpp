@@ -8,6 +8,7 @@
 namespace toCpp {
 	class OnnxTensor {
 	public:
+		virtual ~OnnxTensor() = default; // Virtual destructor for proper cleanup
 		void Name(std::string name) { this->name = name; }
 		std::string Name() const { return remove_chars(name); }
 		std::vector<int> Shape() const;
@@ -20,7 +21,7 @@ namespace toCpp {
 	protected:
 		std::string name;
 		std::vector<int> shape;
-		int32_t dataType;
+		int32_t dataType = 0;
 		bool hasStaticType = true; // Does not have type T but static type like int, float ...
 		static int64_t batchSize;
 	};

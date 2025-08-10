@@ -5,7 +5,7 @@
 #include <iostream>
 using namespace toCpp;
 std::vector<std::string> OnnxConsts::names;
-OnnxConst::OnnxConst(onnx::TensorProto tensorProto)
+OnnxConst::OnnxConst(onnx::TensorProto &tensorProto)
 {
 	this->name = tensorProto.name();
 	this->Shape(tensorProto.dims());
@@ -30,6 +30,7 @@ void OnnxConst::FillData(const onnx::TensorProto& tensorProto) {
 	case (onnx::TensorProto_DataType_INT8):
 		this->data = ExtractDataFromTensor<int8_t>(tensorProto);
 
+		break;
 	case (onnx::TensorProto_DataType_UINT64):
 		this->data = ExtractDataFromTensor<uint64_t>(tensorProto);
 		break;
@@ -61,7 +62,7 @@ void OnnxConst::FillData(const onnx::TensorProto& tensorProto) {
 void OnnxConst::Shape(::google::protobuf::RepeatedField<int64_t> dims) {
 	this->shape.clear();
 	this->shape.reserve(dims.size());
-	for (const auto& dim : dims) {
+	for (const auto dim : dims) {
 		this->shape.push_back(dim);
 	}
 }
@@ -264,7 +265,7 @@ void OnnxConsts::Add(const OnnxConst var) {
 	std::string name = remove_chars(var.Name());
 	if ((names.end() == std::find(names.begin(), names.end(), name))) {
 		names.push_back(name);
-		vars.push_back(var);
+		consts.push_back(var);
 	}
 	else {
 		std::cout << "var " << var.Name() << " is already added" << std::endl; // Can´t happen. ERROR
@@ -273,14 +274,14 @@ void OnnxConsts::Add(const OnnxConst var) {
 
 
 int OnnxConsts::GetCount() const {
-	return vars.size();
+	return consts.size();
 }
 const OnnxConst& OnnxConsts::operator[](int i) const {
-	return vars[i];
+	return consts[i];
 }
 std::vector<std::string> OnnxConsts::GetConstsAsStrings() const {
 	std::vector<std::string> res;
-	for (OnnxConst var : vars)
+	for (OnnxConst var : consts)
 	{
 		res.push_back(var.GetConstantString());
 	}
@@ -288,19 +289,19 @@ std::vector<std::string> OnnxConsts::GetConstsAsStrings() const {
 }
 
 OnnxConst& OnnxConsts::operator[](int i) {
-	return vars[i];
+	return consts[i];
 }
 std::deque<OnnxConst>::const_iterator OnnxConsts::begin() const {
-	return vars.begin();
+	return consts.begin();
 }
 std::deque<OnnxConst>::const_iterator OnnxConsts::end() const {
-	return vars.end();
+	return consts.end();
 }
 std::deque<OnnxConst>::iterator OnnxConsts::begin() {
-	return vars.begin();
+	return consts.begin();
 }
 std::deque<OnnxConst>::iterator OnnxConsts::end() {
-	return vars.end();
+	return consts.end();
 }
 
 // names

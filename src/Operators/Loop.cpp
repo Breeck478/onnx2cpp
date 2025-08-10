@@ -37,7 +37,7 @@ public:
 		try {		
 			// create map without aaded vars for later use
 			std::map<OnnxVar*, OnnxVar*> inToOut; // input var to output var 
-			for (int i = 1; i < Graph().GetInputs().size(); i++) {
+			for (int64_t i = 1; i < Graph().GetInputs().size(); i++) {
 				inToOut[Graph().GetInputs()[i]] = Graph().GetOutputs()[i - 1];
 			}
 			// Add Vars from the main(outer) graph to the Loop Graph
@@ -45,14 +45,14 @@ public:
 			// Mark the inputs and outputs of the Loop Graph as static or non-static 
 			std::vector<std::string> inputNames = Graph().GetInputNames();
 			std::vector<std::string> outputNames = Graph().GetOutputNames();
-			for (int i = inputNames.size() - 1; i >= 0; i--) {
+			for (int64_t i = inputNames.size() - 1; i >= 0; i--) {
 				if ((i < (node->GetInputs().size())) && !(node->GetInputs()[i]->HasStaticType())) {
 					inputNames.erase(inputNames.begin() + i);
 					i--;
 				}
 			}
 			// Ignore first Output value because it is the condition, which is not an output of the node but from the graph itself to set it for the next iterration
-			for (int i = outputNames.size() - 1; i > 0; i--) {
+			for (int64_t i = outputNames.size() - 1; i > 0; i--) {
 				if (((i - 1) < (node->GetOutputs().size())) && !(node->GetOutputs()[i - 1]->HasStaticType())) {
 					outputNames.erase(outputNames.begin() + i);
 					i--;
@@ -63,7 +63,7 @@ public:
 
 			// Now check map, wether in and out types do match. If one of them is non static the other one has to be static as well
 			// Could check here if the static types would be correct
-			for (auto [in, out] : inToOut) {
+			for (auto& [in, out] : inToOut) {
 				if (!in->HasStaticType() || !out->HasStaticType()) {
 					out->HasStaticType(false); 
 					in->HasStaticType(false); 
@@ -83,28 +83,28 @@ public:
 				
 				std::vector<std::string> inputNames;
 				std::vector<std::string> outputNames;
-				for (int i = 0; i < node->GetInputNames().size(); i++) {
+				for (int64_t i = 0; i < node->GetInputNames().size(); i++) {
 					inputNames.push_back(node->GetInputNames()[i] + "_In");
 					if (i == 0)
 						continue;
 					outputNames.push_back(node->GetInputNames()[i] + "_Out");
 				}
 				Graph().PrintGraph(stream);
-				for (int i = 1; i < inputNames.size(); i++) {
+				for (int64_t i = 1; i < inputNames.size(); i++) {
 					stream << "xt::xarray<" + Graph().GetInputs()[i]->GetDataTypeAsString() + "> " + inputNames[i] + " = " + node->GetInputNames()[i] + ";\n";
 				}
-				for (int i = 0; i < outputNames.size(); i++) {
+				for (int64_t i = 0; i < outputNames.size(); i++) {
 					stream << "xt::xarray<" + Graph().GetInputs()[i+1]->GetDataTypeAsString() + "> " + outputNames[i] + ";\n";
 				}
 				stream << "// Loop Graph:\n";
 				stream << "for (int " + inputNames[0] + " = 0; "+inputNames[0]+" < " + node->GetInputNames()[0] + "[0] && " + inputNames[1] + "[0]; ++" + inputNames[0] + ") {\n";
 				stream << "\t// Loop body for " + node->GetName() + "\n";
 				stream << Graph().Name() + "(" + join(inputNames, ", ") + ", " + join(outputNames, ", ") + "); // " + node->GetName() + "\n";
-				for (int i = 0; i+1 < inputNames.size() && i < outputNames.size(); i++) {
+				for (int64_t i = 0; i+1 < inputNames.size() && i < outputNames.size(); i++) {
 					stream << inputNames[i+1] + " = " + outputNames[i] + ";\n";
 				}
 				stream << "}\n";
-				for (int i = 0; i < node->GetOutputNames().size() && i + 1 < outputNames.size(); i++) {
+				for (int64_t i = 0; i < node->GetOutputNames().size() && i + 1 < outputNames.size(); i++) {
 					stream << node->GetOutputNames()[i] + " = " + outputNames[i + 1] + ";\n";
 				}
 

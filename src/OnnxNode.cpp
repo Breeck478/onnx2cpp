@@ -196,14 +196,14 @@ void OnnxNode::SetVarFromList(const OnnxVars& varsList) {
 	bool res = false;
 	std::vector<std::string> varNames = inputNames;
 	// Search for own var in given List 
-	for (auto name : varNames) {
+	for (auto& name : varNames) {
 		OnnxVar* varPointer = nullptr;
 		if (varsList.FindVarPointerByName(name, varPointer) ) { // && !varPointer->ContainsUnkownDim()
  			inputs.push_back(varPointer);
 		}
 	}
 	varNames = outputNames;
-	for (auto name : varNames) {
+	for (auto& name : varNames) {
 		OnnxVar* outputVar = nullptr;
 		if (varsList.FindVarPointerByName(name, outputVar) ) { // && !outputVar->ContainsUnkownDim()
 			outputs.push_back(outputVar);

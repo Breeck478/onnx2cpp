@@ -11,7 +11,7 @@ namespace toCpp {
 	{
 	public:
 		using OnnxTensor::Shape;
-		OnnxConst(onnx::TensorProto valueInfo);
+		OnnxConst(onnx::TensorProto & tensorProto);
 		void Shape(::google::protobuf::RepeatedField<int64_t>);
 		std::string GetShapeName() const;
 		std::string GetDataAsString(bool const doInitialize);
@@ -51,7 +51,7 @@ namespace toCpp {
 	{
 	public:
 		// Vars
-		void Clear() { vars.clear(); }
+		void Clear() { consts.clear(); }
 		void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::TensorProto>& list);
 		int GetCount() const;
 		void Add(const OnnxConst var);
@@ -67,7 +67,7 @@ namespace toCpp {
 		std::string GetName(const int i) const;
 		int GetNameCount() const;
 	private:
-		std::deque<OnnxConst> vars;
+		std::deque<OnnxConst> consts;
 		static std::vector<std::string> names;
 
 	};
