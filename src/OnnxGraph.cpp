@@ -91,7 +91,7 @@ void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 	for (const std::string str : vars.GetVarsAsStrings())
 		stream << str + "\n";
 	stream << "// Consts:\n";
-	for (const std::string str : consts.GetVarsAsStrings())
+	for (const std::string str : consts.GetConstsAsStrings())
 		stream << str + "\n";
 	stream << "// Nodes:\n";
 	for (auto* node : nodes) {

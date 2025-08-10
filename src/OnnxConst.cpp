@@ -278,7 +278,7 @@ int OnnxConsts::GetCount() const {
 const OnnxConst& OnnxConsts::operator[](int i) const {
 	return vars[i];
 }
-std::vector<std::string> OnnxConsts::GetVarsAsStrings() const {
+std::vector<std::string> OnnxConsts::GetConstsAsStrings() const {
 	std::vector<std::string> res;
 	for (OnnxConst var : vars)
 	{
