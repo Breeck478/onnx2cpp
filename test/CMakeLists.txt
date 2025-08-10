@@ -292,6 +292,8 @@ ONNX_backend_node_test_onnxruntime(sin)
 ONNX_backend_node_test_onnxruntime(sub)
 ONNX_backend_node_test_onnxruntime(tanh)
 ONNX_backend_node_test_onnxruntime(where_example)
+
+# DCO tests
 ONNX_backend_node_test_dco(abs)
 ONNX_backend_node_test_dco(add)
 #ONNX_backend_node_test_dco(argmax_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
@@ -301,7 +303,6 @@ ONNX_backend_node_test_dco(add)
 #ONNX_backend_node_test_dco(constant)
 ONNX_backend_node_test_dco(div)
 #ONNX_backend_node_test_dco(equal) bool functions do not have a differentiate method
-
 ONNX_backend_node_test_dco(gemm_all_attributes)
 ONNX_backend_node_test_dco(gemm_alpha)
 ONNX_backend_node_test_dco(gemm_beta)
