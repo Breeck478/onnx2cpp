@@ -43,7 +43,7 @@ target_sources(testgen PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/../src/onnx2cpp.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Cast.cpp)
  
 if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8)) # onnxruntime only avvailable for Windows in 64 bit
-	find_package(onnxruntime CONFIG REQUIRED)
+	find_package(onnxruntime REQUIRED)
 	add_executable(testgenOrt TestInitializer.cpp)
 	target_link_libraries(testgenOrt PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto onnxruntime::onnxruntime)
 	target_include_directories(testgenOrt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src ) 
