@@ -2,11 +2,6 @@
 # und schließen Sie Unterprojekte ein.
 #
 cmake_minimum_required (VERSION 3.24)
-
-# Aktivieren Sie Hot Reload für MSVC-Compiler, sofern unterstützt.
-if(NOT DEFINED CMAKE_TOOLCHAIN_FILE)
-  message(WARNING "CMAKE_TOOLCHAIN_FILE nicht gesetzt – vcpkg wird nicht verwendet!")
-endif()
 if (POLICY CMP0141)
   cmake_policy(SET CMP0141 NEW)
   set(CMAKE_MSVC_DEBUG_INFORMATION_FORMAT "$<IF:$<AND:$<C_COMPILER_ID:MSVC>,$<CXX_COMPILER_ID:MSVC>>,$<$<CONFIG:Debug,RelWithDebInfo>:EditAndContinue>,$<$<CONFIG:Debug,RelWithDebInfo>:ProgramDatabase>>")
@@ -15,7 +10,6 @@ set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project (onnx2cpp)
-set(CMAKE_BUILD_TYPE Debug)
 include_directories(src)
 find_package(ONNX CONFIG REQUIRED)
 find_package(xtensor REQUIRED)
@@ -41,6 +35,7 @@ src/Utils.cpp
 src/OnnxNode.cpp
 src/OnnxConst.cpp
 src/OnnxTensor.cpp
+src/cpp.hint
 ${OPERATORSOURCE})
 
 target_link_libraries(onnx2cpp_lib PRIVATE ONNX::onnx ONNX::onnx_proto)

@@ -8,7 +8,7 @@ namespace toCpp {
 	class onnx2cpp {
 	public:
 		static std::string MakeCppFile(onnx::ModelProto& model, std::ostream& stream, int batchSize = 1, std::vector<std::string> staticInputs = std::vector<std::string>(), std::vector<std::string> staticOutputs = std::vector<std::string>());
-		static std::string MakeCppFile(onnx::ModelProto& model, std::ostream& stream, bool allStatic, OnnxGraph &graphOut);
+		static OnnxGraph MakeCppFileGraphOut(onnx::ModelProto& model, std::ostream& stream, bool allStatic);
 		static std::string MakeCppFile(onnx::ModelProto& model, std::ostream& stream, bool allStatic);
 		void ParseInputs(int argc, char* argv[]);
 		std::string ModelFileName() { return modelFileName; }

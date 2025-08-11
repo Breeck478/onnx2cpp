@@ -121,9 +121,9 @@ int main(int argc, char* argv[])
 	file << "#include <xtensor.hpp>\n";
 	file << "#include \"dco.hpp\"\n";
 	onnx::LoadProtoFromPath(model_fn, onnx_model);
-	OnnxGraph tmpGraph = OnnxGraph();
 	// Print model to file specified by cmake
-	std::string functionName = onnx2cpp::MakeCppFile(onnx_model, file, false, tmpGraph);
+	OnnxGraph tmpGraph = onnx2cpp::MakeCppFileGraphOut(onnx_model, file, false);
+	std::string functionName = tmpGraph.Name();
 	// Print testsuite to get executed by CTest
 	std::vector<std::unique_ptr<OnnxConst>> inputs;
 	std::vector<OnnxVar> outputs;

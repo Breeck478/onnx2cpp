@@ -256,7 +256,7 @@ ONNX_backend_node_test(equal)
 ONNX_backend_node_test(gemm_all_attributes)
 ONNX_backend_node_test(greater)
 ONNX_backend_node_test(identity)
-#ONNX_backend_node_test(loop11)
+#ONNX_backend_node_test(loop11) // Values of input Tensor are not correct. Maybe ther is some difference between differnt protobuf versions it got stored with.
 #ONNX_backend_node_test(loop13_seq) // sequences are not supported by onnx2cpp
 #ONNX_backend_node_test(loop16_seq_none) // sequences are not supported by onnx2cpp
 #ONNX_backend_node_test(matmul_2d)

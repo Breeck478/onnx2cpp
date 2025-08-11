@@ -92,7 +92,7 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto &model, ostream &stream, int batch
 
 }
 
-string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allStatic, OnnxGraph &graphOut) {
+OnnxGraph onnx2cpp::MakeCppFileGraphOut(onnx::ModelProto& model, ostream& stream, bool allStatic) {
 	try
 	{
 		onnx::shape_inference::DataValueMap aMap;
@@ -113,15 +113,14 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allS
 		ostringstream oss;
 		graph.PrintGraph(oss);
 		stream << oss.str();
-		graphOut = graph; // Assign the graph to the output parameter
-		return graph.Name(); // return graph name for function call in testsuit
+		return graph; // return graph name for function call in testsuit
 	}
 	catch (const std::exception& e)
 	{
 		cout << "Error: " << e.what() << endl;
-		return ""; // Return empty string if an error occurs
+		return OnnxGraph(); // Return empty string if an error occurs
 	}
-	return ""; // Return empty string if an error occurs
+	return OnnxGraph(); // Return empty string if an error occurs
 
 }
 

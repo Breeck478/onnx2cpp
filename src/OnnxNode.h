@@ -134,14 +134,31 @@ namespace toCpp {
 	class OnnxNodes
 	{
 	public:
-		// Vars
 		~OnnxNodes() {
+			Clear();
+		}
+		OnnxNodes() = default;
+		OnnxNodes(const OnnxNodes&) = delete;
+		OnnxNodes& operator=(const OnnxNodes&) = delete;
+		OnnxNodes(OnnxNodes&& other) noexcept
+			: nodes(std::move(other.nodes)) 
+		{
+			other.nodes.clear();
+		}
+		OnnxNodes& operator=(OnnxNodes&& other) noexcept {
+			if (this != &other) {
+				Clear(); 
+				nodes = std::move(other.nodes); 
+				other.nodes.clear(); 
+			}
+			return *this;
+		}
+		void Clear() {
 			for (auto* node : nodes) {
-				delete node; // Clean up dynamically allocated nodes
+				delete node;
 			}
 			nodes.clear();
 		}
-		void Clear() { nodes.clear(); }
 		void InitWithGraph(onnx::GraphProto graph, OnnxGraph* graphPtr);
 		int GetCount() const;
 		void Add(const OnnxNode* var);
