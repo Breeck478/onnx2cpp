@@ -1,6 +1,0 @@
-#define REGISTER_OPERATOR_HANDLER(CLASS, NAME) \
-           namespace { \
-               static bool CLASS##_registered = OperatorHandlerFactory::registerHandler(NAME, []() { \
-                   return std::make_unique<CLASS>(); \
-               }); \
-           }
