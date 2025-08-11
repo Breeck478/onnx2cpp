@@ -11,8 +11,8 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 project (onnx2cpp)
 include_directories(src)
+find_package(xtensor CONFIG REQUIRED)
 find_package(ONNX CONFIG REQUIRED)
-find_package(xtensor REQUIRED)
 aux_source_directory(./src/Operators OPERATORSOURCE)
 add_executable (onnx2cpp src/Main.cpp
 src/onnx2cpp.cpp 

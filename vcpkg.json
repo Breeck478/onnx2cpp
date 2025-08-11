@@ -10,6 +10,5 @@
       "name": "onnxruntime-gpu",
       "platform": "(windows & x64)"
     }
-    
   ]
 }

@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.28)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
+set(ONNXRUNTIME_LIB ${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/lib/onnxruntime.lib)
+set(ONNXRUNTIME_INC_DIR${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/include)
 set(ONNX_BACKEND_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/)
 set(ONNX_NODE_TEST_DATA_DIR ${ONNX_BACKEND_TEST_DATA_DIR}/node/)
 set(ONNX_NODE_TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/)
@@ -43,9 +45,10 @@ target_sources(testgen PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/../src/onnx2cpp.cpp
  ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Cast.cpp)
  
 if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8)) # onnxruntime only avvailable for Windows in 64 bit
-	find_package(onnxruntime REQUIRED)
+	#find_package(onnxruntime REQUIRED)
 	add_executable(testgenOrt TestInitializer.cpp)
-	target_link_libraries(testgenOrt PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto onnxruntime::onnxruntime)
+	target_include_directories(testgenOrt PRIVATE ${ONNXRUNTIME_INC_DIR})
+	target_link_libraries(testgenOrt PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto ${ONNXRUNTIME_LIB})
 	target_include_directories(testgenOrt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src ) 
 	target_sources(testgenOrt PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/../src/onnx2cpp.cpp 
 	${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxVar.cpp
