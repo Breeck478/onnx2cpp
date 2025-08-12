@@ -2,8 +2,7 @@ cmake_minimum_required(VERSION 3.28)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 set(ONNXRUNTIME_LIB ${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/lib/onnxruntime.lib)
 set(ONNXRUNTIME_INC_DIR${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/include)
-set(ONNX_BACKEND_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/)
-set(ONNX_NODE_TEST_DATA_DIR ${ONNX_BACKEND_TEST_DATA_DIR}/node/)
+set(ONNX_NODE_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/node/)
 set(ONNX_NODE_TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/)
 set(ONNX_NODE_TEST_MAKEFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/)
 	
@@ -23,76 +22,52 @@ else()
 	message(WARNING "DCO_DIR is not set or does not exist, skipping DCO tests.")
 endif()
 
-
 message(STATUS "xtensor_INCLUDE_DIRS: ${xtensor_INCLUDE_DIRS}")
 add_executable(testgen TestInitializer.cpp)
-target_link_libraries(testgen PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto)
+target_link_libraries(testgen PRIVATE ONNX::onnx ONNX::onnx_proto)
 target_include_directories(testgen PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src ) 
-target_sources(testgen PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/../src/onnx2cpp.cpp 
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxVar.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Utils.cpp 
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxNode.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxConst.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Gemm.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/ConstantOfShape.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Concat.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Pow.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Constant.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxTensor.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Equal.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Where.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Greater.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxGraph.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Loop.cpp
- ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Cast.cpp)
+# required for including Operator.cpp files and activating the mkro inside
+if(MSVC)
+	target_link_libraries(testgen PRIVATE onnx2cpp_lib)
+	set_target_properties(testgen PROPERTIES
+	LINK_FLAGS "/WHOLEARCHIVE:onnx2cpp_lib.lib")
+else()
+	target_link_libraries(testgen 
+		PRIVATE 
+		"-Wl,--whole-archive" 
+		onnx2cpp_lib 
+		"-Wl,--no-whole-archive"
+	)
+endif()
+
  
 if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8)) # onnxruntime only avvailable for Windows in 64 bit
-	#find_package(onnxruntime REQUIRED)
 	add_executable(testgenOrt TestInitializer.cpp)
 	target_include_directories(testgenOrt PRIVATE ${ONNXRUNTIME_INC_DIR})
 	target_link_libraries(testgenOrt PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto ${ONNXRUNTIME_LIB})
 	target_include_directories(testgenOrt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src ) 
-	target_sources(testgenOrt PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/../src/onnx2cpp.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxVar.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Utils.cpp 
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxNode.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxConst.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Gemm.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/ConstantOfShape.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Concat.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Pow.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Constant.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxTensor.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Equal.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Where.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Greater.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxGraph.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Loop.cpp
-	${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Cast.cpp)
+	set_target_properties(testgenOrt PROPERTIES
+    LINK_FLAGS "/WHOLEARCHIVE:onnx2cpp_lib.lib")
 	target_compile_definitions(testgenOrt PRIVATE ORT_COMPARE=1)
 endif()
 
 if(DCO_AVAILABLE)
-	add_executable(testgenDco dcoTestInitializer.cpp)
-	target_link_libraries(testgenDco PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto)
+	add_executable(testgenDco dcoTangentTestInitializer.cpp)
+	target_link_libraries(testgenDco PRIVATE ONNX::onnx ONNX::onnx_proto)
 	target_include_directories(testgenDco PRIVATE ${DCO_INC_PATH} ) 
-	target_sources(testgenDco PRIVATE  ${CMAKE_CURRENT_SOURCE_DIR}/../src/onnx2cpp.cpp 
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxVar.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Utils.cpp 
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxNode.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxConst.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Gemm.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/ConstantOfShape.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Concat.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Pow.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Constant.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxTensor.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Equal.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Where.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Greater.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/OnnxGraph.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Loop.cpp
-	 ${CMAKE_CURRENT_SOURCE_DIR}/../src/Operators/Cast.cpp)
+	# required for including Operator.cpp files and activating the mkro inside
+	if(MSVC) 
+		target_link_libraries(testgenDco PRIVATE onnx2cpp_lib)
+		set_target_properties(testgenDco PROPERTIES
+		LINK_FLAGS "/WHOLEARCHIVE:onnx2cpp_lib.lib")
+	else()
+		target_link_libraries(testgenDco 
+			PRIVATE 
+			"-Wl,--whole-archive" 
+			onnx2cpp_lib 
+			"-Wl,--no-whole-archive"
+		)
+	endif()
 	add_executable(makegen TestMakeFileGenerator.cpp)
 	add_custom_command(
     TARGET makegen POST_BUILD
@@ -122,7 +97,6 @@ function( ONNX_type_test node_name data_dir test_ctest_name accuracy test_data_s
 			target_compile_options(${testbin} PRIVATE -w)
 		endif()
 	target_link_libraries(${testbin} PRIVATE xtensor)
-	#target_link_libraries(${testbin} PRIVATE onnx2cpp_lib)
 	target_include_directories( ${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
 
 
@@ -133,7 +107,6 @@ function( ONNX_type_test node_name data_dir test_ctest_name accuracy test_data_s
 endfunction()
 
 function( ONNX_type_test_onnxruntime node_name data_dir test_ctest_name accuracy test_data_set)
-
 	set( test_c  ${node_name}_${test_data_set}_test_ort.cpp )
 	set( testbin ${node_name}_${test_data_set}_test_ort )	
 	add_custom_command(
@@ -153,7 +126,6 @@ function( ONNX_type_test_onnxruntime node_name data_dir test_ctest_name accuracy
 			target_compile_options(${testbin} PRIVATE -w)
 		endif()
 	target_link_libraries(${testbin} PRIVATE xtensor)
-	#target_link_libraries(${testbin} PRIVATE onnx2cpp_lib)
 	target_include_directories( ${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
 
 	# register with CTest
@@ -173,40 +145,6 @@ function( ONNX_type_test_dco node_name data_dir test_ctest_name accuracy test_da
 	add_custom_target(always_generate_${node_name}_makefile ALL
 		COMMAND makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
 	)
-#	add_custom_command(
-#		OUTPUT
-#		${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
-#		COMMAND 
-#		${CMAKE_COMMAND} -E remove -f${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
-#		COMMAND
-#		testgenDco ${data_dir} ${accuracy} ${test_data_set} -o ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c} 
-#		DEPENDS
-#		testgenDco
-#		)
-#		add_custom_command(
-#		OUTPUT
-#		${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
-#		COMMAND
-#		makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} -o ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
-#		DEPENDS
-#		makegen
-#		)
-#	#Cant add Executable because dco need registration
-#	add_executable( ${testbin}
-#		${test_c}
-#		)
-#	target_compile_options( ${testbin}
-#		PRIVATE
-#			-Wall  /w 
-#		)
-#	target_link_libraries(${testbin} PRIVATE xtensor)
-#	target_include_directories(${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
-#	target_include_directories(${testbin} PRIVATE ${DCO_INC_PATH} ) 
-	
-#	# register with CTest
-#	add_test(NAME ${test_ctest_name}
-#	COMMAND ${testbin}
-#		)
 endfunction()
 
 function( ONNX_backend_node_test node_name)
@@ -234,19 +172,25 @@ endfunction()
 
 function( ONNX_backend_node_test_dco node_name)
 	if(DCO_AVAILABLE)
+		set(options)
+		set(oneValueArgs ACCURACY)
+		set(multiValueArgs)
+		cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
+		if (${arg_ACCURACY})
+			set(accuracy ${arg_ACCURACY})
+		else()
+			set(accuracy 0.1)
+		endif()
 		ONNX_type_test_dco(
 			${node_name}
 			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
 			ONNX_backend_${node_name}_dco
-			0.1
+			${accuracy}
 			0
 		)
-	else()
-	message(WARNING "DCO tests are not available, skipping ONNX_backend_node_test_dco for ${node_name}.")
-		return()
 	endif()
 endfunction()
-# onnxruntime only avvailable for Windows
+
 ONNX_backend_node_test(abs)
 ONNX_backend_node_test(add)
 ONNX_backend_node_test(argmax_default_axis_example)
@@ -340,10 +284,10 @@ ONNX_backend_node_test_dco(identity)
 #ONNX_backend_node_test_dco(matmul_3d)
 #ONNX_backend_node_test_dco(matmul_4d)
 ONNX_backend_node_test_dco(mul)
-ONNX_backend_node_test_dco(pow)
+ONNX_backend_node_test_dco(pow ACCURACY 0.5)
 ONNX_backend_node_test_dco(relu)
 #ONNX_backend_node_test_dco(reshape_allowzero_reordered)
-ONNX_backend_node_test_dco(shape)
+#ONNX_backend_node_test_dco(shape) shape does not have a differentiate method because the return type is always vector of integers
 ONNX_backend_node_test_dco(sin)
 ONNX_backend_node_test_dco(sub)
 ONNX_backend_node_test_dco(tanh)

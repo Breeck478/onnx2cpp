@@ -35,7 +35,6 @@ src/Utils.cpp
 src/OnnxNode.cpp
 src/OnnxConst.cpp
 src/OnnxTensor.cpp
-src/cpp.hint
 ${OPERATORSOURCE})
 
 target_link_libraries(onnx2cpp_lib PRIVATE ONNX::onnx ONNX::onnx_proto)
