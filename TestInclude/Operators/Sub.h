@@ -1,8 +1,8 @@
 #include <xtensor.hpp>
 
 
-template <typename T>
-void Sub(const xt::xarray<T> &a, const xt::xarray<T> &b, xt::xarray<T> &c)
+template <typename Ta, typename Tb, typename Tc>
+void Sub(const xt::xarray<Ta> &a, const xt::xarray<Tb> &b, xt::xarray<Tc> &c)
 {
   c = a - b;
 }

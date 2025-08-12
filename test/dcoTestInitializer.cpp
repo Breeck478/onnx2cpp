@@ -118,17 +118,15 @@ int main(int argc, char* argv[])
 		std::cerr << "Error: Could not open file for writing: " << targetDir << std::endl;
 		return 1; // Exit with error code
 	}
-	file << "#pragma once\n";
 	file << "#include <xtensor.hpp>\n";
 	file << "#include \"dco.hpp\"\n";
-	onnx::LoadProtoFromPath(model_fn, onnx_model);
-	// Print model to file specified by cmake
-	OnnxGraph tmpGraph = onnx2cpp::MakeCppFileGraphOut(onnx_model, file, false);
-	std::string functionName = tmpGraph.Name();
+	onnx::LoadProtoFromPath(model_fn, onnx_model);	
 	// Print testsuite to get executed by CTest
 	std::vector<std::unique_ptr<OnnxConst>> inputs;
 	std::vector<OnnxVar> outputs;
 	std::vector<OnnxVar> references;
+	std::vector<std::string> staticInputs;
+	std::vector<std::string> staticOutputs;
 	std::string dataset_dir = dir + "/test_data_set_" + argv[3];
 	int input_number = 0;
 	while (true) {
@@ -136,10 +134,15 @@ int main(int argc, char* argv[])
 		std::unique_ptr<OnnxConst> in = get_inputConst_from_file(partial, input_number);
 		if (in == nullptr)
 			break;
+		if (input_number != 0)
+			staticInputs.push_back(in->Name());
 		in->Name(in->Name() + "_graph_in");
 		inputs.push_back(std::move(in));
 		input_number++;
 	}
+	
+	OnnxGraph tmpGraph = onnx2cpp::MakeCppFileGraphOut(onnx_model, file, staticInputs, staticOutputs);
+	std::string functionName = tmpGraph.Name();
 	file << "// Compare dco results with finite diefference\n";	
 	input_number = 0;
 	for (size_t i = 0; i < tmpGraph.GetOutputs().size(); ++i) {
@@ -212,14 +215,17 @@ int main(int argc, char* argv[])
 	// initialize dco variables
 	file << "using T = dco::gt1s<float>::type;\n";
 	for (size_t i = 0; i < inputs.size(); ++i) {
-		file << "xt::xarray<T> " << inputNames[i] << " = xt::cast<T>(" << functionInputNames[i] << ");\n";
+		if (i == 0)
+			file << "xt::xarray<T> " << inputNames[i] << " = xt::cast<T>(" << functionInputNames[i] << ");\n";
+		else
+			file << "auto " << inputNames[i] << " = " << functionInputNames[i] << ";\n";
 	}
 	for (size_t i = 0; i < outputs.size(); ++i) {
-		file << "xt::xarray<T> " << outputNames[i] << ";\n";
+		file << "xt::xarray<" << outputs[i].GetDataTypeAsString() << "> " << outputNames[i] << ";\n";
 	}
-	for (size_t i = 0; i < inputNames.size(); ++i) {
-		file << "for(size_t i = 0; i < "<< inputNames[i] << ".size(); i++){"  ;
-		file << "dco::derivative(" << inputNames[i] << ".flat(i)) = 1;\n";
+	if (inputNames.size() >= 1) {
+		file << "for(size_t i = 0; i < "<< inputNames[0] << ".size(); i++){"  ;
+		file << "dco::derivative(" << inputNames[0] << ".flat(i)) = 1;\n";
 		file << "}\n";
 	}
 	// Call the function with dco variables
@@ -256,7 +262,11 @@ int main(int argc, char* argv[])
 	file << "// Graph inputs\n";
 	for (size_t i = 0; i < inputs.size(); ++i) {
 		file << inputs[i]->GetConstantString() ;
-		file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << finiteInputNames[i]<< " = " << inputNames[i] << " + h; \n";
+		// differentiate for first input parameter
+		if (i == 0)
+			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << finiteInputNames[i]<< " = " << inputNames[i] << " + h; \n";
+		else
+			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << finiteInputNames[i] << " = " << inputNames[i] << "; \n";
 	}
 	file << "// Graph outputs\n";
 	for (size_t i = 0; i < outputs.size(); ++i) {
@@ -308,7 +318,7 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < outputNames.size(); ++i) {
 		if (i < referenceNames.size()) {
 			file << "if(" << functionResNames[i] << ".shape() !=" << referenceNames[i] << ".shape()){\n";
-			file << "std::cout << \"Test failed because shape is not equal for function tesult shape " << functionResNames[i] << ".\\n Expected: \\n\" << xt::adapt(" << referenceNames[i] << ".shape()) << \"\\n Actual: \\n\" << xt::adapt(" << functionResNames[i] << ".shape()) << std::endl;";
+			file << "std::cout << \"Test failed because shape is not equal for function result shape " << functionResNames[i] << ".\\n Expected: \\n\" << xt::adapt(" << referenceNames[i] << ".shape()) << \"\\n Actual: \\n\" << xt::adapt(" << functionResNames[i] << ".shape()) << std::endl;";
 			file << "return 1; \n";
 			file << "}\n";
 			file << "for(std::size_t i = 0; i < "<< functionResNames[i]<< ".size(); ++i){\n";

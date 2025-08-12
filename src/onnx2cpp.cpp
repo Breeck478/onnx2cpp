@@ -89,7 +89,7 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto &model, ostream &stream, int batch
 
 }
 
-OnnxGraph onnx2cpp::MakeCppFileGraphOut(onnx::ModelProto& model, ostream& stream, bool allStatic) {
+OnnxGraph onnx2cpp::MakeCppFileGraphOut(onnx::ModelProto& model, ostream& stream, vector<string> staticInputs, vector<string> staticOutputs) {
 	try
 	{
 		onnx::shape_inference::DataValueMap aMap;
@@ -97,14 +97,6 @@ OnnxGraph onnx2cpp::MakeCppFileGraphOut(onnx::ModelProto& model, ostream& stream
 		onnx::shape_inference::SymbolTableImpl symbolTable;
 		symbolTable.addFromGraph(model.graph());
 		onnx::GraphProto graphProto = model.graph();
-		std::vector<std::string> staticInputs;
-		std::vector<std::string> staticOutputs;
-		if (allStatic) {
-			for (const auto& input : model.graph().input()) 
-				staticInputs.push_back(input.name());
-			for (const auto& output : model.graph().output()) 
-				staticOutputs.push_back(output.name());
-		}
 		OnnxGraph graph(graphProto, true, staticInputs, staticOutputs);
 		graph.PreProcess();
 		ostringstream oss;
