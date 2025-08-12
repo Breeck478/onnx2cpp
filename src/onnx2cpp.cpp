@@ -1,7 +1,4 @@
-﻿// onnx2cpp.cpp: Definiert den Einstiegspunkt für die Anwendung.
-//
-#pragma once
-#include "onnx2cpp.h"
+﻿#include "onnx2cpp.h"
 
 #include "Utils.h"
 #include <onnx/shape_inference/implementation.h>

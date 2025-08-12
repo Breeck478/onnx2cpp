@@ -1,4 +1,3 @@
-#pragma once
 #include "Utils.h"
 using namespace toCpp;
 std::string toCpp::GetDataTypeString(const int enumValue) {

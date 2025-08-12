@@ -1,4 +1,3 @@
-#pragma once
 #include "OnnxTensor.h"
 
 #include <algorithm>

@@ -1,4 +1,3 @@
-#pragma once
 #include "OnnxNode.h"
 #include "Utils.h"
 #include <algorithm>

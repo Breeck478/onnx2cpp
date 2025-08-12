@@ -6,8 +6,10 @@ set(ONNX_BACKEND_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/)
 set(ONNX_NODE_TEST_DATA_DIR ${ONNX_BACKEND_TEST_DATA_DIR}/node/)
 set(ONNX_NODE_TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/)
 set(ONNX_NODE_TEST_MAKEFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/)
-
-add_compile_options(/wd5045) # disable warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre is specified
+	
+if (MSVC) # only neccesarry for Visual Studio
+	add_compile_options(/wd5045) # disable warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre is specified
+endif()
 find_package(xtensor CONFIG REQUIRED)
 # Search dco directory
 set(DCO_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/dco)
@@ -114,12 +116,11 @@ function( ONNX_type_test node_name data_dir test_ctest_name accuracy test_data_s
 	add_executable( ${testbin}
 		${test_c}
 		)
-	target_compile_options( ${testbin}
-		PRIVATE
-			-Wall  /w#-Werror
-			#TODO: space for output tensor is generated, but not used.
-			#-Wno-unused-variable
-		)
+		if(MSVC)
+			target_compile_options(${testbin} PRIVATE /w)
+		else()
+			target_compile_options(${testbin} PRIVATE -w)
+		endif()
 	target_link_libraries(${testbin} PRIVATE xtensor)
 	#target_link_libraries(${testbin} PRIVATE onnx2cpp_lib)
 	target_include_directories( ${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
@@ -146,12 +147,11 @@ function( ONNX_type_test_onnxruntime node_name data_dir test_ctest_name accuracy
 	add_executable( ${testbin}
 		${test_c}
 		)
-	target_compile_options( ${testbin}
-		PRIVATE
-			-Wall  /w #-Werror
-			#TODO: space for output tensor is generated, but not used.
-			#-Wno-unused-variable
-		)
+		if(MSVC)
+			target_compile_options(${testbin} PRIVATE /w)
+		else()
+			target_compile_options(${testbin} PRIVATE -w)
+		endif()
 	target_link_libraries(${testbin} PRIVATE xtensor)
 	#target_link_libraries(${testbin} PRIVATE onnx2cpp_lib)
 	target_include_directories( ${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)

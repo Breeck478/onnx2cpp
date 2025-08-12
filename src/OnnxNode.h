@@ -212,8 +212,8 @@ namespace toCpp {
 } // namespace toCpp
 // Makro für die Registrierung  
 #define REGISTER_OPERATOR_HANDLER(CLASS, NAME) \
-           namespace { \
-               static bool CLASS##_registered = OperatorHandlerFactory::registerHandler(NAME, [](const OnnxNode* node) { \
-                   return std::make_unique<CLASS>(node); \
-               }); \
-           }
+namespace { \
+	static bool CLASS##_registered = OperatorHandlerFactory::registerHandler(NAME, [](const OnnxNode* node) { \
+		return std::make_unique<CLASS>(node); \
+    }); \
+}

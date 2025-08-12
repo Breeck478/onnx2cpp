@@ -1,4 +1,3 @@
-#pragma once
 #include "OnnxConst.h"
 #include "Utils.h"
 #include <algorithm>
@@ -200,7 +199,7 @@ std::string OnnxConst::GetDataAsString(bool const doInitialize) {
 }
 
 template<typename T>
-static std::vector<T> OnnxConst::ExtractDataFromTensor(const onnx::TensorProto& tensor) {
+std::vector<T> OnnxConst::ExtractDataFromTensor(const onnx::TensorProto& tensor) {
 	std::vector<T> result;
 	if (tensor.raw_data().size() > 0) {
 		return ParseByteData<T>(tensor.raw_data());

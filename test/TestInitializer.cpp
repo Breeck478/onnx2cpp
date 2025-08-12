@@ -315,6 +315,7 @@ int main(int argc, char* argv[])
 		exit(1);
 	}
 	//std::cout << "#include <xtensor/xio.hpp>" << std::endl;
+	std::cout << "#pragma once" << std::endl;
 	std::cout << "#include <xtensor.hpp>" << std::endl;
 	// Load the ONNX model
 	float accuracy = std::stod(argv[2]);

@@ -1,4 +1,3 @@
-#pragma once
 #include "OnnxVar.h"
 #include "Utils.h"
 #include <iostream>

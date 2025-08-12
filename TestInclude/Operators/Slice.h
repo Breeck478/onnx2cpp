@@ -26,7 +26,7 @@ void Slice(const xt::xarray<T> &data, const xt::xarray<Tind> &starts, const xt::
 
             int start = starts(counter);
             int end = ends(counter);
-            int step = (counter < steps.size()) ? steps(counter) : 1;
+            int step = (counter < static_cast<int>(steps.size())) ? steps(counter) : 1;
             counter++;
             if (start < 0) start += data.shape(i);
             if (end < 0) end += data.shape(i);

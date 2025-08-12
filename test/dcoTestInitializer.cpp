@@ -118,6 +118,7 @@ int main(int argc, char* argv[])
 		std::cerr << "Error: Could not open file for writing: " << targetDir << std::endl;
 		return 1; // Exit with error code
 	}
+	file << "#pragma once\n";
 	file << "#include <xtensor.hpp>\n";
 	file << "#include \"dco.hpp\"\n";
 	onnx::LoadProtoFromPath(model_fn, onnx_model);
