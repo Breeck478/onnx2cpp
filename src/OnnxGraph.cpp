@@ -2,7 +2,7 @@
 
 #include <algorithm>
 using namespace toCpp;
-OnnxGraph::OnnxGraph(onnx::GraphProto graph, bool isInitial, std::vector<std::string> staticInputs, std::vector<std::string> staticOutputs): name(graph.name()), isInitialGraph(isInitial), staticInputs(staticInputs), staticOutputs(staticOutputs){
+OnnxGraph::OnnxGraph(onnx::GraphProto graph, bool isInitial, std::vector<std::string> staticInputs): name(graph.name()), isInitialGraph(isInitial), staticInputs(staticInputs){
 	vars.AddFromList(graph.input(), true);
 	vars.AddFromList(graph.output(), false, true);
 	vars.AddFromList(graph.value_info());
@@ -33,19 +33,11 @@ void OnnxGraph::RegisterIOs() {
 			var->HasStaticType(false);
 		}
 	}
-	for (OnnxTensor* var : vars.GetOutputVars()) {
-		auto it = std::find(staticOutputs.begin(), staticOutputs.end(), var->Name());
-		if (it == staticOutputs.end()) {
-			doUseTemplate = true;
-			var->HasStaticType(false);
-		}
-	}
 	nodes.RegisterVariables(vars);
 }
 
 void OnnxGraph::SetStaticIOs(std::vector <std::string> &inputs, std::vector<std::string> &outputs) {
 	this->staticInputs = inputs;
-	this->staticOutputs = outputs;
 	RegisterIOs();
 }
 

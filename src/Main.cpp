@@ -12,7 +12,10 @@ int main(int argc, char* argv[]) {
 	if (file.is_open() && file.good()) {
 		onnx::ModelProto model;
 		onnx::LoadProtoFromPath(onnx2cppInstance.ModelFileName(), model);
-		onnx2cpp::MakeCppFile(model, file, onnx2cppInstance.BatchSize(), onnx2cppInstance.StaticInputs(), onnx2cppInstance.StaticOutputs());
+		if (onnx2cppInstance.AllStatic())
+			onnx2cpp::MakeCppFile(model, file, true);
+		else
+			onnx2cpp::MakeCppFile(model, file, onnx2cppInstance.StaticInputs());
 		file.close();
 	}
 	else {

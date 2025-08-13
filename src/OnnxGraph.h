@@ -17,7 +17,7 @@ namespace toCpp {
 
 	class OnnxGraph {
 	public:
-		OnnxGraph(onnx::GraphProto graph, bool isInitial = false, std::vector<std::string> staticInputs = std::vector<std::string>(), std::vector<std::string> staticOutputs = std::vector<std::string>());
+		OnnxGraph(onnx::GraphProto graph, bool isInitial = false, std::vector<std::string> staticInputs = std::vector<std::string>());
 		OnnxGraph();
 		void IsInitialGraph(bool isInitial) { this->isInitialGraph = isInitial; }
 		void RegisterIOs();
@@ -41,6 +41,5 @@ namespace toCpp {
 		bool isInitialGraph = false;
 		bool doUseTemplate = false; // only for the initial graph
 		std::vector<std::string> staticInputs;
-		std::vector<std::string> staticOutputs;
 	};
 } // namespace toCpp
