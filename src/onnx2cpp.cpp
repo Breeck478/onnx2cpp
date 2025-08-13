@@ -74,7 +74,7 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto &model, ostream &stream, vector<st
 			symbolTable.addFromGraph(model.graph());
 			onnx::GraphProto graphProto = model.graph();
 			OnnxGraph graph(graphProto, true, staticInputs);
-			graph.PreProcess();
+			graph.PrePrint();
 			ostringstream oss;
 			graph.PrintGraph(oss);
 			stream << oss.str();
@@ -98,7 +98,7 @@ OnnxGraph onnx2cpp::MakeCppFileGraphOut(onnx::ModelProto& model, ostream& stream
 		symbolTable.addFromGraph(model.graph());
 		onnx::GraphProto graphProto = model.graph();
 		OnnxGraph graph(graphProto, true, staticInputs);
-		graph.PreProcess();
+		graph.PrePrint();
 		ostringstream oss;
 		graph.PrintGraph(oss);
 		stream << oss.str();
@@ -127,7 +127,7 @@ string onnx2cpp::MakeCppFile(onnx::ModelProto& model, ostream& stream, bool allS
 				staticInputs.push_back(input.name());
 		}
 		OnnxGraph graph(graphProto, true, staticInputs);
-		graph.PreProcess();
+		graph.PrePrint();
 		ostringstream oss;
 		graph.PrintGraph(oss);
 		stream << oss.str();

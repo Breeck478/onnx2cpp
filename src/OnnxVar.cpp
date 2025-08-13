@@ -56,7 +56,7 @@ std::string OnnxVar::GetVariableString(const bool ignorStatic) {
 	return res;
 }
 
-void OnnxVar::PreProcess() {
+void OnnxVar::PrePrint() {
 
 }
 

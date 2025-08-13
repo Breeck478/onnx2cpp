@@ -33,7 +33,7 @@ public:
 	virtual void SetOpSpecificTensorTypes() {
 		node->GetOutputs()[0]->HasStaticType(true); // output 0 is the condition and is always bool
 	}
-	void PreProcess() override {
+	void PrePrint() override {
 		try {		
 			// create map without aaded vars for later use
 			std::map<OnnxVar*, OnnxVar*> inToOut; // input var to output var 

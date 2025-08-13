@@ -30,7 +30,7 @@ namespace toCpp {
 		virtual void GetOpSpecificNodeGenString(std::ostringstream& stream) const {}
 		virtual void GetOpSpecificVarGen(std::ostringstream& stream) {}
 		virtual void SetOpSpecificTensorTypes() {}
-		virtual void PreProcess() {}
+		virtual void PrePrint() {}
 	protected:
 		const OnnxNode* node;
 	};
@@ -75,7 +75,7 @@ namespace toCpp {
 			}
 			return nullptr; // Not found
 		}
-		void PreProcess();
+		void PrePrint();
 		OperatorHandler* Handler() const { return handler.get(); }
 		bool HasHandler() const { return  handler != nullptr; }
 		OnnxGraph* GetGraph() const { return graph; }

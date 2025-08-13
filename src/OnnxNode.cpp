@@ -229,9 +229,9 @@ void OnnxNode::SetOpSpecificTensorTypes() {
 	}
 }
 
-void OnnxNode::PreProcess() {
+void OnnxNode::PrePrint() {
 	if (HasHandler() && Handler()->OperatorSpecificPreProcess()) {
-		Handler()->PreProcess();
+		Handler()->PrePrint();
 		return;
 	}
 }

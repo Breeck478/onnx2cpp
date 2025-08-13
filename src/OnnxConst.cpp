@@ -248,7 +248,7 @@ std::string OnnxConst::GetConstantString(bool const doInitialize) {
 	return res;
 }
 
-void OnnxConst::PreProcess() {
+void OnnxConst::PrePrint() {
 
 }
 

@@ -45,13 +45,13 @@ std::string OnnxGraph::PrintSpecificGraph(const GraphPosition position) {
 	return "";
 }
 
-void OnnxGraph::PreProcess() {
+void OnnxGraph::PrePrint() {
 	for (auto& constant : consts) 
-		constant.PreProcess();
+		constant.PrePrint();
 	for (auto& var : vars)
-		var.PreProcess();
+		var.PrePrint();
 	for (auto* node : nodes) 
-		node->PreProcess();
+		node->PrePrint();
 }
 
 void OnnxGraph::AddExternVars(const OnnxVars& vars) {

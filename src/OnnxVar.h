@@ -28,7 +28,7 @@ namespace toCpp {
 			this->isInput = isInput;
 			this->isOutput = isOutput;
 		}
-		void PreProcess();
+		void PrePrint();
 		bool NeedsInit() const { return needsInit; }
 		void NeedsInit(bool needsInit) { this->needsInit = needsInit; }
 	private:

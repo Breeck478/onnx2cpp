@@ -40,7 +40,7 @@ namespace toCpp {
 		std::string PrintReshape();
 		TensorData GetData() const;
 		void FillData(const onnx::TensorProto& tensorProto);
-		void PreProcess();
+		void PrePrint();
 		template<typename T>
 		static std::vector<T> ExtractDataFromTensor(const onnx::TensorProto& tensorProto);
 	private:
