@@ -411,3 +411,6 @@ TestInclude/dcoInclude/dco
 
 # vcpkg Verzeichnis
 vcpkg_installed/
+
+# Allow Makefile in TestInclude
+!TestInclude/Makefile
