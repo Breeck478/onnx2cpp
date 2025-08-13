@@ -17,6 +17,29 @@ public:
 	bool OperatorSpecificTensorTypes() const override {
 		return true; // The output type is alway given by the output Tensor type
 	}
+	void PreProcess() override {
+		if (node->GetOutputs().size() < 1) {
+			throw std::runtime_error("ERROR(CastHandler::PreProcess): Cast operator has no outputs");
+		}
+
+		int32_t realType = node->GetOutputs()[0]->DataType(); // Get Output type
+		auto it = node->GetAttribute("to");
+		if (!it.has_value()) {
+			throw std::runtime_error("ERROR(CastHandler::PreProcess): Cast operator has no 'to' attribute");
+		}
+		
+		int32_t expectedType = -1;
+		try {
+			expectedType = std::any_cast<int32_t>(it);
+		}
+		catch (const std::bad_any_cast& e) {
+			throw std::runtime_error("ERROR(CastHandler::PreProcess): Bad cast for 'to' attribute: " + std::string(e.what()));
+		}
+		if (realType != expectedType) {
+			throw std::runtime_error("ERROR(CastHandler::PreProcess): Cast operator output type does not match 'to' attribute type");
+		}
+		
+	}
 	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {
