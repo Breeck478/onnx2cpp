@@ -11,43 +11,6 @@
 
 #include <sstream>
 namespace toCpp {
-	class PredictedDim : public std::map<std::string, int>
-	{
-	public:
-		PredictedDim() = default;
-		int GetPredictedDim(const std::string& name) { return (*this)[name]; }
-
-		int TryGetDimension(const std::string& name) {
-			if (find(name) == end()) {
-				(*this)[name] = -1;
-				return -1; // New Dim registered
-			}
-			else {
-				return (*this)[name];
-			}
-		}
-		void SetDim(const std::string& name, const int dim) {
-			if (find(name) == end()) {
-				(*this)[name] = dim;
-			}
-			else {
-				if ((*this)[name] == -1) {
-					(*this)[name] = dim; // Set new dimension
-
-				}
-				else {
-					std::cout << "Warning: Predicted dimension for " << name << " is already set to " << (*this)[name] << ", but trying to set it to " << dim << std::endl;
-				}
-			}
-		}
-		std::string Print() const {
-			std::string res = "//Predicted Dimensions:\n ";
-			for (const auto& dim : (*this)) {
-				res += "int " + dim.first + "= " + std::to_string(dim.second) + ";\n";
-			}
-			return res;
-		}
-	};
 	//forward declaration of OnnxNode
 	class OnnxNode;
 	// Forward declaration of OnnxGraph;
@@ -97,8 +60,6 @@ namespace toCpp {
 		}
 		void SetVarFromList(const OnnxVars& var);
 		void CreateFunctionCall(std::ostringstream& stream) const;
-		//void PredictDims(const OnnxVars& varsList);
-		//static std::string PrintPredictedDims();#
 		void SetOpSpecificTensorTypes();
 		bool NeedsInclude() const;
 		OnnxTensor* FindTensorByName(const std::string& name) const {
@@ -126,7 +87,6 @@ namespace toCpp {
 		std::map<std::string, std::any> attributes; // name, value
 		std::vector<OnnxTensor*> inputs;
 		std::vector<OnnxTensor*> outputs;
-		static PredictedDim predictedDims;
 		std::unique_ptr<OperatorHandler> handler; // Operator handler for this node
 		OnnxGraph* graph = nullptr; // Pointer to the graph this node belongs to, if any
 	};

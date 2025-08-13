@@ -6,7 +6,6 @@
 
 #include "OnnxGraph.h"
 using namespace toCpp;
-PredictedDim OnnxNode::predictedDims;
 std::vector<std::string> OnnxNodes::opTypes;
 
 OnnxNode::OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr)
@@ -236,38 +235,6 @@ void OnnxNode::PreProcess() {
 		return;
 	}
 }
-	
-//void OnnxNode::PredictDims(const OnnxVars& varsList) {
-//	//if (outputs.size() == 1 && outputs[0]->ContainsUnkownDim()) {
-//
-//	//}
-//	for (OnnxVar* var : inputs) {
-//		if (var->ContainsUnkownDim()) {
-//			const auto& dims = var->GetTypeProto().tensor_type().shape().dim();
-//			for (const auto dim : dims) {
-//				if (dim.has_dim_param() && dim.dim_param() != "batch_size") {
-//					predictedDims.SetDim(dim.dim_param(), -1);
-//				}
-//			}
-//		}
-//	}
-//	for (OnnxVar* var : outputs) {
-//		if (var->ContainsUnkownDim()) {
-//			const onnx::TypeProto_Tensor tensorType = var->GetTypeProto().tensor_type();
-//			const auto& dims = tensorType.shape().dim();
-//			for (const auto dim : dims) {
-//				if (dim.has_dim_param() && dim.dim_param() != "batch_size") {
-//					std::string name = dim.dim_param();
-//					predictedDims.SetDim(name, -1);
-//				}
-//			}
-//		}
-//	}
-//}
-
-//std::string OnnxNode::PrintPredictedDims() {
-//	return predictedDims.Print();
-//}
 
 
 

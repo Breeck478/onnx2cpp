@@ -31,13 +31,7 @@ void OnnxVar::Shape(onnx::TensorShapeProto shapeProto) {
 			this->shape.push_back(dim.dim_value());
 		}
 		else if (dim.has_dim_param()) {
-			if (dim.dim_param() == "batch_size") { 
-				this->shape.push_back(OnnxTensor::batchSize); 
-			}
-			else {
-				this->shape.push_back(-1);
-				SetContainsUnkownDim();
-			}
+			this->shape.push_back(-1); // -1 for unknown dimension
 		}
 		else {
 			// unbekannte dimension ohne zusammenhang zu einer anderen Dimension bzw einem anderem Tensor siehe https://onnx.ai/onnx/repo-docs/IR.html#static-tensor-shapes

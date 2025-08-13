@@ -23,7 +23,6 @@ namespace toCpp {
 		std::vector<int> shape;
 		int32_t dataType = 0;
 		bool hasStaticType = true; // Does not have type T but static type like int, float ...
-		static int64_t batchSize;
 	};
 
 } // namespace toCpp
