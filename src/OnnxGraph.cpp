@@ -71,10 +71,10 @@ void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 		if (doUseTemplate) {
 			stream << "template <typename T>\n";
 		}
-		stream << "void " + Name() + "(" + join(vars.GetIOsAsStrings(), ", ") + "){\n";
+		stream << "void " + Name() + "(" + Join(vars.GetIOsAsStrings(), ", ") + "){\n";
 	}
 	else {
-		stream << "auto " + Name() + " = [&](" + join(vars.GetIOsAsStrings(), ", ") + "){\n";
+		stream << "auto " + Name() + " = [&](" + Join(vars.GetIOsAsStrings(), ", ") + "){\n";
 	}
 	//res += PrintSpecificGraph(GraphPosition::Begin);
 	stream << "// Vars:\n";

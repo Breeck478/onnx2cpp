@@ -33,7 +33,7 @@ std::string toCpp::GetDataTypeString(const int enumValue) {
 }
 
 
-std::string toCpp::join(const std::vector<std::string>& strings, const std::string& delimiter) {
+std::string toCpp::Join(const std::vector<std::string>& strings, const std::string& delimiter) {
     std::string result;
     for (size_t i = 0; i < strings.size(); ++i) {
         result += strings[i];
@@ -44,7 +44,7 @@ std::string toCpp::join(const std::vector<std::string>& strings, const std::stri
     return result;
 }
 
-std::string toCpp::remove_chars(const std::string& input, const std::string& chars_to_remove) {
+std::string toCpp::RemoveChars(const std::string& input, const std::string& chars_to_remove) {
     std::string result = input;
     result.erase(std::remove_if(result.begin(), result.end(),
         [&chars_to_remove](char c) {
@@ -54,7 +54,7 @@ std::string toCpp::remove_chars(const std::string& input, const std::string& cha
     return result;
 }
 
-std::vector<std::string> toCpp::split(const std::string& str, const std::string& delimiter) {
+std::vector<std::string> toCpp::Split(const std::string& str, const std::string& delimiter) {
 	std::vector<std::string> result;
 	size_t start = 0;
 	size_t end = str.find(delimiter);
@@ -66,5 +66,4 @@ std::vector<std::string> toCpp::split(const std::string& str, const std::string&
 	result.push_back(str.substr(start, end));
 	return result;
 }
-
 

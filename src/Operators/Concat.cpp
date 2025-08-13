@@ -12,7 +12,7 @@ public:
 		try {
 			if (node->GetInputNames().size() > 0) {
 				std::string vectorName = "vectorForConcat" + std::to_string(count++);
-				stream << "const std::vector<xt::xarray<" << node->GetInputs()[0]->GetDataTypeAsString() << ">> "<< vectorName  << " = {" + join(node->GetInputNames(), ", ") + "}; \n";
+				stream << "const std::vector<xt::xarray<" << node->GetInputs()[0]->GetDataTypeAsString() << ">> "<< vectorName  << " = {" + Join(node->GetInputNames(), ", ") + "}; \n";
 				stream << "Concat("<< vectorName <<", " + node->GetOutputNames()[0];
 				if (node->GetAttributes().size() > 0) {
 					stream << ", " + node->GetParamsString();

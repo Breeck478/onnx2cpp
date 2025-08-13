@@ -99,7 +99,7 @@ public:
 				stream << "// Loop Graph:\n";
 				stream << "for (int " + inputNames[0] + " = 0; "+inputNames[0]+" < " + node->GetInputNames()[0] + "[0] && " + inputNames[1] + "[0]; ++" + inputNames[0] + ") {\n";
 				stream << "\t// Loop body for " + node->GetName() + "\n";
-				stream << Graph().Name() + "(" + join(inputNames, ", ") + ", " + join(outputNames, ", ") + "); // " + node->GetName() + "\n";
+				stream << Graph().Name() + "(" + Join(inputNames, ", ") + ", " + Join(outputNames, ", ") + "); // " + node->GetName() + "\n";
 				for (int64_t i = 0; i+1 < inputNames.size() && i < outputNames.size(); i++) {
 					stream << inputNames[i+1] + " = " + outputNames[i] + ";\n";
 				}

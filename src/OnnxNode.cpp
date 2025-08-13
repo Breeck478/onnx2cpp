@@ -13,11 +13,11 @@ OnnxNode::OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr)
 	this->graph = graphPtr;
 	for (std::string val : nodeProto.input())
 	{
-		this->inputNames.push_back(remove_chars(val));
+		this->inputNames.push_back(RemoveChars(val));
 	}
 	for (std::string val : nodeProto.output())
 	{
-		this->outputNames.push_back(remove_chars(val));
+		this->outputNames.push_back(RemoveChars(val));
 	}
 	for (onnx::AttributeProto att : nodeProto.attribute())
 	{
@@ -72,7 +72,7 @@ OnnxNode::OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr)
 			break;
 		}
 			}
-	this->name = remove_chars(nodeProto.name());
+	this->name = RemoveChars(nodeProto.name());
 	this->op_type = nodeProto.op_type();
 	this->handler = OperatorHandlerFactory::create(this);
 }
@@ -101,13 +101,13 @@ std::string OnnxNode::GetParamsString() const {
 				res += "." + key + "= " + std::any_cast<onnx::TensorProto>(value).name() + "";
 			}
 			/*else if (value.type() == typeid(std::vector<float>)) {
-				res += "." + key + ": [" + join(std::any_cast<std::vector<float>>(value), ", ") + "]";
+				res += "." + key + ": [" + Join(std::any_cast<std::vector<float>>(value), ", ") + "]";
 			}
 			else if (value.type() == typeid(std::vector<int64_t>)) {
-				res += "." + key + ": [" + join(std::any_cast<std::vector<int64_t>>(value), ", ") + "]";
+				res += "." + key + ": [" + Join(std::any_cast<std::vector<int64_t>>(value), ", ") + "]";
 			}
 			else if (value.type() == typeid(std::vector<std::string>)) {
-				res += "." + key + ": [" + join(std::any_cast<std::vector<std::string>>(value), ", ") + "]";
+				res += "." + key + ": [" + Join(std::any_cast<std::vector<std::string>>(value), ", ") + "]";
 			}
 			else if (value.type() == typeid(std::vector<onnx::TensorProto>)) {
 				res += "." + key + ": [";
@@ -137,10 +137,10 @@ std::string OnnxNode::GetParamsString() const {
 }
 void OnnxNode::CreateFunctionCall(std::ostringstream & stream) const {
 	stream << op_type + "(";
-	stream << join(inputNames, ", ");
+	stream << Join(inputNames, ", ");
 	if (inputNames.size() > 0 && outputNames.size() > 0)
 		stream << ", ";
-	stream << join(outputNames, ", ");
+	stream << Join(outputNames, ", ");
 	if (attributes.size() > 0) {
 		stream << ", " + GetParamsString();
 	}

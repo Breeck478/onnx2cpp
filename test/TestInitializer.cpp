@@ -417,7 +417,7 @@ int main(int argc, char* argv[])
 		hasInAndOut = ", ";
 	}
 	
-	std::cout << functionName << "(" << join(inputNames, ", ") << hasInAndOut << join(outputNames, ", ") << "); " << std::endl;
+	std::cout << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); " << std::endl;
 	for (size_t i = 0; i < outputs.size(); ++i) {
 		if (i < references.size()) {
 			std::cout << "if(" << outputNames[i] << ".shape() !=" << referenceNames[i] << ".shape()){" << std::endl;

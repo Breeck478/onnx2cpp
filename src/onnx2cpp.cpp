@@ -36,7 +36,7 @@ void onnx2cpp::ParseInputs(int argc, char* argv[]) {
 				string inputs = argv[count + 1];
 				if (inputs[0] == '[' && inputs[inputs.size() - 1] == ']') {
 					inputs = RemoveChars(inputs, "[] "); // Remove quotes and spaces
-					staticInputs = split(inputs, ",");
+					staticInputs = Split(inputs, ",");
 				}
 				else {
 					cout << "Error: --static_inputs not set proberly" << endl;

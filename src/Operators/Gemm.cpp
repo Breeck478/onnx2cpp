@@ -12,10 +12,10 @@ public:
 
 
 		if (!node->GetInputNames().empty()) {
-			stream << join(node->GetInputNames(), ", ");
+			stream << Join(node->GetInputNames(), ", ");
 		}
 		if (!node->GetOutputNames().empty()) {
-			stream << ", " + join(node->GetOutputNames(), ", ");
+			stream << ", " + Join(node->GetOutputNames(), ", ");
 		}
 		if (node->GetAttributes().size() > 0) {
 			stream << ", " + node->GetParamsString();
