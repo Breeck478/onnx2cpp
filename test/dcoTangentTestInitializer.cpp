@@ -3,7 +3,6 @@
 #include "OnnxConst.h"
 #include "OnnxVar.h"
 #include <iostream>
-
 #include <fstream>
 #include <onnx/common/file_utils.h>
 #include <google/protobuf/io/coded_stream.h>
@@ -126,7 +125,6 @@ int main(int argc, char* argv[])
 	std::vector<OnnxVar> outputs;
 	std::vector<OnnxVar> references;
 	std::vector<std::string> staticInputs;
-	std::vector<std::string> staticOutputs;
 	std::string dataset_dir = dir + "/test_data_set_" + argv[3];
 	int input_number = 0;
 	while (true) {
@@ -141,7 +139,7 @@ int main(int argc, char* argv[])
 		input_number++;
 	}
 	
-	OnnxGraph tmpGraph = onnx2cpp::MakeCppFileGraphOut(onnx_model, file, staticInputs, staticOutputs);
+	OnnxGraph tmpGraph = onnx2cpp::MakeCppFileGraphOut(onnx_model, file, staticInputs);
 	std::string functionName = tmpGraph.Name();
 	file << "// Compare dco results with finite diefference\n";	
 	input_number = 0;
@@ -157,26 +155,37 @@ int main(int argc, char* argv[])
 	}
 
 	std::vector<std::string> inputNames;
-	std::vector<std::string> finiteInputNames;
-	std::vector<std::string> functionInputNames;
+	std::vector<std::string> ffInputNames; // finite forward input names
+	std::vector<std::string> fbInputNames; // finite backward input names
+	std::vector<std::string> functionInputNames; 
 	std::vector<std::string> outputNames;
-	std::vector<std::string> finiteOutputNames;
+	std::vector<std::string> ffOutputNames; // finite forward output names
+	std::vector<std::string> fbOutputNames; // finite backward output names
 	std::vector<std::string> functionOutputNames;
 	std::vector<std::string> functionResNames;
-	std::vector<std::string> referenceNames;
+	std::vector<std::string> ffReferenceNames; // finite forward reference names
+	std::vector<std::string> fbReferenceNames; // finite backward reference names
+	std::vector<std::string> referenceNames; // finite central reference names
+
 	for (size_t i = 0; i < inputs.size(); ++i) {
-		inputNames.push_back(inputs[i]->Name());
-		finiteInputNames.push_back(inputs[i]->Name() + "_finite");
-		functionInputNames.push_back(inputs[i]->Name() + "_v");
+		std::string inputName = inputs[i]->Name();
+		inputNames.push_back(inputName);
+		ffInputNames.push_back(inputName + "_finite_forward");
+		fbInputNames.push_back(inputName + "_finite_backward");
+		functionInputNames.push_back(inputName + "_v");
 	}
 
 	for (size_t i = 0; i < outputs.size(); ++i) {
-		outputNames.push_back(outputs[i].Name());
-		finiteOutputNames.push_back(outputs[i].Name() + "_finite");
-		functionOutputNames.push_back(outputs[i].Name() + "_v");
-		functionResNames.push_back(outputs[i].Name() + "_df_dx");
+		std::string outputName = outputs[i].Name();
+		outputNames.push_back(outputName);
+		ffOutputNames.push_back(outputName + "_finite_forward");
+		fbOutputNames.push_back(outputName + "_finite_backward");
+		functionOutputNames.push_back(outputName + "_v");
+		functionResNames.push_back(outputName + "_df_dx");
 	}
 	for (size_t i = 0; i < references.size(); ++i) {
+		//ffReferenceNames.push_back(references[i].Name() + "_forward");
+		//fbReferenceNames.push_back(references[i].Name() + "_backward");
 		referenceNames.push_back(references[i].Name());
 	}
 	// make helper function for appending xarray
@@ -233,7 +242,7 @@ int main(int argc, char* argv[])
 	if (!inputs.empty() && !outputs.empty()) {
 		hasInAndOut = ", ";
 	}
-	file << functionName << "(" << join(inputNames, ", ") << hasInAndOut << join(outputNames, ", ") << "); \n";
+	file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
 	for (size_t i = 0; i < outputNames.size(); ++i) {
 		file << "for(size_t i = 0; i < " << outputNames[i] << ".size(); i++){\n";
 		file << "if (i == 0){\n";
@@ -263,15 +272,20 @@ int main(int argc, char* argv[])
 	for (size_t i = 0; i < inputs.size(); ++i) {
 		file << inputs[i]->GetConstantString() ;
 		// differentiate for first input parameter
-		if (i == 0)
-			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << finiteInputNames[i]<< " = " << inputNames[i] << " + h; \n";
-		else
-			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << finiteInputNames[i] << " = " << inputNames[i] << "; \n";
+		if (i == 0) {
+			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << ffInputNames[i] << " = " << inputNames[i] << " + h; \n";
+			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << fbInputNames[i] << " = " << inputNames[i] << " - h; \n";
+		}
+		else {
+			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << ffInputNames[i] << " = " << inputNames[i] << "; \n";
+			file << "xt::xarray<" << inputs[i]->GetDataTypeAsString(true) << "> " << fbInputNames[i] << " = " << inputNames[i] << "; \n";
+		}
 	}
 	file << "// Graph outputs\n";
 	for (size_t i = 0; i < outputs.size(); ++i) {
-		file << outputs[i].GetVariableString(true) ;
-		file << "xt::xarray<" << outputs[i].GetDataTypeAsString(true) << "> " << finiteOutputNames[i] << ";\n";
+		file << outputs[i].GetVariableString(true) + "\n";
+		file << "xt::xarray<" << outputs[i].GetDataTypeAsString(true) << "> " << ffOutputNames[i] << ";\n";
+		file << "xt::xarray<" << outputs[i].GetDataTypeAsString(true) << "> " << fbOutputNames[i] << ";\n";
 		file << "xt::xarray<" << outputs[i].GetDataTypeAsString(true) << "> " << functionResNames[i] << ";\n";
 	}
 	file << "// Reference Values\n";
@@ -283,11 +297,14 @@ int main(int argc, char* argv[])
 		hasInAndOut = ", ";
 	}
 	
-	file << functionName << "(" << join(inputNames, ", ") << hasInAndOut << join(outputNames, ", ") << "); \n";
-	file << functionName << "(" << join(finiteInputNames, ", ") << hasInAndOut << join(finiteOutputNames, ", ") << "); \n";
+	file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
+	file << functionName << "(" << Join(ffInputNames, ", ") << hasInAndOut << Join(ffOutputNames, ", ") << "); \n";
+	file << functionName << "(" << Join(fbInputNames, ", ") << hasInAndOut << Join(fbOutputNames, ", ") << "); \n";
 	for (size_t i = 0; i < outputNames.size(); ++i) {
-		if (i < referenceNames.size() && i < finiteOutputNames.size()) {
-			file <<  referenceNames[i] << " = (" << finiteOutputNames[i] << " - " << outputNames[i] << ")/h; \n";
+		if (i < referenceNames.size() && i < ffOutputNames.size()) {
+			//file << ffReferenceNames[i] << " = (" << ffOutputNames[i] << " - " << outputNames[i] << ")/h; \n";
+			//file << fbReferenceNames[i] << " = (" << outputNames[i] << " - " << ffOutputNames[i] << ")/h; \n";
+			file << referenceNames[i] << " = (" << ffOutputNames[i] << " - " << fbOutputNames[i] << ")/(2 * h); \n"; // https://www.wias-berlin.de/people/john/LEHRE/NUM_PDE/SS09/num_pde_intro_02.pdf
 		}
 	}
 	// tangent function call
@@ -322,9 +339,17 @@ int main(int argc, char* argv[])
 			file << "return 1; \n";
 			file << "}\n";
 			file << "for(std::size_t i = 0; i < "<< functionResNames[i]<< ".size(); ++i){\n";
+			file << "if(" << functionResNames[i] << ".flat(i) != 0 && " << referenceNames[i] << ".flat(i) != 0){\n";
 			file << "if(std::abs( 1 - (" << functionResNames[i] << ".flat(i) / " << referenceNames[i] << ".flat(i))) > "<< accuracy << "){\n";
 			file << "std::cout << \"Test failed for output " << functionResNames[i] << ".\\n Expected: \\n\" << " << referenceNames[i] << " << \"\\n Actual: \\n\" << " << functionResNames[i] << " << std::endl;\n";
 			file << "return 1; \n";
+			file << "}\n";
+			file << "else{\n";
+			file << "if(std::abs(" << functionResNames[i] << ".flat(i) - " << referenceNames[i] << ".flat(i)) > " << accuracy << "){\n";
+			file << "std::cout << \"Test failed for output " << functionResNames[i] << ".\\n Expected: \\n\" << " << referenceNames[i] << " << \"\\n Actual: \\n\" << " << functionResNames[i] << " << std::endl;\n";
+			file << "return 1; \n";
+			file << "}\n";
+			file << "}\n";
 			file << "}\n";
 			file << "}\n";
 		}
