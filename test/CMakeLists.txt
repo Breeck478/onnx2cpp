@@ -52,29 +52,49 @@ if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8)) # o
 endif()
 
 if(DCO_AVAILABLE)
-	add_executable(testgenDco dcoTangentTestInitializer.cpp)
-	target_link_libraries(testgenDco PRIVATE ONNX::onnx ONNX::onnx_proto)
-	target_include_directories(testgenDco PRIVATE ${DCO_INC_PATH} ) 
+	# tangent mode dco tests
+	add_executable(testgenDcoTangent dcoTangentTestInitializer.cpp)
+	target_link_libraries(testgenDcoTangent PRIVATE ONNX::onnx ONNX::onnx_proto)
+	target_include_directories(testgenDcoTangent PRIVATE ${DCO_INC_PATH}_tangent ) 
 	# required for including Operator.cpp files and activating the mkro inside
 	if(MSVC) 
-		target_link_libraries(testgenDco PRIVATE onnx2cpp_lib)
-		set_target_properties(testgenDco PROPERTIES
+		target_link_libraries(testgenDcoTangent PRIVATE onnx2cpp_lib)
+		set_target_properties(testgenDcoTangent PROPERTIES
 		LINK_FLAGS "/WHOLEARCHIVE:onnx2cpp_lib.lib")
 	else()
-		target_link_libraries(testgenDco 
+		target_link_libraries(testgenDcoTangent 
 			PRIVATE 
 			"-Wl,--whole-archive" 
 			onnx2cpp_lib 
 			"-Wl,--no-whole-archive"
 		)
 	endif()
+
+	# adjoint mode dco tests
+	add_executable(testgenDcoAdjoint dcoAdjointTestInitializer.cpp)
+	target_link_libraries(testgenDcoAdjoint PRIVATE ONNX::onnx ONNX::onnx_proto)
+	target_include_directories(testgenDcoAdjoint PRIVATE ${DCO_INC_PATH}_adjoint ) 
+	# required for including Operator.cpp files and activating the mkro inside
+	if(MSVC) 
+		target_link_libraries(testgenDcoAdjoint PRIVATE onnx2cpp_lib)
+		set_target_properties(testgenDcoAdjoint PROPERTIES
+		LINK_FLAGS "/WHOLEARCHIVE:onnx2cpp_lib.lib")
+	else()
+		target_link_libraries(testgenDcoAdjoint 
+			PRIVATE 
+			"-Wl,--whole-archive" 
+			onnx2cpp_lib 
+			"-Wl,--no-whole-archive"
+		)
+	endif()
+	# Test makefile generation
 	add_executable(makegen TestMakeFileGenerator.cpp)
 	add_custom_command(
     TARGET makegen POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E copy
             ${ONNX_NODE_TEST_MAKEFILE_DIR}Makefile
             ${CMAKE_CURRENT_BINARY_DIR}/Makefile
-)
+	)
 endif()
 
 function( ONNX_type_test node_name data_dir test_ctest_name accuracy test_data_set)
@@ -134,15 +154,28 @@ function( ONNX_type_test_onnxruntime node_name data_dir test_ctest_name accuracy
 		)
 endfunction()
 
-function( ONNX_type_test_dco node_name data_dir test_ctest_name accuracy test_data_set)
+function( node_dco_tangent node_name data_dir test_ctest_name accuracy test_data_set)
 
-	set( test_c  ${node_name}_${test_data_set}_test_dco.cpp )
-	set( testbin ${node_name}_${test_data_set}_test_dco )	
+	set( test_c  ${node_name}_${test_data_set}_test_dco_tangent.cpp )
+	set( testbin ${node_name}_${test_data_set}_test_dco_tangent )	
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${testbin})
-	add_custom_target(always_generate_${node_name} ALL
-		COMMAND testgenDco ${data_dir} ${accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
+	add_custom_target(always_generate_${node_name}_tangent ALL
+		COMMAND testgenDcoTangent ${data_dir} ${accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
 	)
-	add_custom_target(always_generate_${node_name}_makefile ALL
+	add_custom_target(always_generate_${node_name}_tangent_makefile ALL
+		COMMAND makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
+	)
+endfunction()
+
+function( node_dco_adjoint node_name data_dir test_ctest_name accuracy test_data_set)
+
+	set( test_c  ${node_name}_${test_data_set}_test_dco_adjoint.cpp )
+	set( testbin ${node_name}_${test_data_set}_test_dco_adjoint )	
+	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${testbin})
+	add_custom_target(always_generate_${node_name}_adjoint ALL
+		COMMAND testgenDcoAdjoint ${data_dir} ${accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
+	)
+	add_custom_target(always_generate_${node_name}_adjoint_makefile ALL
 		COMMAND makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
 	)
 endfunction()
@@ -170,7 +203,7 @@ function( ONNX_backend_node_test_onnxruntime node_name)
 	endif()
 endfunction()
 
-function( ONNX_backend_node_test_dco node_name)
+function( node_dco_tangent_test node_name)
 	if(DCO_AVAILABLE)
 		set(options)
 		set(oneValueArgs ACCURACY)
@@ -181,7 +214,28 @@ function( ONNX_backend_node_test_dco node_name)
 		else()
 			set(accuracy 0.1)
 		endif()
-		ONNX_type_test_dco(
+		node_dco_tangent(
+			${node_name}
+			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
+			ONNX_backend_${node_name}_dco
+			${accuracy}
+			0
+		)
+	endif()
+endfunction()
+
+function( node_dco_adjoint_test node_name)
+	if(DCO_AVAILABLE)
+		set(options)
+		set(oneValueArgs ACCURACY)
+		set(multiValueArgs)
+		cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
+		if (${arg_ACCURACY})
+			set(accuracy ${arg_ACCURACY})
+		else()
+			set(accuracy 0.1)
+		endif()
+		node_dco_adjoint(
 			${node_name}
 			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
 			ONNX_backend_${node_name}_dco
@@ -196,7 +250,7 @@ ONNX_backend_node_test(add)
 ONNX_backend_node_test(argmax_default_axis_example)
 ONNX_backend_node_test(argmin_default_axis_example)
 ONNX_backend_node_test(cast_DOUBLE_to_FLOAT)
-#ONNX_backend_node_test(concat_1d_axis_0)
+ONNX_backend_node_test(concat_1d_axis_0)
 ONNX_backend_node_test(constant)
 ONNX_backend_node_test(div)
 ONNX_backend_node_test(equal)
@@ -261,36 +315,67 @@ ONNX_backend_node_test_onnxruntime(tanh)
 ONNX_backend_node_test_onnxruntime(where_example)
 
 # DCO tests
-ONNX_backend_node_test_dco(abs)
-ONNX_backend_node_test_dco(add)
-#ONNX_backend_node_test_dco(argmax_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
-#ONNX_backend_node_test_dco(argmin_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
-#ONNX_backend_node_test_dco(cast_DOUBLE_to_FLOAT) casting does not have a differentiate method
-#ONNX_backend_node_test_dco(concat_1d_axis_0)
-#ONNX_backend_node_test_dco(constant)
-ONNX_backend_node_test_dco(div)
-#ONNX_backend_node_test_dco(equal) bool functions do not have a differentiate method
-ONNX_backend_node_test_dco(gemm_all_attributes)
-ONNX_backend_node_test_dco(gemm_alpha)
-ONNX_backend_node_test_dco(gemm_beta)
-ONNX_backend_node_test_dco(gemm_default_matrix_bias)
-ONNX_backend_node_test_dco(gemm_default_scalar_bias)
-ONNX_backend_node_test_dco(gemm_default_single_elem_vector_bias)
-ONNX_backend_node_test_dco(gemm_default_vector_bias)
-ONNX_backend_node_test_dco(gemm_default_zero_bias)
-#ONNX_backend_node_test_dco(greater) bool functions do not have a differentiate method
-ONNX_backend_node_test_dco(identity)
-#ONNX_backend_node_test_dco(matmul_2d)
-#ONNX_backend_node_test_dco(matmul_3d)
-#ONNX_backend_node_test_dco(matmul_4d)
-ONNX_backend_node_test_dco(mul)
-ONNX_backend_node_test_dco(pow ACCURACY 0.5)
-ONNX_backend_node_test_dco(relu)
-#ONNX_backend_node_test_dco(reshape_allowzero_reordered)
-#ONNX_backend_node_test_dco(shape) shape does not have a differentiate method because the return type is always vector of integers
-ONNX_backend_node_test_dco(sin)
-ONNX_backend_node_test_dco(sub)
-ONNX_backend_node_test_dco(tanh)
-#ONNX_backend_node_test_dco(where_example) bool functions do not have a differentiate method
+node_dco_tangent_test(abs)
+node_dco_tangent_test(add)
+#node_dco_tangent_test(argmax_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
+#node_dco_tangent_test(argmin_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
+#node_dco_tangent_test(cast_DOUBLE_to_FLOAT) casting does not have a differentiate method
+#node_dco_tangent_test(concat_1d_axis_0)
+#node_dco_tangent_test(constant)
+node_dco_tangent_test(div)
+#node_dco_tangent_test(equal) bool functions do not have a differentiate method
+node_dco_tangent_test(gemm_all_attributes)
+node_dco_tangent_test(gemm_alpha)
+node_dco_tangent_test(gemm_beta)
+node_dco_tangent_test(gemm_default_matrix_bias)
+node_dco_tangent_test(gemm_default_scalar_bias)
+node_dco_tangent_test(gemm_default_single_elem_vector_bias)
+node_dco_tangent_test(gemm_default_vector_bias)
+node_dco_tangent_test(gemm_default_zero_bias)
+#node_dco_tangent_test(greater) bool functions do not have a differentiate method
+node_dco_tangent_test(identity)
+#node_dco_tangent_test(matmul_2d)
+#node_dco_tangent_test(matmul_3d)
+#node_dco_tangent_test(matmul_4d)
+node_dco_tangent_test(mul)
+node_dco_tangent_test(pow ACCURACY 0.5)
+node_dco_tangent_test(relu)
+#node_dco_tangent_test(reshape_allowzero_reordered)
+#node_dco_tangent_test(shape) shape does not have a differentiate method because the return type is always vector of integers
+node_dco_tangent_test(sin)
+node_dco_tangent_test(sub)
+node_dco_tangent_test(tanh)
+#node_dco_tangent_test(where_example) bool functions do not have a differentiate method
 
+node_dco_adjoint_test(abs)
+node_dco_adjoint_test(add)
+#node_dco_adjoint_test(argmax_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
+#node_dco_adjoint_test(argmin_default_axis_example) gives back positions in Tensor. Does not have a differentiate method
+#node_dco_adjoint_test(cast_DOUBLE_to_FLOAT) casting does not have a differentiate method
+#node_dco_adjoint_test(concat_1d_axis_0)
+#node_dco_adjoint_test(constant)
+node_dco_adjoint_test(div)
+#node_dco_adjoint_test(equal) bool functions do not have a differentiate method
+node_dco_adjoint_test(gemm_all_attributes)
+node_dco_adjoint_test(gemm_alpha)
+node_dco_adjoint_test(gemm_beta)
+node_dco_adjoint_test(gemm_default_matrix_bias)
+node_dco_adjoint_test(gemm_default_scalar_bias)
+node_dco_adjoint_test(gemm_default_single_elem_vector_bias)
+node_dco_adjoint_test(gemm_default_vector_bias)
+node_dco_adjoint_test(gemm_default_zero_bias)
+#node_dco_adjoint_test(greater) bool functions do not have a differentiate method
+node_dco_adjoint_test(identity)
+#node_dco_adjoint_test(matmul_2d)
+#node_dco_adjoint_test(matmul_3d)
+#node_dco_adjoint_test(matmul_4d)
+node_dco_adjoint_test(mul)
+node_dco_adjoint_test(pow ACCURACY 0.5)
+node_dco_adjoint_test(relu)
+#node_dco_adjoint_test(reshape_allowzero_reordered)
+#node_dco_adjoint_test(shape) shape does not have a differentiate method because the return type is always vector of integers
+node_dco_adjoint_test(sin)
+node_dco_adjoint_test(sub)
+node_dco_adjoint_test(tanh)
+#node_dco_adjoint_test(where_example) bool functions do not have a differentiate method
 
