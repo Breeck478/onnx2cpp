@@ -154,26 +154,26 @@ function( ONNX_type_test_onnxruntime node_name data_dir test_ctest_name accuracy
 		)
 endfunction()
 
-function( node_dco_tangent node_name data_dir test_ctest_name accuracy test_data_set)
+function( node_dco_tangent node_name data_dir test_ctest_name abs_accuracy rel_accuracy test_data_set)
 
 	set( test_c  ${node_name}_${test_data_set}_test_dco_tangent.cpp )
 	set( testbin ${node_name}_${test_data_set}_test_dco_tangent )	
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${testbin})
 	add_custom_target(always_generate_${node_name}_tangent ALL
-		COMMAND testgenDcoTangent ${data_dir} ${accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
+		COMMAND testgenDcoTangent ${data_dir} ${abs_accuracy} ${rel_accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
 	)
 	add_custom_target(always_generate_${node_name}_tangent_makefile ALL
 		COMMAND makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
 	)
 endfunction()
 
-function( node_dco_adjoint node_name data_dir test_ctest_name accuracy test_data_set)
+function( node_dco_adjoint node_name data_dir test_ctest_name abs_accuracy rel_accuracy test_data_set)
 
 	set( test_c  ${node_name}_${test_data_set}_test_dco_adjoint.cpp )
 	set( testbin ${node_name}_${test_data_set}_test_dco_adjoint )	
 	file(MAKE_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/${testbin})
 	add_custom_target(always_generate_${node_name}_adjoint ALL
-		COMMAND testgenDcoAdjoint ${data_dir} ${accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
+		COMMAND testgenDcoAdjoint ${data_dir} ${abs_accuracy} ${rel_accuracy} ${test_data_set} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/${test_c}
 	)
 	add_custom_target(always_generate_${node_name}_adjoint_makefile ALL
 		COMMAND makegen ${testbin} ${ONNX_NODE_TEST_INCLUDE_DIR} ${CMAKE_CURRENT_BINARY_DIR}/${testbin}/Makefile
@@ -181,24 +181,52 @@ function( node_dco_adjoint node_name data_dir test_ctest_name accuracy test_data
 endfunction()
 
 function( ONNX_backend_node_test node_name)
+	set(options)
+	set(oneValueArgs ACCURACY DATASET)
+	set(multiValueArgs)
+	cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
+	if (${arg_ACCURACY})
+		set(accuracy ${arg_ACCURACY})
+	else()
+		set(accuracy 0.1)
+	endif()
+	if (${arg_DATASET})
+		set(dataset ${arg_DATASET})
+	else()
+		set(dataset 0)
+	endif()
 	ONNX_type_test(
 		${node_name}
 		${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
 		ONNX_backend_${node_name}
-		0.00002
-		0
+		${accuracy}
+		${dataset}
 	)
 endfunction()
 
 
 function( ONNX_backend_node_test_onnxruntime node_name)
 	if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
+		set(options)
+		set(oneValueArgs ACCURACY DATASET)
+		set(multiValueArgs)
+		cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
+		if (${arg_ACCURACY})
+			set(accuracy ${arg_ACCURACY})
+		else()
+			set(accuracy 0.00002)
+		endif()
+		if (${arg_DATASET})
+			set(dataset ${arg_DATASET})
+		else()
+			set(dataset 0)
+		endif()
 		ONNX_type_test_onnxruntime(
 			${node_name}
 			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
 			ONNX_backend_${node_name}_ort
-			0.00002
-			0
+			${accuracy}
+			${dataset}
 		)
 	endif()
 endfunction()
@@ -206,20 +234,31 @@ endfunction()
 function( node_dco_tangent_test node_name)
 	if(DCO_AVAILABLE)
 		set(options)
-		set(oneValueArgs ACCURACY)
+		set(oneValueArgs ABS_ACCURACY REL_ACCURACY DATASET)
 		set(multiValueArgs)
 		cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
-		if (${arg_ACCURACY})
-			set(accuracy ${arg_ACCURACY})
+		if (${arg_ABS_ACCURACY})
+			set(abs_accuracy ${arg_ABS_ACCURACY})
 		else()
-			set(accuracy 0.1)
+			set(abs_accuracy 0.00002)
+		endif()
+		if (${arg_REL_ACCURACY})
+			set(rel_accuracy ${arg_REL_ACCURACY})
+		else()
+			set(rel_accuracy 0.1)
+		endif()
+		if (${arg_DATASET})
+			set(dataset ${arg_DATASET})
+		else()
+			set(dataset 0)
 		endif()
 		node_dco_tangent(
 			${node_name}
 			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
 			ONNX_backend_${node_name}_dco
-			${accuracy}
-			0
+			${abs_accuracy}
+			${rel_accuracy}
+			${dataset}
 		)
 	endif()
 endfunction()
@@ -227,20 +266,31 @@ endfunction()
 function( node_dco_adjoint_test node_name)
 	if(DCO_AVAILABLE)
 		set(options)
-		set(oneValueArgs ACCURACY)
+		set(oneValueArgs ABS_ACCURACY REL_ACCURACY DATASET)
 		set(multiValueArgs)
 		cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
-		if (${arg_ACCURACY})
-			set(accuracy ${arg_ACCURACY})
+		if (${arg_ABS_ACCURACY})
+			set(abs_accuracy ${arg_ABS_ACCURACY})
 		else()
-			set(accuracy 0.1)
+			set(abs_accuracy 0.00002)
+		endif()
+		if (${arg_REL_ACCURACY})
+			set(rel_accuracy ${arg_REL_ACCURACY})
+		else()
+			set(rel_accuracy 0.1)
+		endif()
+		if (${arg_DATASET})
+			set(dataset ${arg_DATASET})
+		else()
+			set(dataset 0)
 		endif()
 		node_dco_adjoint(
 			${node_name}
 			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
 			ONNX_backend_${node_name}_dco
-			${accuracy}
-			0
+			${abs_accuracy}
+			${rel_accuracy}
+			${dataset}
 		)
 	endif()
 endfunction()
@@ -338,7 +388,7 @@ node_dco_tangent_test(identity)
 #node_dco_tangent_test(matmul_3d)
 #node_dco_tangent_test(matmul_4d)
 node_dco_tangent_test(mul)
-node_dco_tangent_test(pow ACCURACY 0.5)
+node_dco_tangent_test(pow REL_ACCURACY 0.5)
 node_dco_tangent_test(relu)
 #node_dco_tangent_test(reshape_allowzero_reordered)
 #node_dco_tangent_test(shape) shape does not have a differentiate method because the return type is always vector of integers
@@ -370,7 +420,7 @@ node_dco_adjoint_test(identity)
 #node_dco_adjoint_test(matmul_3d)
 #node_dco_adjoint_test(matmul_4d)
 node_dco_adjoint_test(mul)
-node_dco_adjoint_test(pow ACCURACY 0.5)
+node_dco_adjoint_test(pow REL_ACCURACY 0.5)
 node_dco_adjoint_test(relu)
 #node_dco_adjoint_test(reshape_allowzero_reordered)
 #node_dco_adjoint_test(shape) shape does not have a differentiate method because the return type is always vector of integers
