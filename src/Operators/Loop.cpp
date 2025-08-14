@@ -33,8 +33,7 @@ public:
 	virtual void SetOpSpecificTensorTypes() {
 		node->GetOutputs()[0]->HasStaticType(true); // output 0 is the condition and is always bool
 	}
-	void PrePrint() override {
-		try {		
+	void PrePrint() override {	
 			// create map without aaded vars for later use
 			std::map<OnnxVar*, OnnxVar*> inToOut; // input var to output var 
 			for (int64_t i = 1; i < Graph().GetInputs().size(); i++) {
@@ -69,12 +68,6 @@ public:
 					in->HasStaticType(false); 
 				}
 			}
-			
-		}
-		catch (const std::bad_any_cast& e) {
-			std::cerr << "Error casting attribute 'body' to GraphProto for loop-Operator: " << e.what() << std::endl;
-			throw; // Re-throw the exception to handle it in the main processing flow
-		}
 	}
 	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
