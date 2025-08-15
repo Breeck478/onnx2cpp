@@ -73,7 +73,7 @@ void OnnxVars::AddFromList(const ::google::protobuf::RepeatedPtrField<onnx::Valu
 
 
 void OnnxVars::Add(const OnnxVar var) {
-	std::string name = RemoveChars(var.Name());
+	std::string name = var.Name();
 	if ((names.end() == std::find(names.begin(), names.end(), name))) {
 		names.push_back(name);
 		vars.push_back(var);

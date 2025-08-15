@@ -13,11 +13,11 @@ OnnxNode::OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr)
 	this->graph = graphPtr;
 	for (std::string val : nodeProto.input())
 	{
-		this->inputNames.push_back(RemoveChars(val));
+		this->inputNames.push_back(GetValidCName(val));
 	}
 	for (std::string val : nodeProto.output())
 	{
-		this->outputNames.push_back(RemoveChars(val));
+		this->outputNames.push_back(GetValidCName(val));
 	}
 	for (onnx::AttributeProto att : nodeProto.attribute())
 	{
@@ -72,7 +72,7 @@ OnnxNode::OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr)
 			break;
 		}
 			}
-	this->name = RemoveChars(nodeProto.name());
+	this->name = GetValidCName(nodeProto.name());
 	this->op_type = nodeProto.op_type();
 	this->handler = OperatorHandlerFactory::create(this);
 }

@@ -54,6 +54,14 @@ std::string toCpp::RemoveChars(const std::string& input, const std::string& char
     return result;
 }
 
+std::string toCpp::GetValidCName(const std::string& input) {
+    std::string result = RemoveChars(input, "/.,: ");
+    if (result.empty() || !std::isalpha(result[0])) {
+        result = "var_" + result; // Prefix with 'var_' if the first character is not a letter
+    }
+    return result;
+}
+
 std::vector<std::string> toCpp::Split(const std::string& str, const std::string& delimiter) {
 	std::vector<std::string> result;
 	size_t start = 0;

@@ -261,7 +261,7 @@ void OnnxConsts::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::T
 
 }
 void OnnxConsts::Add(const OnnxConst var) {
-	std::string name = RemoveChars(var.Name());
+	std::string name = GetValidCName(var.Name());
 	if ((names.end() == std::find(names.begin(), names.end(), name))) {
 		names.push_back(name);
 		consts.push_back(var);
