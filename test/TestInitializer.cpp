@@ -357,17 +357,22 @@ int main(int argc, char* argv[])
 			protoInputs.push_back(proto);
 			input_number++;
 		}
-		input_number = 0;
-		while (true) {
-			std::string partial = dataset_dir + "/output_";
-			std::unique_ptr<OnnxVar> out = get_inputVar_from_file(partial, input_number);
-			if (out == nullptr)
-				break;
-			out->Name(out->Name() + "_graph_out");
-			outputs.push_back(std::move(out));
-			input_number++;
-		}
 		get_ort_results(model_fn, protoInputs, references);
+		for (size_t i = 0; i < references.size(); ++i) {
+			// create new valueinfo for each reference (output of model run)
+			onnx::ValueInfoProto valueInfo;
+			// Set the name type and shape of the valueInfo
+			valueInfo.set_name(references[i]->Name()+"_out");
+			auto* typeProto = valueInfo.mutable_type();
+			auto* tensorType = typeProto->mutable_tensor_type();
+			tensorType->set_elem_type(references[i]->DataType());
+			auto* shapeProto = tensorType->mutable_shape();
+			std::vector<int64_t> shape;
+			for (size_t j = 0; j < references[i]->Shape().size(); j++)
+				shapeProto->add_dim()->set_dim_value(references[i]->Shape()[j]);
+			// create new OnnxVar from valueInfo
+			outputs.push_back(std::make_unique<OnnxVar>(valueInfo));
+		}
 	}
 	catch (const std::exception& e) {
 		std::cout << "Error during ONNX Runtime processing: " << e.what() << std::endl;
