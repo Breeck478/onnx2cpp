@@ -48,19 +48,19 @@ namespace toCpp {
 			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedField): Given repeated field does not hold any Data");
 		}
 
-		size_t count = rpf.size();
+		//size_t count = rpf.size();
 		if constexpr (!std::is_same_v<TOut, bool>) {
-			if (count >= sizeof(TOut)) {
-				count = count / sizeof(TOut);
-			}
+		//	if (count >= sizeof(TOut)) {
+		//		count = count / sizeof(TOut);
+		//	}
 
-			result.resize(count);
+		//	result.resize(count);
 			if constexpr (!std::is_same_v<TOut, std::string>) {
-				for (int i = 1; i < rpf.size(); ++i) {
+				for (int i = 0; i < rpf.size(); ++i) {
 					result.push_back(static_cast<TOut>(rpf.Get(i)));
 				}
 			}else{
-				for (int i = 1; i < rpf.size(); ++i) {
+				for (int i = 0; i < rpf.size(); ++i) {
 					result.push_back(std::to_string(rpf.Get(i)));
 				}
 			}
@@ -79,13 +79,13 @@ namespace toCpp {
 			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedFiel): Given repeated field does not hold any Data");
 		}
 
-		size_t count = static_cast<int64_t>(rpf.size());
+		//size_t count = static_cast<int64_t>(rpf.size());
 		if constexpr (!std::is_same_v<TOut, bool>) {
-			if (count >= sizeof(TOut)) {
-				count = count / sizeof(TOut);
-			}
+		//	if (count >= sizeof(TOut)) {
+		//		count = count / sizeof(TOut);
+		//	}
 
-			result.resize(count);
+		//	result.resize(count);
 			if constexpr (!std::is_same_v<TOut, std::string>) {
 				if constexpr (std::is_same_v<TIn, std::string>) {
 					std::string rpf_str = "";
@@ -94,14 +94,14 @@ namespace toCpp {
 					return ParseByteData<TOut>(rpf_str);
 				}
 				else { // need else because compiler does not register that TIn is not a string
-					for (int i = 1; i < rpf.size(); ++i) {
+					for (int i = 0; i < rpf.size(); ++i) {
 						TIn tmp = rpf.Get(i);
 						result.push_back(static_cast<TOut>(tmp));
 					}
 				}
 			}
 			else {
-				for (int i = 1; i < rpf.size(); ++i) {
+				for (int i = 0; i < rpf.size(); ++i) {
 					result.push_back(rpf.Get(i));
 				}
 			}
