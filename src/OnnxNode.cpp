@@ -190,20 +190,27 @@ void OnnxNode::GetOpSpecificVarGen(std::ostringstream & stream) {
 	}
 }
 
-void OnnxNode::SetVarFromList(const OnnxVars& varsList) {
+void OnnxNode::SetTensorFromLists(const OnnxVars& vars, const OnnxConsts& consts) {
 	bool res = false;
 	std::vector<std::string> varNames = inputNames;
 	// Search for own var in given List 
 	for (auto& name : varNames) {
 		OnnxVar* varPointer = nullptr;
-		if (varsList.FindVarPointerByName(name, varPointer) ) { // && !varPointer->ContainsUnkownDim()
+		if (vars.FindVarPointerByName(name, varPointer) ) { 
  			inputs.push_back(varPointer);
+			continue;
+		}
+		OnnxConst* constPointer = nullptr;
+		if (consts.FindConstPointerByName(name, constPointer)) {
+			inputs.push_back(constPointer);
 		}
 	}
+
+	// here only vars because constants cant be outputs
 	varNames = outputNames;
 	for (auto& name : varNames) {
 		OnnxVar* outputVar = nullptr;
-		if (varsList.FindVarPointerByName(name, outputVar) ) { // && !outputVar->ContainsUnkownDim()
+		if (vars.FindVarPointerByName(name, outputVar) ) {
 			outputs.push_back(outputVar);
 		}
 	}
@@ -289,9 +296,9 @@ int OnnxNodes::GetOpTypeCount() const {
 	return opTypes.size();
 }
 
-void OnnxNodes::RegisterVariables(OnnxVars& varsList) {
+void OnnxNodes::RegisterTensors(OnnxVars& varsList, OnnxConsts& constList) {
 	for (OnnxNode* node : nodes) {
-		node->SetVarFromList(varsList);
+		node->SetTensorFromLists(varsList, constList);
 
 	}
 }

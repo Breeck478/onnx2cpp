@@ -153,10 +153,10 @@ int OnnxVars::GetNameCount() const {
 }
 
 bool OnnxVars::FindVarPointerByName(const std::string name, OnnxVar*& OutputVar) const {
-	for (const OnnxVar& c : vars) {
-		if (c.Name() == name) {
-			OutputVar = const_cast<OnnxVar*>(&c);
-			return true; // Found the const
+	for (const OnnxVar& v : vars) {
+		if (v.Name() == name) {
+			OutputVar = const_cast<OnnxVar*>(&v);
+			return true; // Found the var
 		}
 	}
 	return false;

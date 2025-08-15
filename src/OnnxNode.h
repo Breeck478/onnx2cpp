@@ -7,6 +7,7 @@
 #include <memory>
 #include <functional>
 #include "OnnxVar.h"
+#include "OnnxConst.h"
 #include <typeinfo>
 
 #include <sstream>
@@ -58,7 +59,7 @@ namespace toCpp {
 			}
 			return attributes.end();
 		}
-		void SetVarFromList(const OnnxVars& var);
+		void SetTensorFromLists(const OnnxVars& vars, const OnnxConsts& consts);
 		void CreateFunctionCall(std::ostringstream& stream) const;
 		void SetOpSpecificTensorTypes();
 		bool NeedsInclude() const;
@@ -133,7 +134,7 @@ namespace toCpp {
 		std::vector<std::string> GetOpTypes() const;
 		std::string GetOpType(const int i) const;
 		int GetOpTypeCount() const;
-		void RegisterVariables(OnnxVars& varsList);
+		void RegisterTensors(OnnxVars& varsList, OnnxConsts& constList);
 
 	private:
 		std::vector<OnnxNode*> nodes;

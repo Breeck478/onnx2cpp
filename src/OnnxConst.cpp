@@ -303,6 +303,17 @@ std::deque<OnnxConst>::iterator OnnxConsts::end() {
 	return consts.end();
 }
 
+bool OnnxConsts::FindConstPointerByName(const std::string name, OnnxConst*& outputConst) const {
+	for (const OnnxConst& c : consts) {
+		if (c.Name() == name) {
+			outputConst = const_cast<OnnxConst*>(&c);
+			return true; // Found the const
+		}
+	}
+	return false;
+}
+
+
 // names
 
 std::string OnnxConsts::GetName(const int i) const {

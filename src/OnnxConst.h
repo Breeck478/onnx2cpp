@@ -62,6 +62,7 @@ namespace toCpp {
 		std::deque<OnnxConst>::const_iterator end() const;
 		std::deque<OnnxConst>::iterator begin();
 		std::deque<OnnxConst>::iterator end();
+		bool FindConstPointerByName(const std::string name, OnnxConst*& OutputConst) const;
 		// names
 		std::vector<std::string> GetNames() const;
 		std::string GetName(const int i) const;

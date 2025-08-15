@@ -33,7 +33,7 @@ void OnnxGraph::RegisterIOs() {
 			var->HasStaticType(false);
 		}
 	}
-	nodes.RegisterVariables(vars);
+	nodes.RegisterTensors(vars, consts);
 }
 
 void OnnxGraph::SetStaticIOs(std::vector <std::string> &inputs, std::vector<std::string> &outputs) {
