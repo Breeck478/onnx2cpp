@@ -24,12 +24,10 @@ namespace toCpp {
 		OperatorHandler(const OnnxNode* node) : node(node) {};
 		virtual ~OperatorHandler() = default;
 		virtual bool OperatorSpecificNodeGeneration() const { return false; }
-		virtual bool OperatorSpecificVarGeneration() const { return false; }
 		virtual bool OperatorSpecificTensorTypes() const { return false; }
 		virtual bool OperatorSpecificPreProcess() const { return false; }
 		virtual bool OperatorNeedsInclude() const { return true; }
 		virtual void GetOpSpecificNodeGenString(std::ostringstream& stream) const {}
-		virtual void GetOpSpecificVarGen(std::ostringstream& stream) {}
 		virtual void SetOpSpecificTensorTypes() {}
 		virtual void PrePrint() {}
 	protected:
@@ -45,7 +43,6 @@ namespace toCpp {
 		std::string GetName() const;
 		std::string GetOpType() const { return op_type; }
 		void GetNodeString(std::ostringstream& stream);
-		void GetOpSpecificVarGen(std::ostringstream& stream);
 		std::string GetParamsString()const;
 		std::vector<std::string> GetInputNames() const { return inputNames; }
 		std::vector<std::string> GetOutputNames() const { return outputNames; }

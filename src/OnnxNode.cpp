@@ -57,8 +57,7 @@ OnnxNode::OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr)
 			attributes[att.name()] = std::vector<onnx::GraphProto>(att.graphs().begin(), att.graphs().end());
 			break;
 		case onnx::AttributeProto_AttributeType_SPARSE_TENSOR:
-			// Handle sparse tensor type if needed
-			attributes[att.name()] = att.sparse_tensor();
+			throw std::runtime_error("ERROR(OnnxNode::OnnxNode): Sparse tensors are not supported yet for " + nodeProto.name());
 			break;
 		case onnx::AttributeProto_AttributeType_TYPE_PROTOS:
 			attributes[att.name()] = std::vector<onnx::TypeProto>(att.type_protos().begin(), att.type_protos().end());
@@ -100,11 +99,21 @@ std::string OnnxNode::GetParamsString() const {
 			else if (value.type() == typeid(onnx::TensorProto)) {
 				res += "." + key + "= " + std::any_cast<onnx::TensorProto>(value).name() + "";
 			}
-			/*else if (value.type() == typeid(std::vector<float>)) {
-				res += "." + key + ": [" + Join(std::any_cast<std::vector<float>>(value), ", ") + "]";
+			else if (value.type() == typeid(std::vector<float>)) {
+				res += "." + key + ": [";
+				const auto& floats = std::any_cast<std::vector<float>>(value);
+				for (const auto& val : floats) {
+					res += std::to_string(val) + ", ";
+				}
+				res += "]";
 			}
 			else if (value.type() == typeid(std::vector<int64_t>)) {
-				res += "." + key + ": [" + Join(std::any_cast<std::vector<int64_t>>(value), ", ") + "]";
+				res += "." + key + ": [";
+				const auto& ints = std::any_cast<std::vector<int64_t>>(value);
+				for (const auto& val : ints) {
+					res += std::to_string(val) + ", ";
+				}
+				res += "]";
 			}
 			else if (value.type() == typeid(std::vector<std::string>)) {
 				res += "." + key + ": [" + Join(std::any_cast<std::vector<std::string>>(value), ", ") + "]";
@@ -116,12 +125,12 @@ std::string OnnxNode::GetParamsString() const {
 					res += tensor.name() + ", ";
 				}
 				res += "]";
-			}*/
+			}
 			else if (value.type() == typeid(onnx::GraphProto)) {
-				res += "." + key + "= Graph";//  OnnxGraph(std::any_cast<onnx::GraphProto>(value)).PrintGraph();
+				std::cout << "Warning: Graph attribute should be handled specificly for node " << GetName() << std::endl;
 			}
 			else if (value.type() == typeid(onnx::TypeProto)) {
-				res += "." + key + "= TypeProto"; // Platzhalter für TypeProto-Darstellung
+				std::cout << "Warning: TypeProto attribute should be handled specificly for node " << GetName() << std::endl;
 			}
 			else {
 				res += "." + key + "= UnknownType";
@@ -131,7 +140,7 @@ std::string OnnxNode::GetParamsString() const {
 		}
 
 		res += "}";
-		
+
 	}
 	return res;
 }
@@ -153,14 +162,6 @@ bool OnnxNode::NeedsInclude() const {
 
 void OnnxNode::GetNodeString(std::ostringstream & stream) {
 	if (HasHandler()) {
-		if (Handler()->OperatorSpecificVarGeneration()) {
-			Handler()->GetOpSpecificVarGen(stream);
-		}
-		else {
-			//for (OnnxTensor* var : inputs) {				
-			//	res += var->GetVariableString() + "\n";
-			//}
-		}
 		if (Handler()->OperatorSpecificNodeGeneration()) {
 			Handler()->GetOpSpecificNodeGenString(stream);
 		}
@@ -169,26 +170,11 @@ void OnnxNode::GetNodeString(std::ostringstream & stream) {
 		}
 	}
 	else {
-		//for (OnnxVar* var : inputs) {
-			//if (var && var->ContainsUnkownDim()) {
-		//		res += var->GetVariableString() + "\n";
-			//}
-		//}
 		 CreateFunctionCall(stream);
 	}
 	stream << "\n"; // Add a newline after the function call
 }
 
-void OnnxNode::GetOpSpecificVarGen(std::ostringstream & stream) {
-	if (HasHandler() && Handler()->OperatorSpecificVarGeneration()) {
-		 Handler()->GetOpSpecificVarGen(stream);
-	}
-	else {
-		for (OnnxTensor* var : inputs) {
-			stream << var->GetVariableString() + "\n";
-		}
-	}
-}
 
 void OnnxNode::SetTensorFromLists(const OnnxVars& vars, const OnnxConsts& consts) {
 	bool res = false;

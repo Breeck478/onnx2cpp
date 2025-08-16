@@ -9,9 +9,6 @@ public:
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic
 	}
-	bool OperatorSpecificVarGeneration() const override {
-		return false; // This operator does not generate specific variables
-	}
 	bool OperatorNeedsInclude() const override {
 		return false; // This operator does not need an include
 	}
