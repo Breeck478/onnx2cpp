@@ -57,6 +57,10 @@ void OnnxGraph::PrePrint() {
 void OnnxGraph::AddExternVars(const OnnxVars& vars) {
 	// Add Vars from another source. E.g. for Loop-Operator from outside Graph
 	for (OnnxVar var : vars) {
+		if (var.IsIO()) {
+			var.SetIO(false, false); // Reset IO flags, because these vars are not inputs of this graph
+		}
+
 		var.NeedsInit(false); // Do not need to initialize these vars, they are already initialized in the graph
 		this->vars.Add(var);
 	}
