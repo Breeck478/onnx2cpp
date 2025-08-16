@@ -83,64 +83,80 @@ std::string OnnxNode::GetName() const{
 std::string OnnxNode::GetParamsString() const {
 	std::string res = "";
 	if (attributes.size() > 0) {
-		int counter = 1;
-		res += op_type + "Params{";
-		for (auto it = attributes.begin(); it != attributes.end(); ++it) {
-			auto& [key, value] = *it;
-			if (value.type() == typeid(float)) {
-				res += "." + key + "= " + std::to_string(std::any_cast<float>(value)) + "";
-			}
-			else if (value.type() == typeid(int64_t)) {
-				res += "." + key + "= " + std::to_string(std::any_cast<int64_t>(value)) + "";
-			}
-			else if (value.type() == typeid(std::string)) {
-				res += "." + key + "= \"" + std::any_cast<std::string>(value) + "\"";
-			}
-			else if (value.type() == typeid(onnx::TensorProto)) {
-				res += "." + key + "= " + std::any_cast<onnx::TensorProto>(value).name() + "";
-			}
-			else if (value.type() == typeid(std::vector<float>)) {
-				res += "." + key + ": [";
-				const auto& floats = std::any_cast<std::vector<float>>(value);
-				for (const auto& val : floats) {
-					res += std::to_string(val) + ", ";
+		try {
+			int counter = 1;
+			res += op_type + "Params{";
+			for (auto it = attributes.begin(); it != attributes.end(); ++it) {
+				auto& [key, value] = *it;
+				if (value.type() == typeid(float)) {
+					res += "." + key + "= " + std::to_string(std::any_cast<float>(value)) + "";
 				}
-				res += "]";
-			}
-			else if (value.type() == typeid(std::vector<int64_t>)) {
-				res += "." + key + ": [";
-				const auto& ints = std::any_cast<std::vector<int64_t>>(value);
-				for (const auto& val : ints) {
-					res += std::to_string(val) + ", ";
+				else if (value.type() == typeid(int64_t)) {
+					res += "." + key + "= " + std::to_string(std::any_cast<int64_t>(value)) + "";
 				}
-				res += "]";
-			}
-			else if (value.type() == typeid(std::vector<std::string>)) {
-				res += "." + key + ": [" + Join(std::any_cast<std::vector<std::string>>(value), ", ") + "]";
-			}
-			else if (value.type() == typeid(std::vector<onnx::TensorProto>)) {
-				res += "." + key + ": [";
-				const auto& tensors = std::any_cast<std::vector<onnx::TensorProto>>(value);
-				for (const auto& tensor : tensors) {
-					res += tensor.name() + ", ";
+				else if (value.type() == typeid(std::string)) {
+					res += "." + key + "= \"" + std::any_cast<std::string>(value) + "\"";
 				}
-				res += "]";
+				else if (value.type() == typeid(onnx::TensorProto)) {
+					res += "." + key + "= " + std::any_cast<onnx::TensorProto>(value).name() + "";
+				}
+				else if (value.type() == typeid(std::vector<float>)) {
+					res += "." + key + ": [";
+					const auto& floats = std::any_cast<std::vector<float>>(value);
+					for (size_t i = 0; i < floats.size(); i++) {
+						const auto& val = floats[i];
+						res += std::to_string(val);
+						if (i < floats.size() - 1) {
+							res += ", ";
+						}
+					}
+					res += "]";
+				}
+				else if (value.type() == typeid(std::vector<int64_t>)) {
+					res += "." + key + ": [";
+					const auto& ints = std::any_cast<std::vector<int64_t>>(value);
+					for (size_t i = 0; i < ints.size(); i++) {
+						const auto& val = ints[i];
+						res += std::to_string(val);
+						if (i < ints.size() - 1) {
+							res += ", ";
+						}
+					}
+					res += "]";
+				}
+				else if (value.type() == typeid(std::vector<std::string>)) {
+					res += "." + key + ": [" + Join(std::any_cast<std::vector<std::string>>(value), ", ") + "]";
+				}
+				else if (value.type() == typeid(std::vector<onnx::TensorProto>)) {
+					res += "." + key + ": [";
+					const auto& tensors = std::any_cast<std::vector<onnx::TensorProto>>(value);
+					for (size_t i = 0; i < tensors.size(); i++) {
+						const auto& tensor = tensors[i];
+						res += tensor.name();
+						if (i < tensors.size() - 1) {
+							res += ", ";
+						}
+					}
+					res += "]";
+				}
+				else if (value.type() == typeid(onnx::GraphProto) || value.type() == typeid(std::vector<onnx::GraphProto>)) {
+					std::cout << "Warning: Graph attribute should be handled specificly for node " << GetName() << std::endl;
+				}
+				else if (value.type() == typeid(onnx::TypeProto) || value.type() == typeid(std::vector<onnx::TypeProto>)) {
+					std::cout << "Warning: TypeProto attribute should be handled specificly for node " << GetName() << std::endl;
+				}
+				else {
+					res += "." + key + "= UnknownType";
+				}
+				if (counter < attributes.size()) res += ", ";
+				counter += 1;
 			}
-			else if (value.type() == typeid(onnx::GraphProto)) {
-				std::cout << "Warning: Graph attribute should be handled specificly for node " << GetName() << std::endl;
-			}
-			else if (value.type() == typeid(onnx::TypeProto)) {
-				std::cout << "Warning: TypeProto attribute should be handled specificly for node " << GetName() << std::endl;
-			}
-			else {
-				res += "." + key + "= UnknownType";
-			}
-			if (counter < attributes.size()) res += ", ";
-			counter += 1;
+			res += "}";
 		}
-
-		res += "}";
-
+		catch (const std::bad_any_cast& e) {
+			std::cerr << "Error: Bad any cast in GetParamsString for node " << name << ": " << e.what() << std::endl;
+			res = "UnknownParams";
+		}
 	}
 	return res;
 }
