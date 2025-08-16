@@ -3,6 +3,7 @@ include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
 set(ONNXRUNTIME_LIB ${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/lib/onnxruntime.lib)
 set(ONNXRUNTIME_INC_DIR${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/include)
 set(ONNX_NODE_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/node/)
+set(ONNX_GRAPH_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/graph/)
 set(ONNX_NODE_TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/)
 set(ONNX_NODE_TEST_MAKEFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/)
 	
@@ -48,7 +49,7 @@ if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8)) # o
 	target_include_directories(testgenOrt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src ) 
 	set_target_properties(testgenOrt PROPERTIES
     LINK_FLAGS "/WHOLEARCHIVE:onnx2cpp_lib.lib")
-	target_compile_definitions(testgenOrt PRIVATE ORT_COMPARE=1)
+	target_compile_definitions(testgenOrt PRIVATE -DORT_COMPARE=1)
 endif()
 
 if(DCO_AVAILABLE)
@@ -180,6 +181,34 @@ function( node_dco_adjoint node_name data_dir test_ctest_name abs_accuracy rel_a
 	)
 endfunction()
 
+function( graph_test_call graph_name data_dir test_ctest_name accuracy test_data_set)
+	set( test_c  ${graph_name}_${test_data_set}_test_graph.cpp )
+	set( testbin ${graph_name}_${test_data_set}_test_graph )	
+	add_custom_command(
+		OUTPUT
+		${test_c}
+		COMMAND
+		testgenOrt ${data_dir} ${accuracy} ${test_data_set} > ${test_c} 
+		DEPENDS
+		testgenOrt
+		)
+	add_executable( ${testbin}
+		${test_c}
+		)
+		if(MSVC)
+			target_compile_options(${testbin} PRIVATE /w)
+		else()
+			target_compile_options(${testbin} PRIVATE -w)
+		endif()
+	target_link_libraries(${testbin} PRIVATE xtensor)
+	target_include_directories( ${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
+
+	# register with CTest
+	add_test(NAME ${test_ctest_name}
+		COMMAND ${testbin}
+		)
+endfunction()
+
 function( ONNX_backend_node_test node_name)
 	set(options)
 	set(oneValueArgs ACCURACY DATASET)
@@ -294,6 +323,30 @@ function( node_dco_adjoint_test node_name)
 		)
 	endif()
 endfunction()
+function( graph_test graph_name)
+	set(options)
+	set(oneValueArgs ACCURACY DATASET)
+	set(multiValueArgs)
+	cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
+	if (${arg_ACCURACY})
+		set(accuracy ${arg_ACCURACY})
+	else()
+		set(accuracy 0.1)
+	endif()
+	if (${arg_DATASET})
+		set(dataset ${arg_DATASET})
+	else()
+		set(dataset 0)
+	endif()
+	graph_test_call(
+		${graph_name}
+		${ONNX_GRAPH_TEST_DATA_DIR}/test_${graph_name}
+		ONNX_graph_${graph_name}
+		${accuracy}
+		${dataset}
+	)
+endfunction()
+
 
 ONNX_backend_node_test(abs)
 ONNX_backend_node_test(add)
@@ -418,9 +471,9 @@ node_dco_tangent_test(gemm_default_vector_bias)
 node_dco_tangent_test(gemm_default_zero_bias)
 #node_dco_tangent_test(greater) bool functions do not have a differentiate method
 node_dco_tangent_test(identity)
-#node_dco_tangent_test(matmul_2d)
-#node_dco_tangent_test(matmul_3d)
-#node_dco_tangent_test(matmul_4d)
+node_dco_tangent_test(matmul_2d)
+node_dco_tangent_test(matmul_3d)
+node_dco_tangent_test(matmul_4d)
 node_dco_tangent_test(mul)
 node_dco_tangent_test(pow REL_ACCURACY 0.5)
 node_dco_tangent_test(relu)
@@ -461,9 +514,9 @@ node_dco_adjoint_test(gemm_default_vector_bias)
 node_dco_adjoint_test(gemm_default_zero_bias)
 #node_dco_adjoint_test(greater) bool functions do not have a differentiate method
 node_dco_adjoint_test(identity)
-#node_dco_adjoint_test(matmul_2d)
-#node_dco_adjoint_test(matmul_3d)
-#node_dco_adjoint_test(matmul_4d)
+node_dco_adjoint_test(matmul_2d)
+node_dco_adjoint_test(matmul_3d)
+node_dco_adjoint_test(matmul_4d)
 node_dco_adjoint_test(mul)
 node_dco_adjoint_test(pow REL_ACCURACY 0.5)
 node_dco_adjoint_test(relu)
@@ -474,3 +527,7 @@ node_dco_adjoint_test(sub)
 node_dco_adjoint_test(tanh)
 #node_dco_adjoint_test(where_example) bool functions do not have a differentiate method
 
+graph_test(PINN)
+graph_test(loopModel)
+#graph_test(gptneox_Opset16)
+#graph_test(cs3darknet_l_Opset16)
