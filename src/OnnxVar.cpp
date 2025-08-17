@@ -18,7 +18,7 @@ OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput, bool isOutput) : 
 		this->Shape(typeProto.sparse_tensor_type().shape());
 	}
 	else {
-		throw std::runtime_error("ERROR(OnnxVar::OnnxVar): TypeProto-Type not supported yet for Var" + valueInfo.name());
+		throw std::runtime_error("ERROR(OnnxVar::OnnxVar): TypeProto-Type not supported yet for Var " + valueInfo.name());
 	}
 }
 
