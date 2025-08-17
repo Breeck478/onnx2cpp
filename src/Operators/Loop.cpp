@@ -76,28 +76,42 @@ public:
 				
 				std::vector<std::string> inputNames;
 				std::vector<std::string> outputNames;
-				for (int64_t i = 0; i < node->GetInputNames().size(); i++) {
-					inputNames.push_back(node->GetInputNames()[i] + "_In");
-					if (i == 0)
-						continue;
-					outputNames.push_back(node->GetInputNames()[i] + "_Out");
+				int amountScans = Graph().GetOutputNames().size() - (Graph().GetInputNames().size() - 1);
+				if (amountScans < 0) {
+					amountScans = 0; // No scans needed
+				}
+				for (int64_t i = 0; i < Graph().GetInputNames().size(); i++) {
+					inputNames.push_back(Graph().GetInputNames()[i] + "_In");
+
+				}
+
+				for (int64_t i = 0; i < Graph().GetOutputNames().size(); i++) {
+					outputNames.push_back(Graph().GetOutputNames()[i] + "_out");
 				}
 				Graph().PrintGraph(stream);
 				for (int64_t i = 1; i < inputNames.size(); i++) {
 					stream << "xt::xarray<" + Graph().GetInputs()[i]->GetDataTypeAsString() + "> " + inputNames[i] + " = " + node->GetInputNames()[i] + ";\n";
 				}
 				for (int64_t i = 0; i < outputNames.size(); i++) {
-					stream << "xt::xarray<" + Graph().GetInputs()[i+1]->GetDataTypeAsString() + "> " + outputNames[i] + ";\n";
+					stream << "xt::xarray<" + Graph().GetOutputs()[i]->GetDataTypeAsString() + "> " + outputNames[i] + ";\n";
 				}
+				size_t nodeOutputsSize = node->GetOutputNames().size() - 1;
+				for (int64_t i = 0; i < amountScans; i++) {
+					stream << node->GetOutputNames()[nodeOutputsSize-i] + ".resize({" << Join(node->GetOutputs()[nodeOutputsSize - i]->Shape(), ", ") << "});\n";
+				}
+				
 				stream << "// Loop Graph:\n";
-				stream << "for (int " + inputNames[0] + " = 0; "+inputNames[0]+" < " + node->GetInputNames()[0] + "[0] && " + inputNames[1] + "[0]; ++" + inputNames[0] + ") {\n";
+				stream << "for (size_t " + inputNames[0] + " = 0; "+inputNames[0]+" < " + node->GetInputNames()[0] + "[0] && " + inputNames[1] + "[0]; ++" + inputNames[0] + ") {\n";
 				stream << "\t// Loop body for " + node->GetName() + "\n";
 				stream << Graph().Name() + "(" + Join(inputNames, ", ") + ", " + Join(outputNames, ", ") + "); // " + node->GetName() + "\n";
 				for (int64_t i = 0; i+1 < inputNames.size() && i < outputNames.size(); i++) {
 					stream << inputNames[i+1] + " = " + outputNames[i] + ";\n";
 				}
+				for (int64_t i = 0; i < amountScans; i++) {
+					stream << "xt::view(" << node->GetOutputNames()[nodeOutputsSize - i] << ", " << inputNames[0] << ", xt::all()) = xt::view(" << outputNames[outputNames.size() - 1 - i] + ", xt::all()); \n";
+				}
 				stream << "}\n";
-				for (int64_t i = 0; i < node->GetOutputNames().size() && i + 1 < outputNames.size(); i++) {
+				for (int64_t i = 0; i < node->GetOutputNames().size() - amountScans && i + 1 < outputNames.size(); i++) {
 					stream << node->GetOutputNames()[i] + " = " + outputNames[i + 1] + ";\n";
 				}
 
