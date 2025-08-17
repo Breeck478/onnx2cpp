@@ -7,6 +7,14 @@ bool ArrayContains(const xt::xarray<T1> &arr, T2 value) {
     return xt::any(xt::equal(arr, value));
 }
 
+struct SliceParams
+{
+	const xt::xarray<int> axes = {};
+    const xt::xarray<int> ends = {};
+    const xt::xarray<int> starts = {};
+};
+
+
 // multiple overloads for Slice function because of optional paraemeters
 // steps relies on axex. Tehrefor is is always clear which function to call
 template <typename T, Int32OrInt64 Tind>
@@ -92,4 +100,10 @@ void Slice(const xt::xarray<T>& data, const xt::xarray<Tind>& starts, const xt::
     }
 
     output = xt::strided_view(data, sv);
+}
+
+
+template <typename T, Int32OrInt64 Tind>
+void Slice(const xt::xarray<T>& data, xt::xarray<T>& output, const SliceParams& params = SliceParams()) {
+    Slice(data, params.starts, params.ends, params.axes, output);
 }

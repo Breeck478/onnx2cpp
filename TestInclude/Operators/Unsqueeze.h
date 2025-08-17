@@ -1,5 +1,12 @@
 #include <xtensor.hpp>
 
+struct UnsqueezeParams
+{
+	const xt::xarray<int64_t> axes = {};
+};
+
+
+
 template <typename T>
 void Unsqueeze(const xt::xarray<T> &data, const xt::xarray<int64_t> &axis, xt::xarray<T> &expanded)
 {
@@ -15,4 +22,9 @@ void Unsqueeze(const xt::xarray<T> &data, const xt::xarray<int64_t> &axis, xt::x
 		axis_size = expanded.shape().size();
 
   }
+}
+
+template <typename T>
+void Unsqueeze(const xt::xarray<T>& data, xt::xarray<T>& expanded, const UnsqueezeParams& params = UnsqueezeParams()) {
+	Unsqueeze(data, params.axes, expanded);
 }
