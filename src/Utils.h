@@ -7,7 +7,15 @@
 
 namespace toCpp {
 	std::string GetDataTypeString(const int enumValue);
-	std::string Join(const std::vector<std::string>& strings, const std::string& delimiter);
+	std::string Join(const std::vector<std::string>& values, const std::string& delimiter);
+	template<typename T>
+	std::string Join(const std::vector<T>& values, const std::string& delimiter) {
+		std::vector<std::string> strings;
+		for (size_t i = 0; i < values.size(); ++i) {
+			strings.push_back(std::to_string(values[i]));
+		}
+		return Join(strings, delimiter);
+	}
 	std::string RemoveChars(const std::string& input, const std::string& chars_to_remove = "/.,: ");
 	std::string GetValidCName(const std::string& input);
 	std::vector<std::string> Split(const std::string& str, const std::string& delimiter);

@@ -32,12 +32,11 @@ std::string toCpp::GetDataTypeString(const int enumValue) {
     }
 }
 
-
-std::string toCpp::Join(const std::vector<std::string>& strings, const std::string& delimiter) {
+std::string toCpp::Join(const std::vector<std::string>& values, const std::string& delimiter) {
     std::string result;
-    for (size_t i = 0; i < strings.size(); ++i) {
-        result += strings[i];
-        if (i + 1 < strings.size()) {
+    for (size_t i = 0; i < values.size(); ++i) {
+        result += values[i];
+        if (i + 1 < values.size()) {
             result += delimiter;
         }
     }
