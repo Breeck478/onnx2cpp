@@ -16,6 +16,8 @@ namespace toCpp {
 		std::string GetShapeName() const;
 		std::string GetDataAsString(bool const doInitialize);
 		std::string GetConstantString(bool const doInitialize = true);
+
+		// can be used to get information like size without casting the data
 		std::vector<std::any> GetDataAsAny() const;
 		size_t GetDataSize() const;
 		template <typename T>

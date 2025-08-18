@@ -90,6 +90,7 @@ size_t OnnxConst::GetDataSize() const {
 		}, data);
 }
 
+// can be used to get information like size without casting the data
 template <typename T>
 std::vector<T> OnnxConst::GetDataAsT() const {
 	if (!std::holds_alternative<std::vector<T>>(data)) {
@@ -154,41 +155,40 @@ std::string OnnxConst::GetDataAsString(bool const doInitialize) {
 		oss << Name() << " = ";
 
 		if (std::holds_alternative<std::vector<float>>(data)) {
-			oss << GenerateNestedInitializerFromAny<float>();
+			oss << "{" << Join(std::get<std::vector<float>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<bool>>(data)) {
-			oss << GenerateNestedInitializerFromAny<bool>();
+			oss << "{" << Join(std::get<std::vector<bool>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<int32_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<int32_t>();
+			oss << "{" << Join(std::get<std::vector<int32_t>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<int16_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<int16_t>();
+			oss << "{" << Join(std::get<std::vector<int16_t>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<int8_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<int8_t>();
+			oss << "{" << Join(std::get<std::vector<int8_t>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<uint8_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<uint8_t>();
+			oss << "{" << Join(std::get<std::vector<uint8_t>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<uint16_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<uint16_t>();
+			oss << "{" << Join(std::get<std::vector<uint16_t>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<uint32_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<uint32_t>();
+			oss << "{" << Join(std::get<std::vector<uint32_t>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<int64_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<int64_t>();
+			oss << "{" << Join(std::get<std::vector<int64_t>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<double>>(data)) {
-			oss << GenerateNestedInitializerFromAny<double>();
+			oss << "{" << Join(std::get<std::vector<double>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<std::string>>(data)) {
-			oss << GenerateNestedInitializerFromAny<std::string>();
-			GetDataAsT<std::string>();
+			oss << "{" << Join(std::get<std::vector<std::string>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<uint64_t>>(data)) {
-			oss << GenerateNestedInitializerFromAny<uint64_t>();
+			oss << "{" << Join(std::get<std::vector<uint64_t>>(data), ", ") << "}";
 		}
 		else {
 			std::cout << "ERROR: Tensor data type not supported" << std::endl;
