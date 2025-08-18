@@ -71,7 +71,7 @@ void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 		// start with all includes neccesary for the Operators
 		GetIncludes(stream);
 		stream << "#include <vector>" << std::endl;
-		//stream << "#include <xtensor/xarray.hpp>" << std::endl;		
+		stream << "#include <xtensor.hpp>" << std::endl;		
 		if (doUseTemplate) {
 			stream << "template <typename T>\n";
 		}
