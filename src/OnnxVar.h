@@ -18,8 +18,6 @@ namespace toCpp {
 		//onnx::TypeProto GetTypeProto() const;
 		//std::string GetDataTypeString() const;
 		std::string GetVariableString(const bool ignorStatic = false);
-		bool ContainsUnkownDim() const { return containsUnknowDim; }
-		void SetContainsUnkownDim() { containsUnknowDim = true; }
 		bool IsIO() const { return isInput || isOutput; }
 		bool IsInput() const { return isInput; }
 		bool IsOutput() const { return isOutput; }
@@ -35,7 +33,6 @@ namespace toCpp {
 		bool isInput = false;
 		bool isOutput = false;
 		bool needsInit = true;
-		bool containsUnknowDim = false; // If false, the variable is initialized by an operator
 	};
 
 	class OnnxVars

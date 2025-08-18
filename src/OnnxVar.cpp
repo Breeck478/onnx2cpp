@@ -96,9 +96,6 @@ std::vector<std::string> OnnxVars::GetVarsAsStrings() const {
 			// Skip input and output variables, they are not initialized in the model
 			continue;
 		}
-		//if (var.ContainsUnkownDim()) {
-		//	continue; // Skip variables that are initialized by operators
-		//}
 		std::string varString = var.GetVariableString();
 		if (!varString.empty()) {
 			res.push_back(varString); // Add semicolon to the end of the variable declaration
