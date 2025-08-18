@@ -3,7 +3,7 @@
 template<typename T>
 concept Int32OrInt64 = std::same_as<T, int32_t> || std::same_as<T, int64_t>;
 template <typename T1, typename T2>
-bool ArrayContains(const xt::xarray<T1> &arr, T2 value) {
+bool ArrayContains(const xt::xarray<T1> &arr, T2 value) { 
     return xt::any(xt::equal(arr, value));
 }
 
@@ -30,7 +30,7 @@ void Slice(const xt::xarray<T> &data, const xt::xarray<Tind> &starts, const xt::
     }
     for (size_t i = 0; i < data.shape().size(); ++i)
     {
-        if (ArrayContains(copiedAxes, i)) { // if i is in axes 
+        if (ArrayContains(copiedAxes, static_cast<Tind>(i))) { // if i is in axes 
 
             int start = starts(counter);
             int end = ends(counter);
