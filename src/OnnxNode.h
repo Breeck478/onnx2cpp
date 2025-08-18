@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 #include <map>
-#include <any>
+#include <variant>
 #include <memory>
 #include <functional>
 #include "OnnxVar.h"
@@ -48,13 +48,30 @@ namespace toCpp {
 		std::vector<std::string> GetOutputNames() const { return outputNames; }
 		std::vector<OnnxTensor*> GetInputs() const { return inputs; }
 		std::vector<OnnxTensor*> GetOutputs() const { return outputs; }
-		std::map<std::string, std::any> GetAttributes() const { return attributes; }
-		std::any GetAttribute(const std::string& name) const {
+		using AttributeData = std::variant<
+			float,
+			int64_t,
+			std::string,
+			onnx::TensorProto,
+			onnx::GraphProto,
+			onnx::TypeProto,
+			std::vector<float>,
+			std::vector<int64_t>,
+			std::vector<std::string>,
+			std::vector<onnx::TensorProto>,
+			std::vector<onnx::GraphProto>,
+			std::vector<onnx::TypeProto>
+			// sparse tensors are not supported yet
+			// onnx::SparseTensorProto
+			// std::vector<onnx::SparseTensorProto>
+		>;
+		std::map<std::string, AttributeData> GetAttributes() const { return attributes; }
+		AttributeData GetAttribute(const std::string& name) const {
 			auto it = attributes.find(name);
 			if (it != attributes.end()) {
 				return it->second;
 			}
-			return attributes.end();
+			return AttributeData{};
 		}
 		void SetTensorFromLists(const OnnxVars& vars, const OnnxConsts& consts);
 		void CreateFunctionCall(std::ostringstream& stream) const;
@@ -82,7 +99,7 @@ namespace toCpp {
 		std::vector<std::string> outputNames;
 		std::string name;
 		std::string op_type;
-		std::map<std::string, std::any> attributes; // name, value
+		std::map<std::string, AttributeData> attributes; // name, value
 		std::vector<OnnxTensor*> inputs;
 		std::vector<OnnxTensor*> outputs;
 		std::unique_ptr<OperatorHandler> handler; // Operator handler for this node

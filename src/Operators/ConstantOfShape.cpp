@@ -21,11 +21,11 @@ public:
 		try {
 			if (node->GetOutputNames().size() == 1 && node->GetInputNames().size() == 1) {
 
-					if (node->GetAttribute("value").has_value()) {
-						auto value = std::any_cast<onnx::TensorProto>((node->GetAttribute("value")));
+				if (node->GetAttribute("value").index()) { // index() returns 0 if the attribute is not set
+						auto value = std::get<onnx::TensorProto>((node->GetAttribute("value")));
 						OnnxConst constant(value);
 						
-						if (constant.GetDataAsAny().size() != 1)
+						if (constant.GetDataSize() != 1)
 							std::runtime_error("ERROR(ConstantOfShapeHandler::GetOpSpecificNodeGenString): ConstantOfShape operator must have exactly one value in the Attribute tensor.");
 
 						auto valString = constant.GetDataAsString(false);

@@ -19,7 +19,7 @@ public:
 				for (auto& att : node->GetAttributes())
 				{
 					if (att.first == "value") {
-						auto value = std::any_cast<onnx::TensorProto>(att.second);
+						auto value = std::get<onnx::TensorProto>(att.second);
 						OnnxConst constant(value);
 						constant.Name(node->GetOutputNames()[0]);
 						stream << constant.GetConstantString(false);
@@ -29,27 +29,27 @@ public:
 							OnnxTensor* outputVar = node->GetOutputs()[0];
 							stream << outputVar->Name() << " = { ";
 							if (att.first == "value_ints") {
-								auto value = std::any_cast<std::vector<int64_t>>(att.second);
+								auto value = std::get<std::vector<int64_t>>(att.second);
 								 stream << Join(value, ", ");
 							}
 							else if (att.first == "value_int") {
-								auto value = std::any_cast<int64_t>(att.second);
+								auto value = std::get<int64_t>(att.second);
 								stream << value;
 							}
 							else if (att.first == "value_floats") {
-								auto value = std::any_cast<std::vector<float>>(att.second);
+								auto value = std::get<std::vector<float>>(att.second);
 								stream  << Join(value, ", ");
 							}
 							else if (att.first == "value_float") {
-								auto value = std::any_cast<float>(att.second);
+								auto value = std::get<float>(att.second);
 								stream << value;
 							}
 							else if (att.first == "value_strings") {
-								auto value = std::any_cast<std::vector<std::string>>(att.second);
+								auto value = std::get<std::vector<std::string>>(att.second);
 								stream << Join(value, ", ");
 							}
 							else if (att.first == "value_string") {
-								auto value = std::any_cast<std::string>(att.second);
+								auto value = std::get<std::string>(att.second);
 								stream << value;
 							}
 							else {

@@ -12,11 +12,9 @@ using namespace toCpp;
 
 class LoopHandler : public OperatorHandler {
 public:
-	LoopHandler(const OnnxNode* node) : OperatorHandler(node), graph(std::any_cast<onnx::GraphProto>(node->GetAttribute("body")), false) {
-		if (!node->GetAttribute("body").has_value())
-		{
-			throw std::bad_any_cast();
-		}
+	LoopHandler(const OnnxNode* node) : OperatorHandler(node) {
+		if (std::holds_alternative<onnx::GraphProto>(node->GetAttribute("body")))
+			this->graph = OnnxGraph(std::get<onnx::GraphProto>(node->GetAttribute("body")), false);
 	}
 	bool OperatorSpecificNodeGeneration() const override {
 		return true; // This operator has specific generation logic

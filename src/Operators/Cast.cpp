@@ -22,19 +22,12 @@ public:
 			throw std::runtime_error("ERROR(CastHandler::PrePrint): Cast operator has no outputs");
 		}
 
-		int32_t realType = node->GetOutputs()[0]->DataType(); // Get Output type
+		int64_t realType = node->GetOutputs()[0]->DataType(); // Get Output type
 		auto it = node->GetAttribute("to");
-		if (!it.has_value()) {
+		if (!std::holds_alternative<int64_t>(it)) {
 			throw std::runtime_error("ERROR(CastHandler::PrePrint): Cast operator has no 'to' attribute");
 		}
-		
-		int32_t expectedType = -1;
-		try {
-			expectedType = std::any_cast<int32_t>(it);
-		}
-		catch (const std::bad_any_cast& e) {
-			throw std::runtime_error("ERROR(CastHandler::PrePrint): Bad cast for 'to' attribute: " + std::string(e.what()));
-		}
+		int64_t	expectedType = std::get<int64_t>(it);
 		if (realType != expectedType) {
 			throw std::runtime_error("ERROR(CastHandler::PrePrint): Cast operator output type does not match 'to' attribute type");
 		}
@@ -43,7 +36,7 @@ public:
 	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {
-			int64_t to = std::any_cast<int64_t>(node->GetAttribute("to"));
+			int64_t to = std::get<int64_t>(node->GetAttribute("to"));
 			std::ostringstream tmpStore;
 			tmpStore.swap(stream);
 			stream << "#ifdef DCO_ENABLE_EXPLICIT_TYPE_CAST_TO \n";
