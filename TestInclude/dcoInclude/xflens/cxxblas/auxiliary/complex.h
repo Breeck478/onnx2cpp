@@ -38,7 +38,8 @@
 #include "dco.hpp"
 template <typename T>
 struct IsUsable {
-    static constexpr bool value = std::is_arithmetic<T>::value || dco::is_dco_type_v<T>;
+    using value_t = typename dco::mode<T>::value_t;
+    static constexpr bool value = std::is_arithmetic<value_t>::value;
 };
 
 namespace cxxblas {
