@@ -166,7 +166,7 @@ std::string OnnxConst::GetDataAsString(bool const doInitialize) {
 			oss << "{" << Join(std::get<std::vector<double>>(data), ", ") << "}";
 		}
 		else if (std::holds_alternative<std::vector<std::string>>(data)) {
-			oss << "{" << Join(std::get<std::vector<std::string>>(data), ", ") << "}";
+			oss << "{\"" << Join(std::get<std::vector<std::string>>(data), "\", \"") << "\"}";
 		}
 		else if (std::holds_alternative<std::vector<uint64_t>>(data)) {
 			oss << "{" << Join(std::get<std::vector<uint64_t>>(data), ", ") << "}";
