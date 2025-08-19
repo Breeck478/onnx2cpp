@@ -112,52 +112,52 @@ Ort::Value TensorProtoToOrtValue(const onnx::TensorProto& tensorProto, Ort::Allo
 	// Je nach Datentyp unterschiedlich behandeln
 	switch (tensorProto.data_type()) {
 	case onnx::TensorProto::FLOAT: {
-		std::vector<float> data = OnnxConst::ExtractDataFromTensor<float>(tensorProto);
+		std::vector<float> data = ExtractDataFromTensor<float>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_INT64: {
-		std::vector<int64_t> data = OnnxConst::ExtractDataFromTensor<int64_t>(tensorProto);
+		std::vector<int64_t> data = ExtractDataFromTensor<int64_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_INT32: {
-		std::vector<int32_t> data = OnnxConst::ExtractDataFromTensor<int32_t>(tensorProto);
+		std::vector<int32_t> data = ExtractDataFromTensor<int32_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_INT16: {
-		std::vector<int16_t> data = OnnxConst::ExtractDataFromTensor<int16_t>(tensorProto);
+		std::vector<int16_t> data = ExtractDataFromTensor<int16_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_INT8: {
-		std::vector<int8_t> data = OnnxConst::ExtractDataFromTensor<int8_t>(tensorProto);
+		std::vector<int8_t> data = ExtractDataFromTensor<int8_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_UINT64: {
-		std::vector<uint64_t> data = OnnxConst::ExtractDataFromTensor<uint64_t>(tensorProto);
+		std::vector<uint64_t> data = ExtractDataFromTensor<uint64_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_UINT32: {
-		std::vector<uint32_t> data = OnnxConst::ExtractDataFromTensor<uint32_t>(tensorProto);
+		std::vector<uint32_t> data = ExtractDataFromTensor<uint32_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_UINT16: {
-		std::vector<uint16_t> data = OnnxConst::ExtractDataFromTensor<uint16_t>(tensorProto);
+		std::vector<uint16_t> data = ExtractDataFromTensor<uint16_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_UINT8: {
-		std::vector<uint8_t> data = OnnxConst::ExtractDataFromTensor<uint8_t>(tensorProto);
+		std::vector<uint8_t> data = ExtractDataFromTensor<uint8_t>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_DOUBLE: {
-		std::vector<double> data = OnnxConst::ExtractDataFromTensor<double>(tensorProto);
+		std::vector<double> data = ExtractDataFromTensor<double>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_STRING: {
 		throw std::runtime_error("Error(TensorProtoToOrtValue): String type not supported by runtime "); // is not supported by ONNX Runtime. Dont know why. Could add new TypeToTensorType in onnxruntime_cxx_inline.h for string. But might be on purpose by ONNX?
-		//std::vector<std::string> data = OnnxConst::ExtractDataFromTensor<std::string>(tensorProto);
+		//std::vector<std::string> data = ExtractDataFromTensor<std::string>(tensorProto);
 		//return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_BOOL: {
-		std::vector<bool> data = OnnxConst::ExtractDataFromTensor<bool>(tensorProto);
+		std::vector<bool> data = ExtractDataFromTensor<bool>(tensorProto);
 		return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	default:

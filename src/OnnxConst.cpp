@@ -99,24 +99,6 @@ std::vector<T> OnnxConst::GetDataAsT() const {
 	return std::get<std::vector<T>>(data);
 }
 
-template <typename T>
-std::string OnnxConst::GenerateNestedInitializerFromAny() const {
-	std::ostringstream oss;
-	oss << "{";
-	std::vector<std::any> vals = GetDataAsAny();
-	for (int64_t i = 0; i < vals.size(); ++i) {
-		const T& val = std::any_cast<T>(vals[i]);
-		if constexpr (std::is_floating_point_v<T>) {
-			oss << std::fixed << std::setprecision(20) << val;
-		}
-		else {
-			oss << val;
-		}
-		if (i + 1 < vals.size()) oss << ", ";
-	}
-	oss << "}";
-	return oss.str();
-}
 std::string OnnxConst::PrintShape() {
 	std::string res = "";
 	if (shape.size() > 0) {
@@ -197,41 +179,7 @@ std::string OnnxConst::GetDataAsString(bool const doInitialize) {
 	return res;
 }
 
-template<typename T>
-std::vector<T> OnnxConst::ExtractDataFromTensor(const onnx::TensorProto& tensor) {
-	std::vector<T> result;
-	if (tensor.raw_data().size() > 0) {
-		return ParseByteData<T>(tensor.raw_data());
-	}
-	switch (tensor.data_type()) {
-	case (onnx::TensorProto_DataType_FLOAT):
-		return ParseRepeatedField<float, T>(tensor.float_data());
-	case (onnx::TensorProto_DataType_INT64):
-		return ParseRepeatedField<int64_t, T>(tensor.int64_data());
-	case (onnx::TensorProto_DataType_INT32):
-		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-	case (onnx::TensorProto_DataType_INT16):
-		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-	case (onnx::TensorProto_DataType_INT8):
-		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-	case (onnx::TensorProto_DataType_UINT64):
-		return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
-	case (onnx::TensorProto_DataType_UINT32):
-		return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
-	case (onnx::TensorProto_DataType_UINT16):
-		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-	case (onnx::TensorProto_DataType_UINT8):
-		return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-	case (onnx::TensorProto_DataType_DOUBLE):
-		return ParseRepeatedField<double, T>(tensor.double_data());
-	case (onnx::TensorProto_DataType_STRING):
-		return ParseRepeatedField<std::string, T>(tensor.string_data());
-	case (onnx::TensorProto_DataType_BOOL):
-		return ParseRepeatedFieldBool<int32_t, T>(tensor.int32_data());
-	default:
-		throw std::runtime_error("ERROR(OnnxConst::ExtractDataFromTensor): Tensor data type " + GetDataTypeString(tensor.data_type()) + " not supported for Constant " + tensor.name());
-	}
-}
+
 
 
 
@@ -239,7 +187,7 @@ std::string OnnxConst::GetConstantString(bool const doInitialize) {
 	std::string res = "";
 	res += PrintShape();
 	if (GetDataSize() <= 0) {
-		res += "xt::xarray<" + GetDataTypeAsString() + "> " + Name() + " = xt::zeros<" + GetDataTypeAsString() + ">(" + GetShapeName() + ");\n"; // Initialize with zeros
+		res += "xt::xarray<" + GetDataTypeAsString() + "> " + Name() + " = xt::empty<" + GetDataTypeAsString() + ">(" + GetShapeName() + ");\n"; // Initialize with zeros
 		return res;
 	}
 	res += GetDataAsString(doInitialize);

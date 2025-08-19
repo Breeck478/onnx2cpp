@@ -22,8 +22,6 @@ namespace toCpp {
 		size_t GetDataSize() const;
 		template <typename T>
 		std::vector<T>GetDataAsT() const;
-		template <typename T>
-		std::string GenerateNestedInitializerFromAny() const;
 		using TensorData = std::variant<
 			std::vector<float>,
 			std::vector<std::string>,
@@ -42,8 +40,6 @@ namespace toCpp {
 		std::string PrintReshape();
 		TensorData GetData() const;
 		void FillData(const onnx::TensorProto& tensorProto);
-		template<typename T>
-		static std::vector<T> ExtractDataFromTensor(const onnx::TensorProto& tensorProto);
 		bool operator==(const OnnxConst& other) const {
 			return OnnxTensor::operator==(other) && (data == other.data);
 		}
