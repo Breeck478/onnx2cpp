@@ -73,9 +73,8 @@ void OnnxVars::AddFromList(const ::google::protobuf::RepeatedPtrField<onnx::Valu
 
 
 void OnnxVars::Add(const OnnxVar var) {
-	std::string name = var.Name();
-	if ((names.end() == std::find(names.begin(), names.end(), name))) {
-		names.push_back(name);
+	// make sure it is not already added
+	if ((vars.end() == std::find(vars.begin(), vars.end(), var))) {
 		vars.push_back(var);
 	}
 	else {
@@ -137,17 +136,6 @@ std::deque<OnnxVar>::iterator OnnxVars::end() {
 	return vars.end();
 }
 
-// names
-
-std::string OnnxVars::GetName(const int i) const {
-	return names[i];
-}
-std::vector<std::string> OnnxVars::GetNames() const {
-	return names;
-}
-int OnnxVars::GetNameCount() const {
-	return names.size();
-}
 
 bool OnnxVars::FindVarPointerByName(const std::string name, OnnxVar*& OutputVar) const {
 	for (const OnnxVar& v : vars) {

@@ -45,6 +45,12 @@ namespace toCpp {
 		void PrePrint();
 		template<typename T>
 		static std::vector<T> ExtractDataFromTensor(const onnx::TensorProto& tensorProto);
+		bool operator==(const OnnxConst& other) const {
+			return OnnxTensor::operator==(other) && (data == other.data);
+		}
+		bool operator!=(const OnnxConst& other) const {
+			return !(*this == other);
+		}
 	private:
 		TensorData data;
 	};
@@ -65,13 +71,8 @@ namespace toCpp {
 		std::deque<OnnxConst>::iterator begin();
 		std::deque<OnnxConst>::iterator end();
 		bool FindConstPointerByName(const std::string name, OnnxConst*& OutputConst) const;
-		// names
-		std::vector<std::string> GetNames() const;
-		std::string GetName(const int i) const;
-		int GetNameCount() const;
 	private:
 		std::deque<OnnxConst> consts;
-		static std::vector<std::string> names;
 
 	};
 } // namespace toCpp

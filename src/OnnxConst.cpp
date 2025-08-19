@@ -3,7 +3,6 @@
 #include <algorithm>
 #include <iostream>
 using namespace toCpp;
-std::vector<std::string> OnnxConsts::names;
 OnnxConst::OnnxConst(onnx::TensorProto &tensorProto)
 {
 	this->name = tensorProto.name();
@@ -260,14 +259,13 @@ void OnnxConsts::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::T
 	}
 
 }
-void OnnxConsts::Add(const OnnxConst var) {
-	std::string name = GetValidCName(var.Name());
-	if ((names.end() == std::find(names.begin(), names.end(), name))) {
-		names.push_back(name);
-		consts.push_back(var);
+void OnnxConsts::Add(const OnnxConst constant) {
+	// make sure it is not already added
+	if ((consts.end() == std::find(consts.begin(), consts.end(), constant))) {
+		consts.push_back(constant);
 	}
 	else {
-		std::cout << "var " << var.Name() << " is already added" << std::endl; // Can´t happen. ERROR
+		std::cout << "var " << constant.Name() << " is already added" << std::endl; // Can´t happen. ERROR
 	}
 }
 
@@ -311,18 +309,5 @@ bool OnnxConsts::FindConstPointerByName(const std::string name, OnnxConst*& outp
 		}
 	}
 	return false;
-}
-
-
-// names
-
-std::string OnnxConsts::GetName(const int i) const {
-	return names[i];
-}
-std::vector<std::string> OnnxConsts::GetNames() const {
-	return names;
-}
-int OnnxConsts::GetNameCount() const {
-	return names.size();
 }
 

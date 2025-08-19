@@ -18,6 +18,12 @@ namespace toCpp {
 		std::string GetVariableString();
 		void HasStaticType(bool canStaticType) { this->hasStaticType = canStaticType; }
 		bool HasStaticType() const { return hasStaticType; }
+		bool operator==(const OnnxTensor& other) const {
+			return (name == other.name) && (shape == other.shape) && (dataType == other.dataType) && (hasStaticType == other.hasStaticType);
+		}
+		bool operator!=(const OnnxTensor& other) const {
+			return !(*this == other);
+		}
 	protected:
 		std::string name;
 		std::vector<int> shape;

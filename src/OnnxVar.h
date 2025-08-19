@@ -13,10 +13,9 @@ namespace toCpp {
 	public:
 		OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput = false, bool isOutput = false);
 		using OnnxTensor::Shape;
+
 		void Shape(onnx::TensorShapeProto shapeProto);
 		std::string GetShapeName() const;
-		//onnx::TypeProto GetTypeProto() const;
-		//std::string GetDataTypeString() const;
 		std::string GetVariableString(const bool ignorStatic = false);
 		bool IsIO() const { return isInput || isOutput; }
 		bool IsInput() const { return isInput; }
@@ -29,6 +28,12 @@ namespace toCpp {
 		void PrePrint();
 		bool NeedsInit() const { return needsInit; }
 		void NeedsInit(bool needsInit) { this->needsInit = needsInit; }
+		bool operator==(const OnnxVar& other) const {
+			return OnnxTensor::operator==(other) && (isInput == other.isInput) && (isOutput == other.isOutput) && (needsInit == other.needsInit);
+		}
+		bool operator!=(const OnnxVar& other) const {
+			return !(*this == other);
+		}
 	private:
 		bool isInput = false;
 		bool isOutput = false;
@@ -51,17 +56,11 @@ namespace toCpp {
 		std::deque<OnnxVar>::const_iterator end() const;
 		std::deque<OnnxVar>::iterator begin();
 		std::deque<OnnxVar>::iterator end();
-		// names
-		std::vector<std::string> GetNames() const;
-		std::string GetName(const int i) const;
-		int GetNameCount() const;
 		bool FindVarPointerByName(const std::string name, OnnxVar*& OutputVar) const;
 		std::vector<OnnxVar*> GetInputVars() const;
 		std::vector<OnnxVar*> GetOutputVars() const;
 	private:
 		std::deque<OnnxVar> vars;
-		std::vector<std::string> names;
-		bool isIO = false; // true if this variable is an input or output variable of a Graph
 	};
 
 } // namespace toCpp
