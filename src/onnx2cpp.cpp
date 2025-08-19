@@ -31,7 +31,7 @@ void onnx2cpp::ParseInputs(int argc, char* argv[]) {
 				cout << "Error: --fileOut option requires a file name argument." << endl;
 			}
 		}
-		else if (string(argv[count]) == "--static_inputs") {
+		else if (string(argv[count]) == "--staticInputs") {
 			if (count + 1 < argc) {
 				string inputs = argv[count + 1];
 				if (inputs[0] == '[' && inputs[inputs.size() - 1] == ']') {
@@ -39,7 +39,7 @@ void onnx2cpp::ParseInputs(int argc, char* argv[]) {
 					staticInputs = Split(inputs, ",");
 				}
 				else {
-					cout << "Error: --static_inputs not set proberly" << endl;
+					cout << "Error: --staticInputs not set proberly" << endl;
 				}
 				count++;
 			}
