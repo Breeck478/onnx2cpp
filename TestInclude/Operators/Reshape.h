@@ -7,17 +7,13 @@ struct ReshapeParams
 };
 template<typename T>
 void Reshape(const xt::xarray<T> &data, const xt::xarray<int64_t>& shape, xt::xarray<T>& reshaped, const ReshapeParams& params = ReshapeParams()) {
-	//typename xt::xarray<T>::shape_type  newShape;
-	//for (size_t i = 0; i < shape.size(); ++i) {
-	//	newShape[i] = shape[i];
-	//}
-
+	bool containsZero = false;
 	std::vector<int64_t> newShape(shape.size());
 	for (size_t i = 0; i < shape.size(); ++i) {
 		if (shape(i) == 0) {
-			std::cout << "Warning: Reshape encountered a zero dimension in the shape array. This may lead to unexpected behavior because XTensor does not support 0 Shape (See xcontainer.compute_size)." << std::endl;
+			containsZero = true;
 		}
-			newShape[i] = shape(i);
+		newShape[i] = shape(i);
 
 	}
 	if (params.allowzero == 0) {
@@ -30,9 +26,10 @@ void Reshape(const xt::xarray<T> &data, const xt::xarray<int64_t>& shape, xt::xa
 			}
 		}
 	}
-	//if (data.shape().size() != newShape.size()) {
-	//	throw std::runtime_error("Shape size mismatch: input and output shape must have the same number of elements."); // specified by onnx
-	//}
+	else if (containsZero){ // if allowzero is True and the shape contains a zero. Data is lost. Therefor just initialise a new Array with this shape because reshape does not work with 0
+		reshaped = xt::zeros<T>(newShape);
+		return;
+	}
 	auto dataCopy = data; // Copy the data to avoid modifying the original array
 	reshaped = dataCopy.reshape(newShape);
 }
