@@ -41,25 +41,16 @@ public:
 			Graph().AddExternVars(node->GetGraph()->GetVars());
 			// Mark the inputs and outputs of the Loop Graph as static or non-static 
 			std::vector<std::string> inputNames = Graph().GetInputNames();
-			std::vector<std::string> outputNames = Graph().GetOutputNames();
-			for (int64_t i = inputNames.size() - 1; i >= 0; i--) {
+			for (int64_t i = inputNames.size() - 1; i >= 1; i--) { // start at 1 to ignore the iterater input
 				if ((i < (node->GetInputs().size())) && !(node->GetInputs()[i]->HasStaticType())) {
 					inputNames.erase(inputNames.begin() + i);
 					i--;
 				}
 			}
-			// Ignore first Output value because it is the condition, which is not an output of the node but from the graph itself to set it for the next iterration
-			for (int64_t i = outputNames.size() - 1; i > 0; i--) {
-				if (((i - 1) < (node->GetOutputs().size())) && !(node->GetOutputs()[i - 1]->HasStaticType())) {
-					outputNames.erase(outputNames.begin() + i);
-					i--;
-				}
-			}
-			// Set static ins and outs
-			this->graph.SetStaticIOs(inputNames, outputNames);
+			// Set static inputs
+			this->graph.SetStaticIOs(inputNames);
 
 			// Now check map, wether in and out types do match. If one of them is non static the other one has to be static as well
-			// Could check here if the static types would be correct
 			for (auto& [in, out] : inToOut) {
 				if (!in->HasStaticType() || !out->HasStaticType()) {
 					out->HasStaticType(false); 

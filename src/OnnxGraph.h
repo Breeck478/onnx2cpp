@@ -29,7 +29,7 @@ namespace toCpp {
 		virtual std::string PrintSpecificGraph(const GraphPosition position);
 		void GetIncludes(std::ostringstream& stream) const;
 		std::string Name() const { return name; }
-		void SetStaticIOs(std::vector <std::string>& inputs, std::vector<std::string>& outputs);
+		void SetStaticIOs(std::vector <std::string>& inputs);
 		void PrePrint();
 		OnnxVars& GetVars() { return vars; }
 		void AddExternVars(const OnnxVars& vars); // Add Vars from another source. E.g. for Loop-Operator from outside Graph

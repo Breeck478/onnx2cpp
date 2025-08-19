@@ -36,7 +36,7 @@ void OnnxGraph::RegisterIOs() {
 	nodes.RegisterTensors(vars, consts);
 }
 
-void OnnxGraph::SetStaticIOs(std::vector <std::string> &inputs, std::vector<std::string> &outputs) {
+void OnnxGraph::SetStaticIOs(std::vector <std::string> &inputs) {
 	this->staticInputs = inputs;
 	RegisterIOs();
 }
