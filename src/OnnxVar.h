@@ -25,7 +25,6 @@ namespace toCpp {
 			this->isInput = isInput;
 			this->isOutput = isOutput;
 		}
-		void PrePrint();
 		bool NeedsInit() const { return needsInit; }
 		void NeedsInit(bool needsInit) { this->needsInit = needsInit; }
 		bool operator==(const OnnxVar& other) const {

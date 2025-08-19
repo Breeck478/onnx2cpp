@@ -247,10 +247,6 @@ std::string OnnxConst::GetConstantString(bool const doInitialize) {
 	return res;
 }
 
-void OnnxConst::PrePrint() {
-
-}
-
 // Vars
 void OnnxConsts::InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::TensorProto>& list){
 	Clear();

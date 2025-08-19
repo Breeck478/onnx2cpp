@@ -46,10 +46,6 @@ std::string OnnxGraph::PrintSpecificGraph(const GraphPosition position) {
 }
 
 void OnnxGraph::PrePrint() {
-	for (auto& constant : consts) 
-		constant.PrePrint();
-	for (auto& var : vars)
-		var.PrePrint();
 	for (auto* node : nodes) 
 		node->PrePrint();
 }
