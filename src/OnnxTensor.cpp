@@ -3,8 +3,8 @@
 #include <algorithm>
 #include <iostream>
 using namespace toCpp;
-std::string OnnxTensor::GetDataTypeAsString(const bool ignorStatic) const {
-	if (ignorStatic || hasStaticType) {
+std::string OnnxTensor::GetDataTypeAsString(const bool ignoreDynamic) const {
+	if (ignoreDynamic || hasStaticType) {
 		return GetDataTypeString(dataType);
 	}
 	else {

@@ -45,9 +45,9 @@ std::string OnnxVar::GetShapeName() const {
 }
 
 
-std::string OnnxVar::GetVariableString(const bool ignorStatic) {
+std::string OnnxVar::GetVariableString(const bool ignoreDynamic) {
 	std::string res = "";
-	res += "xt::xarray<" + GetDataTypeAsString(ignorStatic) + "> ";
+	res += "xt::xarray<" + GetDataTypeAsString(ignoreDynamic) + "> ";
 	if (IsIO() && IsOutput())
 		res += "&";
 	res += Name();

@@ -16,7 +16,7 @@ namespace toCpp {
 
 		void Shape(onnx::TensorShapeProto shapeProto);
 		std::string GetShapeName() const;
-		std::string GetVariableString(const bool ignorStatic = false);
+		std::string GetVariableString(const bool ignoreDynamic = false);
 		bool IsIO() const { return isInput || isOutput; }
 		bool IsInput() const { return isInput; }
 		bool IsOutput() const { return isOutput; }

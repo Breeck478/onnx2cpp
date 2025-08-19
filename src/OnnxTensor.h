@@ -12,7 +12,7 @@ namespace toCpp {
 		void Name(std::string name) { this->name = GetValidCName(name); }
 		std::string Name() const { return GetValidCName(name); }
 		std::vector<int> Shape() const;
-		std::string GetDataTypeAsString(const bool ignorStatic = false) const;
+		std::string GetDataTypeAsString(const bool ignoreDynamic = false) const;
 		void DataType(int32_t type) { this->dataType = type; }
 		int32_t DataType()const { return dataType; }
 		std::string GetVariableString();
