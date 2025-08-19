@@ -1,9 +1,8 @@
 #include <xtensor.hpp>
 #include <iostream>
 
-template <typename Tx, typename Ty, typename Tr>
-void Where(const xt::xarray<bool>& condition, const xt::xarray<Tx>& x, const xt::xarray<Ty>& y, xt::xarray<Tr>& output)
-{ // Ensure that x and y are of the same type
-	static_assert(std::is_same<Tx, Ty>::value, "Types of x and y must be the same for Where operation");
+template <typename T>
+void Where(const xt::xarray<bool>& condition, const xt::xarray<T>& x, const xt::xarray<T>& y, xt::xarray<T>& output)
+{ 
 	output = xt::where(condition, x, y);
 }
