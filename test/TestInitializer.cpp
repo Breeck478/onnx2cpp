@@ -56,7 +56,6 @@ onnx::TensorProto get_inputProto_from_file(std::string& partial_path, int input_
 	if (load_input_data(input_fn, tensor) == false)
 		return onnx::TensorProto();
 
-	//std::unique_ptr<onnx::TensorProto> tensorPointer = std::make_unique<onnx::TensorProto>(tensor);
 	return tensor;
 }
 
@@ -153,8 +152,6 @@ Ort::Value TensorProtoToOrtValue(const onnx::TensorProto& tensorProto, Ort::Allo
 	}
 	case onnx::TensorProto_DataType_STRING: {
 		throw std::runtime_error("Error(TensorProtoToOrtValue): String type not supported by runtime "); // is not supported by ONNX Runtime. Dont know why. Could add new TypeToTensorType in onnxruntime_cxx_inline.h for string. But might be on purpose by ONNX?
-		//std::vector<std::string> data = ExtractDataFromTensor<std::string>(tensorProto);
-		//return MakeOrtValueFromDataAndShape(allocator, shape, data);
 	}
 	case onnx::TensorProto_DataType_BOOL: {
 		std::vector<bool> data = ExtractDataFromTensor<bool>(tensorProto);
@@ -238,7 +235,6 @@ void get_ort_results(const std::string& modelPath, std::vector<onnx::TensorProto
 	Ort::Env env(ORT_LOGGING_LEVEL_WARNING, "ORTReferencesRun");
 	Ort::SessionOptions session_options;
 	std::wstring w_modelPath = std::wstring(modelPath.begin(), modelPath.end());
-	//Ort::Session session(env, w_modelPath.c_str(), session_options);
 	Ort::Experimental::Session session = Ort::Experimental::Session(env, model_file, session_options);
 	std::vector<Ort::Value> ortInputs;
 	Ort::AllocatorWithDefaultOptions allocator;
@@ -270,28 +266,6 @@ void get_ort_results(const std::string& modelPath, std::vector<onnx::TensorProto
 			// Convert Ort::Value to onnx::TensorProto
 			onnx::TensorProto tensorProto;
 			SetTensorProtoFromOrtValue(tensorProto, output_tensor, session.GetOutputNames()[i]);
-
-
-			
-			//switch (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_FLOAT) {
-			//	//const float* data = output_tensor.GetTensorData<float>();
-			//	//tensorProto.mutable_float_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
-			//	const float* data = output_tensor.GetTensorData<float>();
-			//	size_t num_elements = output_tensor.GetTensorTypeAndShapeInfo().GetElementCount();
-			//	tensorProto.mutable_raw_data()->assign(reinterpret_cast<const char*>(data), reinterpret_cast<const char*>(data) + num_elements * sizeof(float));
-			//}
-			//else if (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_INT32) {
-			//	const int32_t* data = output_tensor.GetTensorData<int32_t>();
-			//	tensorProto.mutable_int32_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
-			//}
-			//else if (output_tensor.GetTensorTypeAndShapeInfo().GetElementType() == onnx::TensorProto_DataType_INT64) {
-			//	const int64_t* data = output_tensor.GetTensorData<int64_t>();
-			//	tensorProto.mutable_int64_data()->Assign(data, data + output_tensor.GetTensorTypeAndShapeInfo().GetElementCount());
-			//}
-			//else {
-			//	std::cerr << "ERROR(get_ort_results): Unsupported tensor type in ONNX Runtime output." << std::endl;
-			//	exit(1);
-			//}
 			std::unique_ptr<OnnxConst> out = std::make_unique<OnnxConst>(tensorProto);
 			outputs.push_back(std::move(out));
 		}
