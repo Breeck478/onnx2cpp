@@ -16,10 +16,10 @@ std::string toCpp::GetDataTypeString(const int enumValue) {
     case    onnx::TensorProto_DataType_UINT16: return "uint16_t";
     case    onnx::TensorProto_DataType_UINT32: return "uint32_t";
     case    onnx::TensorProto_DataType_UINT64: return "uint64_t";
-        //case    onnx::TensorProto_DataType_FLOAT16: return "float16_t";   
-        //case    onnx::TensorProto_DataType_COMPLEX64: return "complex64_t"; 
-        //case    onnx::TensorProto_DataType_COMPLEX128: return "complex128_t"; 
-        //case    onnx::TensorProto_DataType_BFLOAT16: return "bfloat16_t"; 
+        //case    onnx::TensorProto_DataType_FLOAT16: return "Todo";   
+        //case    onnx::TensorProto_DataType_COMPLEX64: return "Todo"; 
+        //case    onnx::TensorProto_DataType_COMPLEX128: return "Todo"; 
+        //case    onnx::TensorProto_DataType_BFLOAT16: return "Todo"; 
         //case    onnx::TensorProto_DataType_FLOAT8E4M3FN: return "Todo";  
         //case    onnx::TensorProto_DataType_FLOAT8E4M3FNUZ: return "Todo";
         //case    onnx::TensorProto_DataType_FLOAT8E5M2: return "Todo";
@@ -73,4 +73,3 @@ std::vector<std::string> toCpp::Split(const std::string& str, const std::string&
 	result.push_back(str.substr(start, end));
 	return result;
 }
-
