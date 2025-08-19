@@ -61,13 +61,13 @@ namespace toCpp {
 		std::vector<std::string> GetConstsAsStrings() const;
 		const OnnxConst& operator[](int i) const;
 		OnnxConst& operator[](int i);
-		std::deque<OnnxConst>::const_iterator begin() const;
-		std::deque<OnnxConst>::const_iterator end() const;
-		std::deque<OnnxConst>::iterator begin();
-		std::deque<OnnxConst>::iterator end();
+		std::vector<OnnxConst>::const_iterator begin() const;
+		std::vector<OnnxConst>::const_iterator end() const;
+		std::vector<OnnxConst>::iterator begin();
+		std::vector<OnnxConst>::iterator end();
 		bool FindConstPointerByName(const std::string name, OnnxConst*& OutputConst) const;
 	private:
-		std::deque<OnnxConst> consts;
+		std::vector<OnnxConst> consts;
 
 	};
 } // namespace toCpp

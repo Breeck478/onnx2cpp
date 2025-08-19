@@ -232,16 +232,16 @@ std::vector<std::string> OnnxConsts::GetConstsAsStrings() const {
 OnnxConst& OnnxConsts::operator[](int i) {
 	return consts[i];
 }
-std::deque<OnnxConst>::const_iterator OnnxConsts::begin() const {
+std::vector<OnnxConst>::const_iterator OnnxConsts::begin() const {
 	return consts.begin();
 }
-std::deque<OnnxConst>::const_iterator OnnxConsts::end() const {
+std::vector<OnnxConst>::const_iterator OnnxConsts::end() const {
 	return consts.end();
 }
-std::deque<OnnxConst>::iterator OnnxConsts::begin() {
+std::vector<OnnxConst>::iterator OnnxConsts::begin() {
 	return consts.begin();
 }
-std::deque<OnnxConst>::iterator OnnxConsts::end() {
+std::vector<OnnxConst>::iterator OnnxConsts::end() {
 	return consts.end();
 }
 

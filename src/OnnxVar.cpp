@@ -1,9 +1,7 @@
 #include "OnnxVar.h"
 #include "Utils.h"
 #include <iostream>
-#include <deque>
 
-// std::vector<std::string> OnnxVars::names;
 using namespace toCpp;
 
 OnnxVar::OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput, bool isOutput) : isInput(isInput), isOutput(isOutput){
@@ -115,16 +113,16 @@ std::vector<std::string> OnnxVars::GetIOsAsStrings() const {
 OnnxVar& OnnxVars::operator[](int i) {
 	return vars[i];
 }
-std::deque<OnnxVar>::const_iterator OnnxVars::begin() const {
+std::vector<OnnxVar>::const_iterator OnnxVars::begin() const {
 	return vars.begin();
 }
-std::deque<OnnxVar>::const_iterator OnnxVars::end() const {
+std::vector<OnnxVar>::const_iterator OnnxVars::end() const {
 	return vars.end();
 }
-std::deque<OnnxVar>::iterator OnnxVars::begin() {
+std::vector<OnnxVar>::iterator OnnxVars::begin() {
 	return vars.begin();
 }
-std::deque<OnnxVar>::iterator OnnxVars::end() {
+std::vector<OnnxVar>::iterator OnnxVars::end() {
 	return vars.end();
 }
 

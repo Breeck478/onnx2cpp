@@ -1,9 +1,7 @@
 #pragma once
 #include <onnx/onnx_pb.h>
 #include <string>
-#include <deque>
 #include <vector>
-
 #include "OnnxTensor.h"
 
 
@@ -51,15 +49,15 @@ namespace toCpp {
 		std::vector<std::string> GetIOsAsStrings() const;
 		const OnnxVar& operator[](int i) const;
 		OnnxVar& operator[](int i);
-		std::deque<OnnxVar>::const_iterator begin() const;
-		std::deque<OnnxVar>::const_iterator end() const;
-		std::deque<OnnxVar>::iterator begin();
-		std::deque<OnnxVar>::iterator end();
+		std::vector<OnnxVar>::const_iterator begin() const;
+		std::vector<OnnxVar>::const_iterator end() const;
+		std::vector<OnnxVar>::iterator begin();
+		std::vector<OnnxVar>::iterator end();
 		bool FindVarPointerByName(const std::string name, OnnxVar*& OutputVar) const;
 		std::vector<OnnxVar*> GetInputVars() const;
 		std::vector<OnnxVar*> GetOutputVars() const;
 	private:
-		std::deque<OnnxVar> vars;
+		std::vector<OnnxVar> vars;
 	};
 
 } // namespace toCpp
