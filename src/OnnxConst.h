@@ -57,7 +57,7 @@ namespace toCpp {
 		void Clear() { consts.clear(); }
 		void InitWithList(const ::google::protobuf::RepeatedPtrField<onnx::TensorProto>& list);
 		int GetCount() const;
-		void Add(const OnnxConst var);
+		void Add(const OnnxConst constant);
 		std::vector<std::string> GetConstsAsStrings() const;
 		const OnnxConst& operator[](int i) const;
 		OnnxConst& operator[](int i);

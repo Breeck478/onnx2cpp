@@ -30,10 +30,10 @@ void Concat(const std::vector<xt::xarray<T>> x, xt::xarray<T>& r, ConcatParams p
 		}
 	}
 	for (std::size_t i = 0; i < rank; i++) {
-		size_t dim_size = x[0].shape()[i];
+		size_t dimSize = x[0].shape()[i];
 		for (const auto& arr : x) {
 			if (i == axis) continue; // Skip the axis we are concatenating along. The dimension may differ.
-			if (arr.shape()[i] != dim_size) {
+			if (arr.shape()[i] != dimSize) {
 				throw std::runtime_error("All input arrays must have the same shape except for the concatenation axis.");
 			}
 		}
@@ -42,11 +42,11 @@ void Concat(const std::vector<xt::xarray<T>> x, xt::xarray<T>& r, ConcatParams p
 	std::vector<std::size_t> newForm;
 	for (std::size_t i = 0; i < rank; i++) {
 		if (i == axis) {
-			std::size_t total_size = 0;
+			std::size_t totalSize = 0;
 			for (const auto& arr : x) {
-				total_size += arr.shape()[i];
+				totalSize += arr.shape()[i];
 			}
-			newForm.push_back(total_size);
+			newForm.push_back(totalSize);
 		}
 		else {
 			newForm.push_back(x[0].shape()[i]);

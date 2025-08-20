@@ -15,12 +15,3 @@ std::string OnnxTensor::GetDataTypeAsString(const bool ignoreDynamic) const {
 std::vector<int> OnnxTensor::Shape() const {
 	return shape;
 }
-
-
-std::string OnnxTensor::GetVariableString() {
-	std::string res = "xt::xarray<" + GetDataTypeAsString() + "> " + Name();
-	if (hasStaticType) {
-		res += "&";
-	}
-	return res;
-}

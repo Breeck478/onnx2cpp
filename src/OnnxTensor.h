@@ -15,7 +15,6 @@ namespace toCpp {
 		std::string GetDataTypeAsString(const bool ignoreDynamic = false) const;
 		void DataType(int32_t type) { this->dataType = type; }
 		int32_t DataType()const { return dataType; }
-		std::string GetVariableString();
 		void HasStaticType(bool canStaticType) { this->hasStaticType = canStaticType; }
 		bool HasStaticType() const { return hasStaticType; }
 		bool operator==(const OnnxTensor& other) const {
