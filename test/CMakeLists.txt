@@ -461,9 +461,13 @@ ONNX_backend_node_test(slice_neg)
 ONNX_backend_node_test(slice_neg_steps)
 ONNX_backend_node_test(slice_negative_axes)
 ONNX_backend_node_test(softmax_axis_0)
-#ONNX_backend_node_test(softmax_axis_0_expanded) #this test user OPerators not yet implementet in onnx2cpp
+#ONNX_backend_node_test(softmax_axis_0_expanded) #this and other expanded tests use Operators not yet implementet in onnx2cpp
 ONNX_backend_node_test(softmax_axis_1)
-#ONNX_backend_node_test(softmax_axis_1_expanded) 
+ONNX_backend_node_test(softmax_axis_2)
+ONNX_backend_node_test(softmax_default_axis)
+ONNX_backend_node_test(softmax_example)
+ONNX_backend_node_test(softmax_large_number)
+ONNX_backend_node_test(softmax_negative_axis)
 # es sind noch nicht alle Tests für den expanded Modus eingefügt. Der Rest solte auch noch hinzugefügt werden
 ONNX_backend_node_test(sub)
 ONNX_backend_node_test(tanh)
