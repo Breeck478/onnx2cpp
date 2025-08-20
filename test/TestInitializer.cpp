@@ -8,6 +8,7 @@
 #include <experimental_onnxruntime_cxx_api.h>
 #endif
 #include <onnx/common/file_utils.h>
+#include <onnx/version_converter/convert.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
 #include <memory>
@@ -297,6 +298,7 @@ int main(int argc, char* argv[])
 	std::string dir(argv[1]);
 	std::string model_fn = dir + "/model.onnx";
 	onnx::LoadProtoFromPath(model_fn, onnx_model); 
+	onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 18);
 	// Print model to file specified by cmake
 	std::string functionName = onnx2cpp::MakeCppFile(onnx_model, std::cout, true);
 	// Print testsuite to get executed by CTest
