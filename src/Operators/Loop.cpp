@@ -26,37 +26,57 @@ public:
 		return true; 
 	}
 	bool OperatorSpecificTensorTypes() const override { 
-		return false; 
+		return true; 
 	}
 	virtual void SetOpSpecificTensorTypes() {
-		node->GetOutputs()[0]->HasStaticType(true); // output 0 is the condition and is always bool
+			
+
+		// Add all tensors from the main(outer) graph to the Loop Graph
+		Graph().AddExternVars(node->GetGraph()->GetVars());
+		Graph().AddExternConsts(node->GetGraph()->GetConsts());
+		// Fill Map for graph in- and outputs
+		for (int64_t i = 0; i < Graph().GetOutputs().size(); i++) { // outputs size might be bigger then inputs because of scans
+			if (i +1 < Graph().GetInputs().size())
+				OutToIn().push_back(std::pair(Graph().GetOutputs()[i], Graph().GetInputs()[i + 1])); 
+			else 
+				OutToIn().push_back(std::pair(Graph().GetOutputs()[i] , nullptr)); // Scan output
+			
+		}
+		// Fill map for node inputs to graph inputs
+		for (int64_t i = 0; i < node->GetInputs().size(); i++) { // start at one because 
+			if (i < Graph().GetInputs().size())
+				InToIn().push_back(std::pair(node->GetInputs()[i], Graph().GetInputs()[i]));
+		}
+		// Fill map for graph outputs to node outputs
+		for (int64_t i = 1; i < Graph().GetOutputs().size(); i++) { // Skip first one because it is the condition which is not given back as result of node
+			if (i-1 < node->GetOutputs().size())
+				OutToOut().push_back(std::pair(Graph().GetOutputs()[i], node->GetOutputs()[i-1]));
+		}
+
+		// Mark the inputs and outputs of the Loop Graph as static or dynamic
+		std::vector<std::string> inputNames = Graph().GetInputNames();
+		for (int64_t i = inputNames.size() - 1; i >= 1; i--) { // start at 1 to ignore the iterater input
+			if ((i < node->GetInputs().size()) && (!node->GetInputs()[i]->HasStaticType())) {
+				inputNames.erase(inputNames.begin() + i);
+			}
+		}
+		Graph().SetStaticIOs(inputNames);
+		// Now check map, wether in and out types do match. If one of them is dynamic the other one has to be dynamic as well
+		for (auto& [in, out] : OutToIn()) {
+			if (!in->HasStaticType() || (out != nullptr && !out->HasStaticType())) {
+				if (out != nullptr)
+					out->HasStaticType(false);
+				in->HasStaticType(false);
+			}
+		}
+		for (auto& [graphOut, nodeOut] : OutToOut()) {
+			if (!graphOut->HasStaticType()) {
+				nodeOut->HasStaticType(false);
+			}
+		}
 	}
 	void PrePrint() override {	
-			// create map without aaded vars for later use
-			std::map<OnnxVar*, OnnxVar*> inToOut; // input var to output var 
-			for (int64_t i = 1; i < Graph().GetInputs().size(); i++) {
-				inToOut[Graph().GetInputs()[i]] = Graph().GetOutputs()[i - 1];
-			}
-			// Add Vars from the main(outer) graph to the Loop Graph
-			Graph().AddExternVars(node->GetGraph()->GetVars());
-			// Mark the inputs and outputs of the Loop Graph as static or non-static 
-			std::vector<std::string> inputNames = Graph().GetInputNames();
-			for (int64_t i = inputNames.size() - 1; i >= 1; i--) { // start at 1 to ignore the iterater input
-				if ((i < (node->GetInputs().size())) && !(node->GetInputs()[i]->HasStaticType())) {
-					inputNames.erase(inputNames.begin() + i);
-					i--;
-				}
-			}
-			// Set static inputs
-			this->graph.SetStaticIOs(inputNames);
 
-			// Now check map, wether in and out types do match. If one of them is non static the other one has to be static as well
-			for (auto& [in, out] : inToOut) {
-				if (!in->HasStaticType() || !out->HasStaticType()) {
-					out->HasStaticType(false); 
-					in->HasStaticType(false); 
-				}
-			}
 	}
 	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
@@ -68,9 +88,9 @@ public:
 				int amountScans = Graph().GetOutputNames().size() - (Graph().GetInputNames().size() - 1);
 				if (amountScans < 0) {
 					amountScans = 0; // No scans needed
-				}
+				}  
 				for (int64_t i = 0; i < Graph().GetInputNames().size(); i++) {
-					inputNames.push_back(Graph().GetInputNames()[i] + "_In");
+					inputNames.push_back(Graph().GetInputNames()[i] + "_in");
 
 				}
 
@@ -123,7 +143,19 @@ public:
 	OnnxGraph& Graph() {
 		return graph;
 	}
+	std::vector<std::pair<OnnxTensor*, OnnxTensor*>>& InToIn() {
+		return inToIn;
+	}
+	std::vector<std::pair<OnnxTensor*, OnnxTensor*>>& OutToOut() {
+		return outToOut;
+	}
+	std::vector<std::pair<OnnxVar*, OnnxVar*>>& OutToIn() {
+		return outToIn;
+	}
 private:
 	OnnxGraph graph;
+	std::vector<std::pair<OnnxTensor*, OnnxTensor*>> inToIn; // Node in to Graph in 
+	std::vector<std::pair<OnnxTensor*, OnnxTensor*>> outToOut; // Graph out to Node out
+	std::vector<std::pair<OnnxVar*, OnnxVar*>> outToIn; // Graph in to Greaph out
 };
 REGISTER_OPERATOR_HANDLER(LoopHandler, "Loop")

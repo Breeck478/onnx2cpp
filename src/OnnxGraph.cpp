@@ -61,6 +61,12 @@ void OnnxGraph::AddExternVars(const OnnxVars& vars) {
 		this->vars.Add(var);
 	}
 }
+void OnnxGraph::AddExternConsts(const OnnxConsts& consts) {
+	// Add Vars from another source. E.g. for Loop-Operator from outside Graph
+	for (OnnxConst constant : consts) {
+		this->consts.Add(constant);
+	}
+}
 
 void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 	if (isInitialGraph) {

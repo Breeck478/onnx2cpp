@@ -32,7 +32,9 @@ namespace toCpp {
 		void SetStaticIOs(std::vector <std::string>& inputs);
 		void PrePrint();
 		OnnxVars& GetVars() { return vars; }
+		OnnxConsts& GetConsts() { return consts; }
 		void AddExternVars(const OnnxVars& vars); // Add Vars from another source. E.g. for Loop-Operator from outside Graph
+		void AddExternConsts(const OnnxConsts& consts); // Add Vars from another source. E.g. for Loop-Operator from outside Graph
 	private:
 		std::string name;
 		OnnxVars vars;
