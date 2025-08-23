@@ -32,11 +32,9 @@ void ReduceMean(const xt::xarray<T>& data, const xt::xarray<int64_t>& axes, xt::
 	for (size_t i = 0; i < data.shape().size(); i++) {
 #
 		if (absAxes.size() > 0 && std::find(absAxes.begin(), absAxes.end(), i) == absAxes.end()) { // if axes is empty all dimension of output tneosr are 1
-			std::cout << "A" << std::endl;
 			keepdimsShape.push_back(data.shape()[i]);
 		}
 		else {
-			std::cout << "B" << std::endl;
 			keepdimsShape.push_back(1);
 		}
 

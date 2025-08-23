@@ -17,10 +17,10 @@ void Softmax(const xt::xarray<T>& input, xt::xarray<T>& output, const SoftmaxPar
 	};
 	if (input.size() == 0) {
 		output = input;
-		exit;
+		return;
 	}
 	// manualy reshape tensors to copy keepdims behavior from numpy
-	xt::xarray<T> keepdimsTmp = xt::amax(input, { axis });
+	xt::xarray<T> keepdimsTmp = xt::amax(input, { axis }); //xt::keep_dims_type
 	keepdimsTmp.reshape(keepdimsShape);
 	xt::xarray<T> tmp = input - keepdimsTmp;
 	output = xt::exp(tmp);
