@@ -7,6 +7,8 @@
 #include <onnx/common/file_utils.h>
 #include <google/protobuf/io/coded_stream.h>
 #include <google/protobuf/io/zero_copy_stream_impl_lite.h>
+
+#include <onnx/version_converter/convert.h>
 #include <memory>
 #include <vector>
 using namespace toCpp;
@@ -125,6 +127,8 @@ int main(int argc, char* argv[])
 	file << "#include <xtensor.hpp>\n";
 	file << "#include \"dco.hpp\"\n";
 	onnx::LoadProtoFromPath(model_fn, onnx_model);
+	// convert Model to version supported by onnx2cpp
+	onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 18);
 	// Print testsuite to get executed by CTest
 	std::vector<std::unique_ptr<OnnxConst>> inputs;
 	std::vector<OnnxVar> outputs;

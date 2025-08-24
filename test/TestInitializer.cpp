@@ -44,7 +44,7 @@ bool load_input_data(const std::string& filename, onnx::TensorProto& result)
    if (nread != size)
 	   throw std::runtime_error("Problem reading input data");
 
-   ::google::protobuf::io::ArrayInputStream input_stream(data.data(), size); // Use data.data() here as well
+   ::google::protobuf::io::ArrayInputStream input_stream(data.data(), size); 
    ::google::protobuf::io::CodedInputStream coded_stream(&input_stream);
    return result.ParseFromCodedStream(&coded_stream);
 }
@@ -298,6 +298,7 @@ int main(int argc, char* argv[])
 	std::string dir(argv[1]);
 	std::string model_fn = dir + "/model.onnx";
 	onnx::LoadProtoFromPath(model_fn, onnx_model); 
+	// convert Model to version supported by onnx2cpp
 	onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 18);
 	// Print model to file specified by cmake
 	std::string functionName = onnx2cpp::MakeCppFile(onnx_model, std::cout, true);
