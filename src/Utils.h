@@ -19,41 +19,6 @@ namespace toCpp {
 	std::string RemoveChars(const std::string& input, const std::string& chars_to_remove = "/.,: ");
 	std::string GetValidCName(const std::string& input);
 	std::vector<std::string> Split(const std::string& str, const std::string& delimiter);
-	template <typename T>
-	std::vector<T> ExtractDataFromTensor(const onnx::TensorProto& tensor) {
-		std::vector<T> result;
-		if (tensor.raw_data().size() > 0) {
-			return ParseByteData<T>(tensor.raw_data());
-		}
-		switch (tensor.data_type()) {
-		case (onnx::TensorProto_DataType_FLOAT):
-			return ParseRepeatedField<float, T>(tensor.float_data());
-		case (onnx::TensorProto_DataType_INT64):
-			return ParseRepeatedField<int64_t, T>(tensor.int64_data());
-		case (onnx::TensorProto_DataType_INT32):
-			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-		case (onnx::TensorProto_DataType_INT16):
-			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-		case (onnx::TensorProto_DataType_INT8):
-			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-		case (onnx::TensorProto_DataType_UINT64):
-			return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
-		case (onnx::TensorProto_DataType_UINT32):
-			return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
-		case (onnx::TensorProto_DataType_UINT16):
-			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-		case (onnx::TensorProto_DataType_UINT8):
-			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
-		case (onnx::TensorProto_DataType_DOUBLE):
-			return ParseRepeatedField<double, T>(tensor.double_data());
-		case (onnx::TensorProto_DataType_STRING):
-			return ParseRepeatedField<std::string, T>(tensor.string_data());
-		case (onnx::TensorProto_DataType_BOOL):
-			return ParseRepeatedFieldBool<int32_t, T>(tensor.int32_data());
-		default:
-			throw std::runtime_error("ERROR(Utils::ExtractDataFromTensor): Tensor data type " + GetDataTypeString(tensor.data_type()) + " not supported for Constant " + tensor.name());
-		}
-	}
 
 	template<typename TOut>
 	std::vector<TOut> ParseByteData(const std::string& dataField) {
@@ -173,6 +138,42 @@ namespace toCpp {
 		}
 
 		return result;
+	}
+
+	template <typename T>
+	std::vector<T> ExtractDataFromTensor(const onnx::TensorProto& tensor) {
+		std::vector<T> result;
+		if (tensor.raw_data().size() > 0) {
+			return ParseByteData<T>(tensor.raw_data());
+		}
+		switch (tensor.data_type()) {
+		case (onnx::TensorProto_DataType_FLOAT):
+			return ParseRepeatedField<float, T>(tensor.float_data());
+		case (onnx::TensorProto_DataType_INT64):
+			return ParseRepeatedField<int64_t, T>(tensor.int64_data());
+		case (onnx::TensorProto_DataType_INT32):
+			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+		case (onnx::TensorProto_DataType_INT16):
+			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+		case (onnx::TensorProto_DataType_INT8):
+			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+		case (onnx::TensorProto_DataType_UINT64):
+			return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
+		case (onnx::TensorProto_DataType_UINT32):
+			return ParseRepeatedField<uint64_t, T>(tensor.uint64_data());
+		case (onnx::TensorProto_DataType_UINT16):
+			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+		case (onnx::TensorProto_DataType_UINT8):
+			return ParseRepeatedField<int32_t, T>(tensor.int32_data());
+		case (onnx::TensorProto_DataType_DOUBLE):
+			return ParseRepeatedField<double, T>(tensor.double_data());
+		case (onnx::TensorProto_DataType_STRING):
+			return ParseRepeatedField<std::string, T>(tensor.string_data());
+		case (onnx::TensorProto_DataType_BOOL):
+			return ParseRepeatedFieldBool<int32_t, T>(tensor.int32_data());
+		default:
+			throw std::runtime_error("ERROR(Utils::ExtractDataFromTensor): Tensor data type " + GetDataTypeString(tensor.data_type()) + " not supported for Constant " + tensor.name());
+		}
 	}
 
 } // namespace toCpp

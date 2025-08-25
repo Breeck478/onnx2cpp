@@ -9,7 +9,7 @@ endif()
 set(CMAKE_CXX_STANDARD 23)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-project (onnx2cpp)
+project(onnx2cpp)
 include_directories(src)
 find_package(xtensor CONFIG REQUIRED)
 find_package(ONNX CONFIG REQUIRED)
@@ -41,10 +41,10 @@ target_link_libraries(onnx2cpp_lib PRIVATE ONNX::onnx ONNX::onnx_proto)
 target_link_libraries(onnx2cpp_lib PRIVATE xtensor)
 
 
-#if (--TEST)
+if (--TEST)
 	set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 	enable_testing()
 	add_subdirectory(test)
-#endif()
+endif()
 
 
