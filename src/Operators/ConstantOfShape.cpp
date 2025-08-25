@@ -26,10 +26,10 @@ public:
 						OnnxConst constant(value);
 						
 						if (constant.GetDataSize() != 1)
-							std::runtime_error("ERROR(ConstantOfShapeHandler::GetOpSpecificNodeGenString): ConstantOfShape operator must have exactly one value in the Attribute tensor.");
+							throw std::runtime_error("ERROR(ConstantOfShapeHandler::GetOpSpecificNodeGenString): ConstantOfShape operator must have exactly one value in the Attribute tensor.");
 
 						auto valString = constant.GetDataAsString(false);
-						valString.erase(0, 5); // Remove "value" (name of this tensor)
+						valString.erase(0, 5); // Remove "value" (name of this tensor) mby use finde to remove everything till "="
 						valString = RemoveChars(valString, "{} =;"); // Remove curly braces and equal
 						// Output shape is simular to shape given by the input
 						stream <<  node->GetOutputNames()[0] << ".resize({" << Join(node->GetOutputs()[0]->Shape(), ",") << "});\n";
