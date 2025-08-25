@@ -236,7 +236,7 @@ int main(int argc, char* argv[])
 		file << "xt::xarray<" << outputs[i].GetDataTypeAsString() << "> " << outputNames[i] << ";\n";
 	}
 	if (inputNames.size() >= 1) {
-		file << "for(size_t i = 0; i < "<< inputNames[0] << ".size(); i++){"  ;
+		file << "for(size_t i = 0; i < "<< inputNames[0] << ".size(); i++){\n"  ;
 		file << "dco::derivative(" << inputNames[0] << ".flat(i)) = 1;\n";
 		file << "}\n";
 	}

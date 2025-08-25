@@ -231,7 +231,7 @@ int main(int argc, char* argv[])
 	}
 	// Register input variables
 	if (inputNames.size() >= 1) {
-		file << "for(size_t i = 0; i < " << inputNames[0] << ".size(); i++){";
+		file << "for(size_t i = 0; i < " << inputNames[0] << ".size(); i++){\n";
 		file << "tape->register_variable(" << inputNames[0] << ".flat(i));\n";
 		file << "}\n";
 	}
