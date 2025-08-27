@@ -1,3 +1,10 @@
+#pragma once
+#ifdef DCO_ENABLE_EXPLICIT_TYPE_CAST_TO
+#ifndef DCO_EXPLICIT_TYPE_CAST_TO_INT64_T_DEFINED
+#define DCO_EXPLICIT_TYPE_CAST_TO_INT64_T_DEFINED
+DCO_ENABLE_EXPLICIT_TYPE_CAST_TO(int64_t)
+#endif
+#endif 
 #include <xtensor.hpp>
 #include <xtensor-blas/xlinalg.hpp>
 struct ArgMaxParams
@@ -16,7 +23,7 @@ void ArgMax(const xt::xarray<T>& data, xt::xarray<int64_t>& reduced, const ArgMa
     if (select_last_index == 0)
     {
         // _argmax
-        xt::xarray<T> tempRes = xt::argmax(data, axis);
+        xt::xarray<int64_t> tempRes = xt::argmax(data, axis);
         if ((keepdims == 1) && (tempRes.dimension() < data.dimension()))
         {
             reduced = xt::cast<int64_t>(xt::expand_dims(tempRes, axis));

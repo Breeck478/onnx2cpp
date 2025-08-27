@@ -1,6 +1,12 @@
+#pragma once
+#ifdef DCO_ENABLE_EXPLICIT_TYPE_CAST_TO
+#ifndef DCO_EXPLICIT_TYPE_CAST_TO_INT64_T_DEFINED
+#define DCO_EXPLICIT_TYPE_CAST_TO_INT64_T_DEFINED
+DCO_ENABLE_EXPLICIT_TYPE_CAST_TO(int64_t)
+#endif
+#endif  
 #include <xtensor.hpp>
 #include <xtensor-blas/xlinalg.hpp>
-
 struct ArgMinParams
 {
   const int axis = 0;
@@ -17,7 +23,7 @@ void ArgMin(const xt::xarray<T>& data, xt::xarray<int64_t>& reduced, const ArgMi
     if (select_last_index == 0)
     {
         // _argmin
-        xt::xarray<T> tempRes = xt::argmin(data, axis);
+        xt::xarray<int64_t> tempRes = xt::argmin(data, axis);
         if ((keepdims == 1) && (tempRes.dimension() < data.dimension()))
         {
             reduced = xt::cast<int64_t>(xt::expand_dims(tempRes, axis));

@@ -54,14 +54,14 @@ void Concat(const std::vector<xt::xarray<T>> x, xt::xarray<T>& r, ConcatParams p
 	}
 	r = xt::empty<T>(newForm); // Initialize the result array with the new shape
 	std::size_t offset = 0;
-	for (const auto& t : x)
+	for (const auto& tensor : x)
 	{
 		xt::xstrided_slice_vector slice_vector;
 		for (std::size_t dim = 0; dim < rank; ++dim)
 		{
 			if (dim == axis)
 			{
-				slice_vector.push_back(xt::range(offset, offset + t.shape()[dim]));
+				slice_vector.push_back(xt::range(offset, offset + tensor.shape()[dim]));
 			}
 			else
 			{
@@ -70,7 +70,7 @@ void Concat(const std::vector<xt::xarray<T>> x, xt::xarray<T>& r, ConcatParams p
 		}
 
 		auto resultStride = xt::strided_view(r, slice_vector);
-		xt::noalias(resultStride) = t;
-		offset += t.shape()[axis];
+		xt::noalias(resultStride) = tensor;
+		offset += tensor.shape()[axis];
 	}
 }
