@@ -42,7 +42,7 @@
       },
     {
       "name": "Windows",
-      "displayName": "x64-release",
+      "displayName": "Windows Release",
       "inherits": "x64-debug",
       "cacheVariables": {
         "CMAKE_BUILD_TYPE": "Release"
