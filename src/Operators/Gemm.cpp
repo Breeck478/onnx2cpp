@@ -5,7 +5,7 @@ class GemmHandler : public OperatorHandler {
 public:
 	GemmHandler(const OnnxNode* node) : OperatorHandler(node) {}
 	bool OperatorSpecificNodeGeneration() const override {
-		return true; // This operator has specific generation logic
+		return false; // This operator has specific generation logic
 	}
 	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 		stream << "Gemm(";

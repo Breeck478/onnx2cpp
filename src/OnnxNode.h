@@ -42,8 +42,6 @@ namespace toCpp {
 		OnnxNode(onnx::NodeProto nodeProto, OnnxGraph* graphPtr);
 		std::string GetName() const;
 		std::string GetOpType() const { return op_type; }
-		void GetNodeString(std::ostringstream& stream);
-		std::string GetParamsString()const;
 		std::vector<std::string> GetInputNames() const { return inputNames; }
 		std::vector<std::string> GetOutputNames() const { return outputNames; }
 		std::vector<OnnxTensor*> GetInputs() const { return inputs; }
@@ -73,10 +71,10 @@ namespace toCpp {
 			}
 			return AttributeData{};
 		}
-		void SetTensorFromLists(const OnnxVars& vars, const OnnxConsts& consts);
-		void CreateFunctionCall(std::ostringstream& stream) const;
-		void SetOpSpecificTensorTypes();
-		bool NeedsInclude() const;
+
+		OperatorHandler* Handler() const { return handler.get(); }
+		bool HasHandler() const { return  handler != nullptr; }
+		OnnxGraph* GetGraph() const { return graph; }
 		OnnxTensor* FindTensorByName(const std::string& name) const {
 			for (OnnxTensor* tensor : inputs) {
 				if (tensor->Name() == name) {
@@ -90,10 +88,14 @@ namespace toCpp {
 			}
 			return nullptr; // Not found
 		}
+		void GetNodeString(std::ostringstream& stream);
+		std::string GetParamsString()const;
+		void SetTensorFromLists(const OnnxVars& vars, const OnnxConsts& consts);
+		void CreateFunctionCall(std::ostringstream& stream) const;
+		void SetOpSpecificTensorTypes();
+		bool NeedsInclude() const;
 		void PrePrint();
-		OperatorHandler* Handler() const { return handler.get(); }
-		bool HasHandler() const { return  handler != nullptr; }
-		OnnxGraph* GetGraph() const { return graph; }
+
 	private:
 		std::vector<std::string> inputNames;
 		std::vector<std::string> outputNames;
@@ -143,7 +145,6 @@ namespace toCpp {
 		std::vector<OnnxNode*>::const_iterator end() const;
 		std::vector<OnnxNode*>::iterator begin();
 		std::vector<OnnxNode*>::iterator end();
-		// Print predicted dimensions for all nodes
 	   // names
 		std::vector<std::string> GetOpTypes() const;
 		std::string GetOpType(const int i) const;
@@ -153,7 +154,6 @@ namespace toCpp {
 	private:
 		std::vector<OnnxNode*> nodes;
 		static std::vector<std::string> opTypes;
-		// Static variable to store predicted dimensions for all nodes
 	};
 
 
@@ -163,7 +163,6 @@ namespace toCpp {
 		using Map = std::map<std::string, Creator>; // OpType, OperatorHandler
 
 		static bool registerHandler(const std::string& name, Creator creator) {
-			//std::cout << name << std::endl; 
 			GetMap()[name] = creator;
 			return true;
 		}

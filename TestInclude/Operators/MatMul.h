@@ -25,6 +25,7 @@ void MatMul(const xt::xarray<Ta> a, const xt::xarray<Tb> b, xt::xarray<Ty>& y)
         // calculate Batch size
         size_t batchSize = 1;
         for (auto dim : batchShape) batchSize *= dim;
+
         for (size_t i = 0; i < batchSize; i++) {
             // Calculate indexes for bachtes
             std::vector<size_t> idx(batchShape.size());

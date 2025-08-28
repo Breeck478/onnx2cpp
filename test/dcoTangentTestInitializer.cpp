@@ -34,14 +34,14 @@ bool load_input_data(const std::string& filename, onnx::TensorProto& result)
    int size = ftell(f);
    fseek(f, 0, SEEK_SET);
 
-   std::vector<char> data(size); // Use std::vector for dynamic memory allocation
-   int nread = fread(data.data(), 1, size, f); // Use data.data() to access the underlying array
+   std::vector<char> data(size);
+   int nread = fread(data.data(), 1, size, f);
    fclose(f);
 
    if (nread != size)
 	   throw std::runtime_error("Problem reading input data");
 
-   ::google::protobuf::io::ArrayInputStream input_stream(data.data(), size); // Use data.data() here as well
+   ::google::protobuf::io::ArrayInputStream input_stream(data.data(), size);
    ::google::protobuf::io::CodedInputStream coded_stream(&input_stream);
    return result.ParseFromCodedStream(&coded_stream);
 }
@@ -54,7 +54,6 @@ onnx::TensorProto get_inputProto_from_file(std::string& partial_path, int input_
 	if (load_input_data(input_fn, tensor) == false)
 		return onnx::TensorProto();
 
-	//std::unique_ptr<onnx::TensorProto> tensorPointer = std::make_unique<onnx::TensorProto>(tensor);
 	return tensor;
 }
 
@@ -122,13 +121,14 @@ int main(int argc, char* argv[])
 		std::cerr << "Error: Could not open file for writing: " << targetDir << std::endl;
 		return 1; // Exit with error code
 	}
+	file << "#pragma once\n";
 	file << "#include <xtensor.hpp>\n";
 	file << "#include \"dco.hpp\"\n";
 	onnx::LoadProtoFromPath(model_fn, onnx_model);
 	// convert Model to version supported by onnx2cpp
 	if (onnx_model.ir_version() < 18)
 		onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 19);
-	// Print testsuite to get executed by CTest
+	// Print testsuite which can be executed by makefile
 	std::vector<std::unique_ptr<OnnxConst>> inputs;
 	std::vector<OnnxVar> outputs;
 	std::vector<OnnxVar> references;
@@ -189,10 +189,6 @@ int main(int argc, char* argv[])
 		functionOutputNames.push_back(outputName + "_v");
 		functionResNames.push_back(outputName + "_df_dx");
 	}
-	//for (size_t i = 0; i < references.size(); ++i) {
-	//	referenceNames.push_back(references[i].Name());
-	//}
-	// make helper function for appending xarray
 	file << "template <typename T>\n";
 	file << "xt::xarray<T> appendValue(const xt::xarray<T> &arr, T val)\n";
 	file << "{\n";
@@ -307,7 +303,6 @@ int main(int argc, char* argv[])
 		hasInAndOut = ", ";
 	}
 	
-	//file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
 	file << functionName << "(" << Join(ffInputNames, ", ") << hasInAndOut << Join(ffOutputNames, ", ") << "); \n";
 	file << functionName << "(" << Join(fbInputNames, ", ") << hasInAndOut << Join(fbOutputNames, ", ") << "); \n";
 	for (size_t i = 0; i < outputNames.size(); ++i) {

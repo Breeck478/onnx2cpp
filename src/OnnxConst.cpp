@@ -27,7 +27,6 @@ void OnnxConst::FillData(const onnx::TensorProto& tensorProto) {
 		break;
 	case (onnx::TensorProto_DataType_INT8):
 		this->data = ExtractDataFromTensor<int8_t>(tensorProto);
-
 		break;
 	case (onnx::TensorProto_DataType_UINT64):
 		this->data = ExtractDataFromTensor<uint64_t>(tensorProto);
@@ -209,7 +208,7 @@ void OnnxConsts::Add(const OnnxConst constant) {
 		consts.push_back(constant);
 	}
 	else {
-		std::cout << "var " << constant.Name() << " is already added" << std::endl; // Can´t happen. ERROR
+		std::cout << "var " << constant.Name() << " is already added" << std::endl; // Can´t happen.
 	}
 }
 

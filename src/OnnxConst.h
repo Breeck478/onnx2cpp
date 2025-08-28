@@ -11,17 +11,13 @@ namespace toCpp {
 	{
 	public:
 		using OnnxTensor::Shape;
+		bool operator==(const OnnxConst& other) const {
+			return OnnxTensor::operator==(other) && (data == other.data);
+		}
+		bool operator!=(const OnnxConst& other) const {
+			return !(*this == other);
+		}
 		OnnxConst(onnx::TensorProto & tensorProto);
-		void Shape(::google::protobuf::RepeatedField<int64_t>);
-		std::string GetShapeName() const;
-		std::string GetDataAsString(bool const doInitialize);
-		std::string GetConstantString(bool const doInitialize = true);
-
-		// can be used to get information like size without casting the data
-		std::vector<std::any> GetDataAsAny() const;
-		size_t GetDataSize() const;
-		template <typename T>
-		std::vector<T>GetDataAsT() const;
 		using TensorData = std::variant<
 			std::vector<float>,
 			std::vector<std::string>,
@@ -36,16 +32,20 @@ namespace toCpp {
 			std::vector<uint32_t>,
 			std::vector<uint64_t>
 		>;
+		void Shape(::google::protobuf::RepeatedField<int64_t>);
+		std::string GetShapeName() const;
+		std::string GetDataAsString(bool const doInitialize);
+		std::string GetConstantString(bool const doInitialize = true);
+
+		// can be used to get information like size without casting the data
+		std::vector<std::any> GetDataAsAny() const;
+		size_t GetDataSize() const;
+		template <typename T>
+		std::vector<T>GetDataAsT() const;
 		std::string PrintShape();
 		std::string PrintReshape();
 		TensorData GetData() const;
 		void FillData(const onnx::TensorProto& tensorProto);
-		bool operator==(const OnnxConst& other) const {
-			return OnnxTensor::operator==(other) && (data == other.data);
-		}
-		bool operator!=(const OnnxConst& other) const {
-			return !(*this == other);
-		}
 	private:
 		TensorData data;
 	};

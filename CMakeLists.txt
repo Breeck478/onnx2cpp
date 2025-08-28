@@ -42,7 +42,6 @@ target_link_libraries(onnx2cpp_lib PRIVATE xtensor)
 
 
 if (TEST)
-	set(CMAKE_CTEST_ARGUMENTS "--output-on-failure")
 	enable_testing()
 	add_subdirectory(test)
 endif()

@@ -25,7 +25,7 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (dataField.size() <= 0) {
-			return result; ; // throw std::runtime_error("Tensor has no raw_data field.");
+			return result;
 		}
 
 		size_t count = dataField.size();
@@ -38,8 +38,8 @@ namespace toCpp {
 			std::memcpy(result.data(), dataField.data(), dataField.size());
 		}
 		else {
-			// Spezielle Behandlung für bool (ein Byte pro bool)
-			count = dataField.size(); // Annehmen: jedes Byte entspricht einem bool
+			// Special behavior for bool (one Byte per bool)
+			count = dataField.size();
 			result.resize(count);
 			for (size_t i = 0; i < count; ++i) {
 				result[i] = dataField[i] != 0;
@@ -54,16 +54,10 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (rpf.size() <= 0) {
-			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedField): Given repeated field does not hold any Data");
+			return result;
 		}
 
-		//size_t count = rpf.size();
 		if constexpr (!std::is_same_v<TOut, bool>) {
-		//	if (count >= sizeof(TOut)) {
-		//		count = count / sizeof(TOut);
-		//	}
-
-		//	result.resize(count);
 			if constexpr (!std::is_same_v<TOut, std::string>) {
 				for (int i = 0; i < rpf.size(); ++i) {
 					result.push_back(static_cast<TOut>(rpf.Get(i)));
@@ -85,16 +79,10 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (rpf.size() <= 0) {
-			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedFiel): Given repeated field does not hold any Data");
+			return result;
 		}
 
-		//size_t count = static_cast<int64_t>(rpf.size());
 		if constexpr (!std::is_same_v<TOut, bool>) {
-		//	if (count >= sizeof(TOut)) {
-		//		count = count / sizeof(TOut);
-		//	}
-
-		//	result.resize(count);
 			if constexpr (!std::is_same_v<TOut, std::string>) {
 				if constexpr (std::is_same_v<TIn, std::string>) {
 					std::string rpf_str = "";
@@ -123,15 +111,15 @@ namespace toCpp {
 		std::vector<TOut> result;
 
 		if (rpf.size() <= 0) {
-			return result; ; // throw std::runtime_error("ERROR(ParseRepeatedField): Given repeated field does not hold any Data");
+			return result;
 		}
 
 		size_t count = rpf.size();
 		if constexpr (!std::is_same_v<TOut, bool>) {
 			throw std::runtime_error("ERROR(ParseRepeatedFieldBool): Given Datatype is not bool");
 		}
-		// Spezielle Behandlung für bool (ein Byte pro bool)
-		count = rpf.size(); // Annehmen: jedes Byte entspricht einem bool
+		// Special behavior for bool (one Byte per bool)
+		count = rpf.size();
 		result.resize(count);
 		for (size_t i = 0; i < count; ++i) {
 			result[i] = rpf[i] != 0;

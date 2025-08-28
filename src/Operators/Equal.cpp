@@ -13,9 +13,5 @@ public:
 	void SetOpSpecificTensorTypes() override {
 		// Do nothing. outputtypes are always bool. Independent on what the input type is
 	}
-
-
-
-	//GemmHandler(OnnxNode node) : OperatorHandler(node) {}
 };
 REGISTER_OPERATOR_HANDLER(EqualHandler, "Equal")

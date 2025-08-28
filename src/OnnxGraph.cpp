@@ -22,7 +22,7 @@ OnnxGraph::OnnxGraph() {
 }
 
 void OnnxGraph::RegisterIOs() {
-	// Set all IOs to static or non tatic type depending on user Input
+	// Set all inputs to static or dynamic type depending on user Input
 	// 
 	//inputs
 
@@ -39,10 +39,6 @@ void OnnxGraph::RegisterIOs() {
 void OnnxGraph::SetStaticIOs(std::vector <std::string> &inputs) {
 	this->staticInputs = inputs;
 	RegisterIOs();
-}
-
-std::string OnnxGraph::PrintSpecificGraph(const GraphPosition position) {
-	return "";
 }
 
 void OnnxGraph::PrePrint() {
@@ -82,7 +78,6 @@ void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 	else {
 		stream << "auto " + Name() + " = [&](" + Join(vars.GetIOsAsStrings(), ", ") + "){\n";
 	}
-	//res += PrintSpecificGraph(GraphPosition::Begin);
 	stream << "// Vars:\n";
 	for (const std::string str : vars.GetVarsAsStrings())
 		stream << str + "\n";
@@ -98,7 +93,6 @@ void OnnxGraph::PrintGraph(std::ostringstream & stream) const {
 			std::cerr << "Error generating" << node->GetName() << "operator: " << e.what() << std::endl;
 		}
 	}
-	//res += PrintSpecificGraph(GraphPosition::End);
 	if (isInitialGraph) {
 		stream << "}\n";
 	}

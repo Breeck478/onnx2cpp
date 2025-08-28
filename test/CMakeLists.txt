@@ -5,7 +5,7 @@ set(ONNX_GRAPH_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/graph/)
 set(ONNX_NODE_TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/)
 set(ONNX_NODE_TEST_MAKEFILE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/)
 	
-if (MSVC) # only neccesarry for Visual Studio
+if (MSVC) # only neccesarry for Visual Studio (cl.exe)
 	add_compile_options(/wd5045) # disable warning C5045: Compiler will insert Spectre mitigation for memory load if /Qspectre is specified
 endif()
 find_package(xtensor CONFIG REQUIRED)

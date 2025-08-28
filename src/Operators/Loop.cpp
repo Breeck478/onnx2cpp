@@ -154,6 +154,7 @@ public:
 	}
 private:
 	OnnxGraph graph;
+	// Not all maps are used in GetOpSpecificNodeGenString. It might be more efficient to use them threr as wel´l.
 	std::vector<std::pair<OnnxTensor*, OnnxTensor*>> inToIn; // Node in to Graph in 
 	std::vector<std::pair<OnnxTensor*, OnnxTensor*>> outToOut; // Graph out to Node out
 	std::vector<std::pair<OnnxVar*, OnnxVar*>> outToIn; // Graph in to Greaph out

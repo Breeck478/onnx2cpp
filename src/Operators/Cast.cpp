@@ -36,6 +36,7 @@ public:
 	void GetOpSpecificNodeGenString(std::ostringstream & stream) const override {
 
 		try {
+			// write dco-makro at the start of the given stream
 			int64_t to = std::get<int64_t>(node->GetAttribute("to"));
 			std::ostringstream tmpStore;
 			tmpStore.swap(stream);

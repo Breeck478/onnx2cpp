@@ -1,3 +1,4 @@
+#pragma warning(disable:4244)
 #include "onnx2cpp.h"
 #include "Utils.h"
 #include "OnnxConst.h"
@@ -11,6 +12,7 @@
 #include <vector>
 using namespace toCpp;
 
+// This file is based on https://github.com/kraiskil/onnx2c/blob/master/test/onnx_backend_tests_generator.cc
 onnx::ValueInfoProto makeValueInfoFromTensorProto(const onnx::TensorProto& tensorProto)
 {
 	onnx::ValueInfoProto valueInfo;
@@ -33,8 +35,8 @@ bool load_input_data(const std::string& filename, onnx::TensorProto& result)
    int size = ftell(f);
    fseek(f, 0, SEEK_SET);
 
-   std::vector<char> data(size); // Use std::vector for dynamic memory allocation
-   int nread = fread(data.data(), 1, size, f); // Use data.data() to access the underlying array
+   std::vector<char> data(size); 
+   int nread = fread(data.data(), 1, size, f); 
    fclose(f);
 
    if (nread != size)
@@ -91,9 +93,8 @@ int main(int argc, char* argv[])
 		std::cerr << " <test_data_set> integer value: select the test dataset to run this test against. (Most tests have only 0)" << std::endl;
 		exit(1);
 	}
-	//std::cout << "#include <xtensor/xio.hpp>" << std::endl;
 	std::cout << "#pragma once" << std::endl;
-	std::cout << "#include <xtensor.hpp>" << std::endl;
+	//std::cout << "#include <xtensor.hpp>" << std::endl;
 	// Load the ONNX model
 	float accuracy = std::stod(argv[2]);
 	onnx::ModelProto onnx_model;
@@ -105,7 +106,7 @@ int main(int argc, char* argv[])
 		onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 19);
 	// Print model to file specified by cmake
 	std::string functionName = onnx2cpp::MakeCppFile(onnx_model, std::cout, true);
-	// Print testsuite to get executed by CTest
+	// Print testsuite which gets executed by CTest
 	std::cout << "//Graph generated. All below is test suite code." << std::endl;
 
 	std::vector<std::unique_ptr<OnnxConst>> inputs;

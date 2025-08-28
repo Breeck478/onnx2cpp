@@ -11,10 +11,6 @@ namespace toCpp {
 	public:
 		OnnxVar(onnx::ValueInfoProto valueInfo, bool isInput = false, bool isOutput = false);
 		using OnnxTensor::Shape;
-
-		void Shape(onnx::TensorShapeProto shapeProto);
-		std::string GetShapeName() const;
-		std::string GetVariableString(const bool ignoreDynamic = false);
 		bool IsIO() const { return isInput || isOutput; }
 		bool IsInput() const { return isInput; }
 		bool IsOutput() const { return isOutput; }
@@ -31,6 +27,11 @@ namespace toCpp {
 		bool operator!=(const OnnxVar& other) const {
 			return !(*this == other);
 		}
+
+
+		void Shape(onnx::TensorShapeProto shapeProto);
+		std::string GetShapeName() const;
+		std::string GetVariableString(const bool ignoreDynamic = false);
 	private:
 		bool isInput = false;
 		bool isOutput = false;

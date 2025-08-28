@@ -10,10 +10,6 @@
 
 #include <vector>
 namespace toCpp {
-	enum GraphPosition {
-		Begin,
-		End
-	};
 
 	class OnnxGraph {
 	public:
@@ -26,7 +22,6 @@ namespace toCpp {
 		std::vector<OnnxVar*> GetInputs() const { return vars.GetInputVars(); }
 		std::vector<OnnxVar*> GetOutputs() const { return vars.GetOutputVars(); }
 		void PrintGraph(std::ostringstream& stream) const;
-		virtual std::string PrintSpecificGraph(const GraphPosition position);
 		void GetIncludes(std::ostringstream& stream) const;
 		std::string Name() const { return name; }
 		void SetStaticIOs(std::vector <std::string>& inputs);
