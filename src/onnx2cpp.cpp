@@ -19,7 +19,7 @@ void onnx2cpp::ParseInputs(int argc, char* argv[]) {
 				fileInSet = true;
 			}
 			else {
-				cout << "Error: --fileIn option requires a file name argument." << endl;
+				cout << "Warning: --fileIn option requires a file name argument." << endl;
 			}
 		}
 		else if (string(argv[count]) == "--fileOut") {
@@ -28,18 +28,18 @@ void onnx2cpp::ParseInputs(int argc, char* argv[]) {
 				count++;
 			}
 			else {
-				cout << "Error: --fileOut option requires a file name argument." << endl;
+				cout << "Warning: --fileOut option requires a file name argument." << endl;
 			}
 		}
 		else if (string(argv[count]) == "--staticInputs") {
 			if (count + 1 < argc) {
 				string inputs = argv[count + 1];
-				if (inputs[0] == '[' && inputs[inputs.size() - 1] == ']') {
-					inputs = RemoveChars(inputs, "[] "); // Remove quotes and spaces
+				if (inputs[0] == '{' && inputs[inputs.size() - 1] == '}') {
+					inputs = RemoveChars(inputs, "{} "); // Remove quotes and spaces
 					staticInputs = Split(inputs, ",");
 				}
 				else {
-					cout << "Error: --staticInputs not set proberly" << endl;
+					cout << "Warning: --staticInputs not set proberly2" << endl;
 				}
 				count++;
 			}
