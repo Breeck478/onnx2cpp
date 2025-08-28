@@ -1,7 +1,5 @@
 cmake_minimum_required(VERSION 3.28)
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/../src)
-set(ONNXRUNTIME_LIB ${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/lib/onnxruntime.lib)
-set(ONNXRUNTIME_INC_DIR${CMAKE_CURRENT_BINARY_DIR}/../vcpkg_installed/x64-windows/include)
 set(ONNX_NODE_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/node/)
 set(ONNX_GRAPH_TEST_DATA_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../test/data/graph/)
 set(ONNX_NODE_TEST_INCLUDE_DIR ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude/dcoInclude/)
@@ -41,16 +39,6 @@ else()
 	)
 endif()
 
- 
-if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8)) # onnxruntime only avvailable for Windows in 64 bit
-	add_executable(testgenOrt TestInitializer.cpp)
-	target_include_directories(testgenOrt PRIVATE ${ONNXRUNTIME_INC_DIR})
-	target_link_libraries(testgenOrt PRIVATE onnx2cpp_lib ONNX::onnx ONNX::onnx_proto ${ONNXRUNTIME_LIB})
-	target_include_directories(testgenOrt PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../src ) 
-	set_target_properties(testgenOrt PROPERTIES
-    LINK_FLAGS "/WHOLEARCHIVE:onnx2cpp_lib.lib")
-	target_compile_definitions(testgenOrt PRIVATE -DORT_COMPARE=1)
-endif()
 
 if(DCO_AVAILABLE)
 	# tangent mode dco tests
@@ -127,33 +115,6 @@ function( ONNX_type_test node_name data_dir test_ctest_name accuracy test_data_s
 		)
 endfunction()
 
-function( ONNX_type_test_onnxruntime node_name data_dir test_ctest_name accuracy test_data_set)
-	set( test_c  ${node_name}_${test_data_set}_test_ort.cpp )
-	set( testbin ${node_name}_${test_data_set}_test_ort )	
-	add_custom_command(
-		OUTPUT
-		${test_c}
-		COMMAND
-		testgenOrt ${data_dir} ${accuracy} ${test_data_set} > ${test_c} 
-		DEPENDS
-		testgenOrt
-		)
-	add_executable( ${testbin}
-		${test_c}
-		)
-		if(MSVC)
-			target_compile_options(${testbin} PRIVATE /w)
-		else()
-			target_compile_options(${testbin} PRIVATE -w)
-		endif()
-	target_link_libraries(${testbin} PRIVATE xtensor)
-	target_include_directories( ${testbin} PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../TestInclude)
-
-	# register with CTest
-	add_test(NAME ${test_ctest_name}
-		COMMAND ${testbin}
-		)
-endfunction()
 
 function( node_dco_tangent node_name data_dir test_ctest_name abs_accuracy rel_accuracy test_data_set)
 
@@ -254,33 +215,6 @@ function( ONNX_backend_node_test node_name)
 		${accuracy}
 		${dataset}
 	)
-endfunction()
-
-
-function( ONNX_backend_node_test_onnxruntime node_name)
-	if((CMAKE_SYSTEM_NAME STREQUAL "Windows") AND (CMAKE_SIZEOF_VOID_P EQUAL 8))
-		set(options)
-		set(oneValueArgs ACCURACY DATASET)
-		set(multiValueArgs)
-		cmake_parse_arguments(PARSE_ARGV 0 arg "${options}" "${oneValueArgs}" "${multiValueArgs}")
-		if (${arg_ACCURACY})
-			set(accuracy ${arg_ACCURACY})
-		else()
-			set(accuracy 0.00002)
-		endif()
-		if (${arg_DATASET})
-			set(dataset ${arg_DATASET})
-		else()
-			set(dataset 0)
-		endif()
-		ONNX_type_test_onnxruntime(
-			${node_name}
-			${ONNX_NODE_TEST_DATA_DIR}/test_${node_name}
-			ONNX_backend_${node_name}_ort
-			${accuracy}
-			${dataset}
-		)
-	endif()
 endfunction()
 
 function( node_dco_tangent_test node_name)

@@ -5,10 +5,6 @@
   "dependencies": [
     "onnx",
     "xtensor",
-    "xtensor-blas",
-    {
-      "name": "onnxruntime-gpu",
-      "platform": "(windows & x64)"
-    }
+    "xtensor-blas"
   ]
 }
