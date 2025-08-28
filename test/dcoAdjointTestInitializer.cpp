@@ -128,7 +128,8 @@ int main(int argc, char* argv[])
 	file << "#include \"dco.hpp\"\n";
 	onnx::LoadProtoFromPath(model_fn, onnx_model);
 	// convert Model to version supported by onnx2cpp
-	onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 18);
+	if (onnx_model.ir_version() < 18)
+		onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 19);
 	// Print testsuite to get executed by CTest
 	std::vector<std::unique_ptr<OnnxConst>> inputs;
 	std::vector<OnnxVar> outputs;
@@ -190,9 +191,18 @@ int main(int argc, char* argv[])
 		functionOutputNames.push_back(outputName + "_v");
 		functionResNames.push_back(outputName + "_df_dx");
 	}
-	for (size_t i = 0; i < references.size(); ++i) {
-		referenceNames.push_back(references[i].Name());
-	}
+	//for (size_t i = 0; i < references.size(); ++i) {
+	//	referenceNames.push_back(references[i].Name());
+	//}
+	// make helper function for appending xarray
+	file << "template <typename T>\n";
+	file << "xt::xarray<T> appendValue(const xt::xarray<T> &arr, T val)\n";
+	file << "{\n";
+	file << "xt::xarray<T> new_arr = xt::empty<T>({ arr.size() + 1 });\n";
+	file << "std::copy(arr.begin(), arr.end(), new_arr.begin());\n";
+	file << "new_arr(arr.size()) = val; // letzten Wert setzen\n";
+	file << "return new_arr;\n";
+	file << "}\n";
 
 	// adjoint function
 	file << "void df_fx_adjoint(";
@@ -242,37 +252,67 @@ int main(int argc, char* argv[])
 	}
 	file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
 	// Register output variables
-	if (outputNames.size() >= 1) {
-		file << "for(size_t i = 0; i < " << outputNames[0] << ".size(); i++){";
-		file << "tape->register_output_variable(" << outputNames[0] << ".flat(i));\n";
-		file << "}\n";
+	//if (outputNames.size() >= 1) {
+	//	file << "for(size_t i = 0; i < " << outputNames[0] << ".size(); i++){";
+	//	file << "tape->register_output_variable(" << outputNames[0] << ".flat(i));\n";
+	//	file << "}\n";
+	//}
+	for (size_t i = 0; i < outputs.size(); ++i) {
+		if (!outputs[i].HasStaticType()) {
+			file << "for(size_t i = 0; i < " << outputNames[i] << ".size(); i++){";
+			file << "tape->register_output_variable(" << outputNames[i] << ".flat(i));\n";
+			file << "}\n";
+			// The reference val has to be the same val we derive against
+			referenceNames.push_back(references[i].Name());
+			break;
+		}
 	}
 
 	// propagate adjoint 
 	
 	for (size_t i = 0; i < outputNames.size(); ++i) {
-		file << functionResNames[i] << " = xt::zeros<"+ outputs[i].GetDataTypeAsString(true) +">({";
-		for (size_t j = 0; j < outputs[i].Shape().size(); ++j) {
-			if (j > 0) {
-				file << ", ";
+		if (!outputs[i].HasStaticType()) {
+			//file << functionResNames[i] << " = xt::zeros<" + outputs[i].GetDataTypeAsString(true) + ">({";
+			//for (size_t j = 0; j < outputs[i].Shape().size(); ++j) {
+			//	if (j > 0) {
+			//		file << ", ";
+			//	}
+			//	file << outputs[i].Shape()[j];
+			//}
+			//file << "}); // Shape of outputs Tensor\n";
+			file << "for(size_t k = 0; k < " << inputNames[i] << ".size(); k++){\n";
+			file << "for(size_t i = 0; i < " << outputNames[i] << ".size(); i++){\n";
+			file << "dco::derivative(" << outputNames[0] << ".flat(i)) = 1;\n";
+			if (inputNames.size() >= 1) {
+				file << "for(size_t j = 0; j < " << inputNames[0] << ".size(); j++){";
+				file << "dco::derivative(" << inputNames[0] << ".flat(j)) = 0;\n";
+				file << "}\n";
 			}
-			file << outputs[i].Shape()[j];
-		}
-		file << "}); // Shape of outputs Tensor\n";
-		file << "for(size_t k = 0; k < " << inputNames[i] << ".size(); k++){\n";
-		file << "for(size_t i = 0; i < " << outputNames[i] << ".size(); i++){\n";
-		file << "dco::derivative(" << outputNames[0] << ".flat(i)) = 1;\n";
-		if (inputNames.size() >= 1) {
-			file << "for(size_t j = 0; j < " << inputNames[0] << ".size(); j++){";
-			file << "dco::derivative(" << inputNames[0] << ".flat(j)) = 0;\n";
+			file << "tape->interpret_adjoint();\n";
+			file << "if(k == 0){\n";
+			file << "if(i == 0){\n";
+			file << functionResNames[i] << ".data()[i] = dco::derivative(" << inputNames[i] << ".flat(k));\n";
+			file << "}else{\n";
+			file << functionResNames[i] << " = appendValue(" << functionResNames[i] << ", dco::derivative(" << inputNames[i] << ".flat(k))); \n";
 			file << "}\n";
+			file << "}\n";
+			file << "else{\n";
+			file << functionResNames[i] << ".flat(i) += dco::derivative(" << inputNames[i] << ".flat(k));\n";
+			file << "}\n";
+			file << "tape->zero_adjoints();\n";
+			file << "}\n";
+			file << "}\n";
+			// Reshape result Tensor
+			file << functionResNames[i] << ".reshape({";
+			for (size_t j = 0; j < outputs[i].Shape().size(); ++j) {
+				if (j > 0) {
+					file << ", ";
+				}
+				file << outputs[i].Shape()[j];
+			}
+			file << "}); // Shape of output Tensor\n";
+			break; // only for first Tensor with dynamic Type
 		}
-		file << "tape->interpret_adjoint();\n";
-		file << functionResNames[i] << ".flat(i) += dco::derivative(" << inputNames[i] << ".flat(k));\n";
-		file << "tape->zero_adjoints();\n";
-		file << "}\n";
-		file << "}\n";
-
 	}
 	file << "}\n";
 
@@ -308,7 +348,7 @@ int main(int argc, char* argv[])
 		hasInAndOut = ", ";
 	}
 
-	file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
+	//file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
 	file << functionName << "(" << Join(ffInputNames, ", ") << hasInAndOut << Join(ffOutputNames, ", ") << "); \n";
 	file << functionName << "(" << Join(fbInputNames, ", ") << hasInAndOut << Join(fbOutputNames, ", ") << "); \n";
 	for (size_t i = 0; i < outputNames.size(); ++i) {

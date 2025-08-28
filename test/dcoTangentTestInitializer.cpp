@@ -126,7 +126,8 @@ int main(int argc, char* argv[])
 	file << "#include \"dco.hpp\"\n";
 	onnx::LoadProtoFromPath(model_fn, onnx_model);
 	// convert Model to version supported by onnx2cpp
-	onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 18);
+	if (onnx_model.ir_version() < 18)
+		onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 19);
 	// Print testsuite to get executed by CTest
 	std::vector<std::unique_ptr<OnnxConst>> inputs;
 	std::vector<OnnxVar> outputs;
@@ -188,9 +189,9 @@ int main(int argc, char* argv[])
 		functionOutputNames.push_back(outputName + "_v");
 		functionResNames.push_back(outputName + "_df_dx");
 	}
-	for (size_t i = 0; i < references.size(); ++i) {
-		referenceNames.push_back(references[i].Name());
-	}
+	//for (size_t i = 0; i < references.size(); ++i) {
+	//	referenceNames.push_back(references[i].Name());
+	//}
 	// make helper function for appending xarray
 	file << "template <typename T>\n";
 	file << "xt::xarray<T> appendValue(const xt::xarray<T> &arr, T val)\n";
@@ -247,21 +248,27 @@ int main(int argc, char* argv[])
 	}
 	file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
 	for (size_t i = 0; i < outputNames.size(); ++i) {
-		file << "for(size_t i = 0; i < " << outputNames[i] << ".size(); i++){\n";
-		file << "if (i == 0){\n";
-		file << functionResNames[i] << ".data()[i] = dco::derivative(" << outputNames[i] << ".flat(i));\n";
-		file << "} else {\n";
-		file << functionResNames[i] << " = appendValue(" << functionResNames[i] << ", dco::derivative(" << outputNames[i] << ".flat(i)));\n";
-		file << "}\n";
-		file << "}\n";
-		file << functionResNames[i] << ".reshape({";
-		for (size_t j = 0; j < outputs[i].Shape().size(); ++j) {
-			if (j > 0) {
-				file << ", ";
+		if (!outputs[i].HasStaticType()) {
+			file << "for(size_t i = 0; i < " << outputNames[i] << ".size(); i++){\n";
+			file << "if (i == 0){\n";
+			file << functionResNames[i] << ".data()[i] = dco::derivative(" << outputNames[i] << ".flat(i));\n";
+			file << "} else {\n";
+			file << functionResNames[i] << " = appendValue(" << functionResNames[i] << ", dco::derivative(" << outputNames[i] << ".flat(i)));\n";
+			file << "}\n";
+			file << "}\n";
+			// Reshape result Tensor
+			file << functionResNames[i] << ".reshape({";
+			for (size_t j = 0; j < outputs[i].Shape().size(); ++j) {
+				if (j > 0) {
+					file << ", ";
+				}
+				file << outputs[i].Shape()[j];
 			}
-			file << outputs[i].Shape()[j];
-		}			
-			file << "}); // Shape of outputs Tensor\n";
+			file << "}); // Shape of output Tensor\n";
+			// The reference val has to be the same val we derive against
+			referenceNames.push_back(references[i].Name());
+			break; // only for first Tensor with dynamic Type
+		}
 	}
 
 	file << "}\n";
@@ -300,7 +307,7 @@ int main(int argc, char* argv[])
 		hasInAndOut = ", ";
 	}
 	
-	file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
+	//file << functionName << "(" << Join(inputNames, ", ") << hasInAndOut << Join(outputNames, ", ") << "); \n";
 	file << functionName << "(" << Join(ffInputNames, ", ") << hasInAndOut << Join(ffOutputNames, ", ") << "); \n";
 	file << functionName << "(" << Join(fbInputNames, ", ") << hasInAndOut << Join(fbOutputNames, ", ") << "); \n";
 	for (size_t i = 0; i < outputNames.size(); ++i) {

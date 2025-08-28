@@ -247,9 +247,7 @@ void get_ort_results(const std::string& modelPath, std::vector<onnx::TensorProto
 			auto outputInfo = inputTensor.GetTensorTypeAndShapeInfo();
 			std::vector<int64_t> outputShape = outputInfo.GetShape();
 			size_t num_elems = 1;
-			for (auto d : outputShape) num_elems *= d; // Gesamtanzahl der Werte berechnen
-
-			// Beispiel f�r float-Ausgabe:
+			for (auto d : outputShape) num_elems *= d; 
 			float* outputData = inputTensor.GetTensorMutableData<float>();
 			std::vector<float> outputVec(outputData, outputData + num_elems);
 		}
@@ -299,7 +297,8 @@ int main(int argc, char* argv[])
 	std::string model_fn = dir + "/model.onnx";
 	onnx::LoadProtoFromPath(model_fn, onnx_model); 
 	// convert Model to version supported by onnx2cpp
-	onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 18);
+	if(onnx_model.ir_version() < 18)
+		onnx_model = onnx::version_conversion::ConvertVersion(onnx_model, 19);
 	// Print model to file specified by cmake
 	std::string functionName = onnx2cpp::MakeCppFile(onnx_model, std::cout, true);
 	// Print testsuite to get executed by CTest
